@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+:root {
+  /* Warm, green-tinted near-black — deliberately not the GitHub/VSCode blue-black
+     every other dev tool uses. Green is the primary brand accent, amber the
+     secondary one; blue/purple/orange/yellow survive only for realistic code
+     syntax-highlighting in mockups, not for UI chrome. */
+  --background: #0c130f;
+  --surface: #142019;
+  --surface-raised: #1b2a20;
+  --surface-glass: rgba(27, 42, 32, 0.55);
+  --border: #2c3d30;
+  --border-subtle: #1e2c22;
+  --foreground: #eef6ef;
+  --muted: #93a698;
+  --accent-green: #4ade80;
+  --accent-green-soft: #86efac;
+  --accent-amber: #f5a623;
+  --accent-amber-soft: #fbc85e;
+  --accent-blue: #61afef;
+  --accent-orange: #d19a66;
+  --accent-purple: #c678dd;
+  --accent-red: #e06c75;
+  --accent-yellow: #e5c07b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-glass: var(--surface-glass);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent-green: var(--accent-green);
+  --color-accent-green-soft: var(--accent-green-soft);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-amber-soft: var(--accent-amber-soft);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-red: var(--accent-red);
+  --color-accent-yellow: var(--accent-yellow);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+::selection {
+  background: rgba(74, 222, 128, 0.25);
+}
+
+* {
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.text-gradient-brand {
+  background: linear-gradient(100deg, var(--accent-green-soft) 10%, var(--accent-amber) 90%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.card-glass {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--surface-raised) 78%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 70%, transparent) 100%
+  );
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  position: relative;
+}
