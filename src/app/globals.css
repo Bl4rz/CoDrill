@@ -91,3 +91,28 @@ body {
   -webkit-backdrop-filter: blur(18px);
   position: relative;
 }
+
+/*
+ * The animated hero background renders ~100 gradient-stroked SVG paths plus
+ * two feGaussianBlur-filtered ellipses across the full viewport — cheap on
+ * desktop, but this combination (heavy SVG filters + a large filtered
+ * region) is a known way to crash WebKit's renderer on iOS (confirmed live:
+ * repeated "A problem occurred" crashes on iPhone Safari/Chrome). Below is a
+ * pure-CSS switch — no JS, no hydration timing — so the heavy version is
+ * simply never painted on touch/small/reduced-motion devices, rather than
+ * relying on JS to swap it out after the fact.
+ */
+.bg-heavy {
+  display: block;
+}
+.bg-light {
+  display: none;
+}
+@media (max-width: 767px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .bg-heavy {
+    display: none;
+  }
+  .bg-light {
+    display: block;
+  }
+}

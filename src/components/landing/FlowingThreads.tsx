@@ -52,6 +52,14 @@ function buildBand(seed: number, baseY: number, count: number): Thread[] {
  * running through it) — a hand-built SVG recreation of the cluely-style
  * abstract hero art, not an imported image, so it stays theme-tinted and
  * dependency-free.
+ *
+ * Renders two versions. `.bg-heavy` (this SVG, ~100 gradient-stroked paths
+ * plus two feGaussianBlur-filtered ellipses) crashed WebKit's renderer on a
+ * real iPhone in testing — too much filtered-region compositing for mobile
+ * Safari/Chrome. `.bg-light` is a plain CSS gradient with no SVG and no
+ * filters at all. Which one paints is decided purely by the CSS media query
+ * in globals.css (`.bg-heavy`/`.bg-light`), not JS, so there's no hydration
+ * window where the heavy version could render even briefly on a phone.
  */
 export function FlowingThreads() {
   const bandA = useMemo(() => buildBand(7, H * 0.34, 48), []);
@@ -62,21 +70,13 @@ export function FlowingThreads() {
     const el = layerRef.current;
     if (!el) return;
 
-    // position:fixed + a CSS blur filter + a scroll-driven transform update is
-    // a known WebKit/mobile-Safari combination that flickers or drops repaints
-    // during momentum scroll (especially scrolling back up). Touch devices and
-    // prefers-reduced-motion both skip the scroll-linked parallax entirely and
-    // ease off the blur, rather than fighting the browser's compositor.
+    // Even though .bg-heavy is display:none on these devices via CSS, skip
+    // attaching the scroll listener too — no point paying for it on a layer
+    // that's never painted.
     const lightweight =
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
       window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
-
-    el.style.filter = lightweight ? "blur(2px)" : "blur(6px)";
-
-    if (lightweight) {
-      el.style.transform = "translate3d(0, 0, 0)";
-      return;
-    }
+    if (lightweight) return;
 
     let ticking = false;
     const apply = () => {
@@ -99,101 +99,87 @@ export function FlowingThreads() {
   }, []);
 
   return (
-    <div
-      ref={layerRef}
-      className="absolute inset-x-0 will-change-transform"
-      style={{ top: -PARALLAX_MAX, bottom: -PARALLAX_MAX, filter: "blur(6px)" }}
-    >
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="xMidYMid slice"
-        className="h-full w-full"
+    <>
+      <div
+        ref={layerRef}
+        className="bg-heavy absolute inset-x-0 will-change-transform"
+        style={{ top: -PARALLAX_MAX, bottom: -PARALLAX_MAX, filter: "blur(6px)" }}
       >
-        <defs>
-          <linearGradient id="thread-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop
-              offset="0%"
-              stopColor="var(--accent-green)"
-              stopOpacity="0.12"
-            />
-            <stop
-              offset="36%"
-              stopColor="var(--accent-amber)"
-              stopOpacity="0.85"
-            />
-            <stop
-              offset="52%"
-              stopColor="var(--accent-amber-soft)"
-              stopOpacity="0.95"
-            />
-            <stop
-              offset="72%"
-              stopColor="var(--accent-green-soft)"
-              stopOpacity="0.55"
-            />
-            <stop
-              offset="100%"
-              stopColor="var(--accent-green)"
-              stopOpacity="0.1"
-            />
-          </linearGradient>
-          <filter
-            id="thread-soften"
-            x="-20%"
-            y="-20%"
-            width="140%"
-            height="140%"
-          >
-            <feGaussianBlur stdDeviation="36" />
-          </filter>
-        </defs>
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          preserveAspectRatio="xMidYMid slice"
+          className="h-full w-full"
+        >
+          <defs>
+            <linearGradient id="thread-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="var(--accent-green)" stopOpacity="0.12" />
+              <stop offset="36%" stopColor="var(--accent-amber)" stopOpacity="0.85" />
+              <stop offset="52%" stopColor="var(--accent-amber-soft)" stopOpacity="0.95" />
+              <stop offset="72%" stopColor="var(--accent-green-soft)" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="var(--accent-green)" stopOpacity="0.1" />
+            </linearGradient>
+            <filter id="thread-soften" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="36" />
+            </filter>
+          </defs>
 
-        <g transform={`rotate(-6 ${W / 2} ${H / 2})`}>
-          <ellipse
-            cx={W * 0.5}
-            cy={H * 0.34}
-            rx={W * 0.58}
-            ry={140}
-            fill="var(--accent-green)"
-            opacity={0.2}
-            filter="url(#thread-soften)"
-          />
-          {bandA.map((l, i) => (
-            <path
-              key={`a${i}`}
-              d={l.d}
-              stroke="url(#thread-grad)"
-              strokeWidth={l.width}
-              fill="none"
-              opacity={l.opacity}
-              strokeLinecap="round"
+          <g transform={`rotate(-6 ${W / 2} ${H / 2})`}>
+            <ellipse
+              cx={W * 0.5}
+              cy={H * 0.34}
+              rx={W * 0.58}
+              ry={140}
+              fill="var(--accent-green)"
+              opacity={0.2}
+              filter="url(#thread-soften)"
             />
-          ))}
-        </g>
+            {bandA.map((l, i) => (
+              <path
+                key={`a${i}`}
+                d={l.d}
+                stroke="url(#thread-grad)"
+                strokeWidth={l.width}
+                fill="none"
+                opacity={l.opacity}
+                strokeLinecap="round"
+              />
+            ))}
+          </g>
 
-        <g transform={`rotate(-11 ${W / 2} ${H / 2})`}>
-          <ellipse
-            cx={W * 0.5}
-            cy={H * 0.68}
-            rx={W * 0.58}
-            ry={140}
-            fill="var(--accent-green)"
-            opacity={0.16}
-            filter="url(#thread-soften)"
-          />
-          {bandB.map((l, i) => (
-            <path
-              key={`b${i}`}
-              d={l.d}
-              stroke="url(#thread-grad)"
-              strokeWidth={l.width}
-              fill="none"
-              opacity={l.opacity}
-              strokeLinecap="round"
+          <g transform={`rotate(-11 ${W / 2} ${H / 2})`}>
+            <ellipse
+              cx={W * 0.5}
+              cy={H * 0.68}
+              rx={W * 0.58}
+              ry={140}
+              fill="var(--accent-green)"
+              opacity={0.16}
+              filter="url(#thread-soften)"
             />
-          ))}
-        </g>
-      </svg>
-    </div>
+            {bandB.map((l, i) => (
+              <path
+                key={`b${i}`}
+                d={l.d}
+                stroke="url(#thread-grad)"
+                strokeWidth={l.width}
+                fill="none"
+                opacity={l.opacity}
+                strokeLinecap="round"
+              />
+            ))}
+          </g>
+        </svg>
+      </div>
+
+      <div
+        className="bg-light absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 45% at 20% 25%, color-mix(in srgb, var(--accent-green) 30%, transparent) 0%, transparent 70%)," +
+            "radial-gradient(ellipse 65% 40% at 80% 70%, color-mix(in srgb, var(--accent-amber) 26%, transparent) 0%, transparent 70%)," +
+            "var(--background)",
+        }}
+      />
+    </>
   );
 }
