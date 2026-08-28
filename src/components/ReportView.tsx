@@ -1,6 +1,33 @@
 import Link from "next/link";
 import { StoredSession } from "@/lib/store";
 import { DifficultyBadge } from "@/components/DifficultyBadge";
+import { Attempt, InterviewQuestion } from "@/lib/types";
+
+type ScoreAxis = "correctness" | "communication" | "reasoning";
+
+const NEXT_ACTION_COPY: Record<ScoreAxis, string> = {
+  correctness:
+    "Before you consider a solution done, trace through it with a concrete example — small correctness gaps were the most consistent thing across your questions this session.",
+  communication:
+    "Narrate your thinking as you work, not just when asked — stating assumptions and trade-offs out loud was the biggest gap this session.",
+  reasoning:
+    "Lead with time/space complexity and why you picked this approach over alternatives before writing code — that's where you lost the most ground this session.",
+};
+
+function weakestAxis(
+  attempts: { question: InterviewQuestion; attempt: Attempt }[],
+): ScoreAxis | null {
+  const scored = attempts.filter((a) => a.attempt.scores);
+  if (scored.length === 0) return null;
+  const totals = { correctness: 0, communication: 0, reasoning: 0 };
+  for (const { attempt } of scored) {
+    totals.correctness += attempt.scores!.correctness_score;
+    totals.communication += attempt.scores!.communication_score;
+    totals.reasoning += attempt.scores!.reasoning_score;
+  }
+  const axes: ScoreAxis[] = ["correctness", "communication", "reasoning"];
+  return axes.reduce((weakest, axis) => (totals[axis] < totals[weakest] ? axis : weakest));
+}
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
   const color =
@@ -25,6 +52,7 @@ export function ReportView({ session }: { session: StoredSession }) {
   const attempts = session.questions
     .map((q) => ({ question: q, attempt: session.attempts[q.id] }))
     .filter((x) => x.attempt);
+  const nextActionAxis = weakestAxis(attempts);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-6 py-14">
@@ -34,6 +62,17 @@ export function ReportView({ session }: { session: StoredSession }) {
         </p>
         <h1 className="text-2xl font-semibold text-foreground">Session report</h1>
       </header>
+
+      {nextActionAxis && (
+        <section className="rounded-lg border border-accent-green/30 bg-accent-green/5 p-5">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-accent-green">
+            Your next rep
+          </p>
+          <p className="text-base leading-relaxed text-foreground">
+            {NEXT_ACTION_COPY[nextActionAxis]}
+          </p>
+        </section>
+      )}
 
       <section className="rounded-lg border border-border bg-surface p-5">
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">

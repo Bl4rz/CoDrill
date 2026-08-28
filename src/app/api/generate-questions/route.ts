@@ -43,8 +43,6 @@ const GENERATE_TOOL: StructuredTool = {
   },
 };
 
-const DIFFICULTY_ORDER: Record<Difficulty, number> = { easy: 0, medium: 1, hard: 2 };
-
 export async function POST(req: NextRequest) {
   try {
     const { role_summary } = (await req.json()) as { role_summary: RoleSummary };
@@ -63,9 +61,10 @@ export async function POST(req: NextRequest) {
         "reword well-known questions from LeetCode, HackerRank, Cracking the Coding Interview, or similar " +
         "banks. Tailor every question to the candidate's specific role: match the tech stack, the seniority " +
         "level (junior questions should be more scoped and guided in framing; senior/staff questions should " +
-        "involve ambiguity, tradeoffs, or system-level thinking), and the focus areas. Order questions from " +
-        "easiest to hardest. Each question should be answerable by writing code in an interview (30-45 min), " +
-        "not a multi-day project.",
+        "involve ambiguity, tradeoffs, or system-level thinking), and the focus areas. Include a genuine mix " +
+        "of easy, medium, and hard questions — do NOT order them from easiest to hardest; real interviews " +
+        "don't follow a predictable difficulty ramp, and neither should this set. Each question should be " +
+        "answerable by writing code in an interview (30-45 min), not a multi-day project.",
       messages: [
         {
           role: "user",
@@ -77,8 +76,6 @@ export async function POST(req: NextRequest) {
     });
 
     const questions: InterviewQuestion[] = result.questions
-      .slice()
-      .sort((a, b) => DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty])
       .map((q, i) => ({
         id: crypto.randomUUID(),
         question_text: q.question_text,

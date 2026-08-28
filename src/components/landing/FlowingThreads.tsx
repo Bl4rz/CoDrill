@@ -59,16 +59,32 @@ export function FlowingThreads() {
   const layerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const el = layerRef.current;
+    if (!el) return;
+
+    // position:fixed + a CSS blur filter + a scroll-driven transform update is
+    // a known WebKit/mobile-Safari combination that flickers or drops repaints
+    // during momentum scroll (especially scrolling back up). Touch devices and
+    // prefers-reduced-motion both skip the scroll-linked parallax entirely and
+    // ease off the blur, rather than fighting the browser's compositor.
+    const lightweight =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
+
+    el.style.filter = lightweight ? "blur(2px)" : "blur(6px)";
+
+    if (lightweight) {
+      el.style.transform = "translate3d(0, 0, 0)";
+      return;
+    }
+
     let ticking = false;
     const apply = () => {
-      const el = layerRef.current;
-      if (el) {
-        const offset = Math.max(
-          -PARALLAX_MAX,
-          Math.min(PARALLAX_MAX, window.scrollY * PARALLAX_FACTOR),
-        );
-        el.style.transform = `translate3d(0, ${offset}px, 0)`;
-      }
+      const offset = Math.max(
+        -PARALLAX_MAX,
+        Math.min(PARALLAX_MAX, window.scrollY * PARALLAX_FACTOR),
+      );
+      el.style.transform = `translate3d(0, ${offset}px, 0)`;
       ticking = false;
     };
     const onScroll = () => {

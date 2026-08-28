@@ -6,6 +6,8 @@ import { motion } from "motion/react";
 import { TypedTerminal } from "@/components/landing/TypedTerminal";
 import { CodeFollowupPreview } from "@/components/landing/CodeFollowupPreview";
 import { ReportPreview } from "@/components/landing/ReportPreview";
+import { ExampleWalkthrough } from "@/components/landing/ExampleWalkthrough";
+import { FAQ } from "@/components/landing/FAQ";
 import { FlowingThreads } from "@/components/landing/FlowingThreads";
 import { Logo } from "@/components/Logo";
 
@@ -112,7 +114,7 @@ const STEPS = [
   {
     n: "02",
     title: "Get your questions",
-    detail: "5-8 original questions, ranked easy to hard, built specifically for that role.",
+    detail: "5-8 original questions, a genuine mix of difficulty, built specifically for that role.",
     accent: "var(--accent-amber)",
   },
   {
@@ -199,6 +201,24 @@ export default function LandingPage() {
           <TypedTerminal lines={APPROACH_LINES} label="interviewer.speaking()" />
         </motion.div>
       </section>
+
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-80px" }}
+        variants={stagger}
+        className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 pb-16"
+      >
+        <motion.p
+          variants={fadeUp}
+          className="text-center font-mono text-xs uppercase tracking-widest text-muted"
+        >
+          One real example, before you start
+        </motion.p>
+        <motion.div variants={fadeUp}>
+          <ExampleWalkthrough />
+        </motion.div>
+      </motion.section>
 
       <motion.section
         initial="hidden"
@@ -376,6 +396,24 @@ export default function LandingPage() {
             </p>
             <p className="mt-1 text-sm text-muted">One new job posting, one new set of questions.</p>
           </div>
+        </motion.div>
+      </motion.section>
+
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-80px" }}
+        variants={stagger}
+        className="mx-auto w-full max-w-3xl px-6 py-20"
+      >
+        <motion.p
+          variants={fadeUp}
+          className="mb-8 text-center font-mono text-xs uppercase tracking-widest text-muted"
+        >
+          FAQ
+        </motion.p>
+        <motion.div variants={fadeUp}>
+          <FAQ />
         </motion.div>
       </motion.section>
 
