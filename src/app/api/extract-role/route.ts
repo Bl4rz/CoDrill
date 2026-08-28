@@ -41,15 +41,42 @@ function looksLikeUrl(input: string): boolean {
   return /^https?:\/\/\S+$/i.test(trimmed) && !trimmed.includes("\n");
 }
 
-function stripHtml(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
+function decodeHtmlEntities(text: string): string {
+  return text
     .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+function stripHtml(html: string): string {
+  return decodeHtmlEntities(
+    html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+  )
     .replace(/\s+/g, " ")
     .trim();
+}
+
+// Many job boards (Workday, Greenhouse, Lever, ...) render the visible page
+// client-side, leaving <body> essentially empty in the raw HTML response —
+// but they still server-render an og:description/description meta tag with
+// the full posting text for link previews and SEO. stripHtml alone discards
+// meta tags entirely (it only keeps text *between* tags, and this content
+// lives in an attribute), so a page like that would come back empty even
+// though the real text was sitting right there in the response.
+function extractMetaDescription(html: string): string {
+  const match =
+    html.match(/<meta[^>]+property=["']og:description["'][^>]*content=["']([^"']*)["']/i) ??
+    html.match(/<meta[^>]+content=["']([^"']*)["'][^>]*property=["']og:description["']/i) ??
+    html.match(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']*)["']/i) ??
+    html.match(/<meta[^>]+content=["']([^"']*)["'][^>]*name=["']description["']/i);
+  return match ? decodeHtmlEntities(match[1]).trim() : "";
 }
 
 async function resolveJobPostingText(input: string): Promise<string> {
@@ -64,7 +91,9 @@ async function resolveJobPostingText(input: string): Promise<string> {
     );
   }
   const html = await res.text();
-  const text = stripHtml(html);
+  const bodyText = stripHtml(html);
+  const metaText = extractMetaDescription(html);
+  const text = metaText.length > bodyText.length ? metaText : bodyText;
   if (text.length < 30) {
     throw new Error(
       "Couldn't extract readable text from that URL. Paste the job posting text instead."
