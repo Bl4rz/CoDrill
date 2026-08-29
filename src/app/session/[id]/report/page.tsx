@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { StoredSession, loadSession } from "@/lib/store";
+import { fetchCloudSession } from "@/lib/supabase/sessions";
 import { ReportView } from "@/components/ReportView";
 import { Spinner } from "@/components/Spinner";
 
@@ -12,8 +13,21 @@ export default function ReportPage() {
   const [session, setSession] = useState<StoredSession | null | undefined>(undefined);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading client-only localStorage on mount
-    setSession(loadSession(params.id));
+    const local = loadSession(params.id);
+    if (local) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reading client-only localStorage on mount
+      setSession(local);
+      return;
+    }
+    // Not on this device — fall back to the cloud copy (e.g. viewing from a
+    // different device than the one the session was run on).
+    let cancelled = false;
+    fetchCloudSession(params.id).then((cloud) => {
+      if (!cancelled) setSession(cloud);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [params.id]);
 
   if (session === undefined) {

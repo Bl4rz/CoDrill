@@ -1,6 +1,7 @@
 "use client";
 
 import { Attempt, InterviewQuestion, RoleSummary, SessionReport } from "@/lib/types";
+import { syncSessionToCloud } from "@/lib/supabase/sessions";
 
 export interface StoredSession {
   id: string;
@@ -46,6 +47,8 @@ export function saveSession(session: StoredSession) {
   if (!index.includes(session.id)) {
     localStorage.setItem(INDEX_KEY, JSON.stringify([...index, session.id]));
   }
+  // Fire-and-forget: no-ops if signed out, never blocks or breaks the local save.
+  void syncSessionToCloud(session);
 }
 
 export function loadSession(id: string): StoredSession | null {
