@@ -7,10 +7,16 @@ export async function GET(request: Request) {
   const next = searchParams.get("next") ?? "/";
 
   if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+    try {
+      const supabase = await createClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+    } catch (err) {
+      // Covers a misconfigured/missing Supabase env var too — better to
+      // land on the friendly error page than 500 mid-OAuth-flow.
+      console.error("Auth callback failed:", err);
     }
   }
 
