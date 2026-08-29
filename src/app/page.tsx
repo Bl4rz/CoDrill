@@ -10,6 +10,7 @@ import { ExampleWalkthrough } from "@/components/landing/ExampleWalkthrough";
 import { FAQ } from "@/components/landing/FAQ";
 import { FlowingThreads } from "@/components/landing/FlowingThreads";
 import { Logo } from "@/components/Logo";
+import { AuthButton } from "@/components/AuthButton";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -137,12 +138,15 @@ export default function LandingPage() {
           <Logo className="h-6 w-6" />
           <span className="font-mono text-xs uppercase tracking-widest text-muted">Codrill</span>
         </div>
-        <Link
-          href="/start"
-          className="rounded-md bg-accent-amber px-4 py-2 text-xs font-semibold text-background transition hover:scale-[1.04] hover:bg-accent-amber-soft active:scale-[0.97]"
-        >
-          Start free session
-        </Link>
+        <div className="flex items-center gap-3">
+          <AuthButton />
+          <Link
+            href="/start"
+            className="rounded-md bg-accent-amber px-4 py-2 text-xs font-semibold text-background transition hover:scale-[1.04] hover:bg-accent-amber-soft active:scale-[0.97]"
+          >
+            Start free session
+          </Link>
+        </div>
       </nav>
 
       <section className="mx-auto flex w-full max-w-4xl flex-col items-center gap-6 px-6 pb-20 pt-16 text-center sm:pt-24">
