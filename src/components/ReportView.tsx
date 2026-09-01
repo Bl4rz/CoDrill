@@ -68,7 +68,7 @@ export function ReportView({ session }: { session: StoredSession }) {
         <p className="font-mono text-xs uppercase tracking-widest text-muted">
           {session.role_summary.role_title} · {session.role_summary.seniority}
         </p>
-        <h1 className="text-2xl font-semibold text-foreground">
+        <h1 className="font-display text-2xl font-medium text-foreground">
           {session.role_summary.role_title} — session report
         </h1>
       </header>

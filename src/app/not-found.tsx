@@ -11,7 +11,7 @@ export default function NotFound() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
       <Logo className="h-10 w-10" />
-      <h1 className="text-2xl font-semibold text-foreground">Page not found</h1>
+      <h1 className="font-display text-2xl font-medium text-foreground">Page not found</h1>
       <p className="text-sm text-muted">
         Whatever you were looking for isn&apos;t here — it may have moved, or the link might be
         off.

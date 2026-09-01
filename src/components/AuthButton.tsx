@@ -79,7 +79,7 @@ export function AuthButton() {
     <button
       type="button"
       onClick={signInWithGoogle}
-      className="whitespace-nowrap rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent-green hover:text-accent-green"
+      className="whitespace-nowrap text-xs font-medium text-muted transition hover:text-accent-green"
     >
       Sign in with Google
     </button>

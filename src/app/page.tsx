@@ -133,7 +133,7 @@ export default function LandingPage() {
         <FlowingThreads />
       </div>
 
-      <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
+      <nav className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 py-6">
         <div className="flex items-center gap-2">
           <Logo className="h-6 w-6" />
           <span className="font-mono text-xs uppercase tracking-widest text-muted">Codrill</span>
@@ -164,10 +164,10 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.05 }}
-          className="text-4xl font-semibold tracking-tight text-foreground sm:text-6xl"
+          className="font-display text-4xl font-medium tracking-tight text-foreground italic sm:text-6xl"
         >
-          Practice the interview{" "}
-          <span className="text-gradient-brand">for the job you actually want.</span>
+          Practice the interview for the job{" "}
+          <span className="text-accent-green not-italic">you actually want</span>.
         </motion.h1>
 
         <motion.p
@@ -252,7 +252,7 @@ export default function LandingPage() {
       >
         <motion.div variants={fadeUp} className="text-center">
           <p className="font-mono text-xs uppercase tracking-widest text-muted">See it in action</p>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          <h2 className="font-display mt-3 text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
             Every screenshot below is the real product.
           </h2>
         </motion.div>
@@ -339,7 +339,7 @@ export default function LandingPage() {
       >
         <motion.h2
           variants={fadeUp}
-          className="text-center text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
+          className="font-display text-center text-2xl font-medium tracking-tight text-foreground sm:text-3xl"
         >
           Not another question bank.
         </motion.h2>
@@ -428,7 +428,10 @@ export default function LandingPage() {
         variants={stagger}
         className="mx-auto flex w-full max-w-3xl flex-col items-center gap-5 px-6 pb-28 pt-8 text-center"
       >
-        <motion.h2 variants={fadeUp} className="text-2xl font-semibold text-foreground sm:text-3xl">
+        <motion.h2
+          variants={fadeUp}
+          className="font-display text-2xl font-medium text-foreground sm:text-3xl"
+        >
           Your next interview is coming. Practice the one that matters.
         </motion.h2>
         <motion.div variants={fadeUp}>

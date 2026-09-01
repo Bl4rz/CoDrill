@@ -42,7 +42,7 @@ export default function StartPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-16">
       <header className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <Link href="/" className="flex items-center gap-2 w-fit">
             <Logo className="h-6 w-6" />
             <span className="font-mono text-xs uppercase tracking-widest text-muted">
@@ -52,7 +52,7 @@ export default function StartPage() {
           <AuthButton />
         </div>
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Start" }]} />
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+        <h1 className="font-display text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
           Paste the job posting you&apos;re preparing for.
         </h1>
         <p className="max-w-xl text-sm leading-relaxed text-muted">

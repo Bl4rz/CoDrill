@@ -95,7 +95,7 @@ export function SessionShell({ sessionId }: { sessionId: string }) {
         <p className="font-mono text-xs uppercase tracking-widest text-muted">
           {session.role_summary.role_title} · {session.role_summary.seniority}
         </p>
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="font-display text-xl font-medium text-foreground">
           {session.role_summary.role_title} — mock interview
         </h1>
       </header>
