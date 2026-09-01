@@ -28,37 +28,44 @@ const FEATURES = [
   {
     title: "Freshly generated, every time",
     detail:
-      "No question banks, no LeetCode reskins. The model reads your posting and invents 5-8 original questions tailored to the exact role.",
+      "No question banks, no LeetCode reskins. The model reads your posting and invents 5-8 original questions tailored to the exact role — every session is a different set.",
     accent: "var(--accent-green)",
+    span: "lg:col-span-2 lg:row-span-2",
+    big: true,
   },
   {
     title: "Approach before code",
     detail:
       "A real interviewer doesn't hand you a blank editor. You explain your plan first — flawed reasoning gets a guiding question, not a lecture.",
     accent: "var(--accent-amber)",
+    span: "lg:col-span-2",
   },
   {
     title: "A real code editor",
     detail: "Monaco, the engine behind VS Code. JavaScript, Python, and Java, syntax-highlighted.",
     accent: "var(--accent-green)",
+    span: "",
   },
   {
     title: "Follow-ups that read your code",
     detail:
       "Complexity, scaling, edge cases — asked about the specific function you just wrote, not a generic checklist.",
     accent: "var(--accent-amber)",
+    span: "",
   },
   {
     title: "Speak it, don't type it",
     detail:
       "Talk through your approach out loud and hear the interviewer respond, with a genuinely human-sounding voice.",
     accent: "var(--accent-green)",
+    span: "lg:col-span-2",
   },
   {
     title: "A report that finds patterns",
     detail:
       "Not just per-question scores — it flags habits repeated across the session, like skipping complexity until asked.",
     accent: "var(--accent-amber)",
+    span: "lg:col-span-2",
   },
 ];
 
@@ -189,7 +196,7 @@ export default function LandingPage() {
         >
           <Link
             href="/start"
-            className="rounded-md bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background shadow-[0_0_40px_-10px_var(--accent-green)] transition hover:scale-[1.03] hover:shadow-[0_0_50px_-8px_var(--accent-amber)] active:scale-[0.97]"
+            className="rounded-md bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background shadow-[0_6px_20px_-8px_var(--accent-green)] transition hover:scale-[1.03] hover:shadow-[0_8px_24px_-8px_var(--accent-amber)] active:scale-[0.97]"
           >
             Start your free mock interview →
           </Link>
@@ -317,7 +324,7 @@ export default function LandingPage() {
               variants={fadeUp}
               whileHover={{ y: -4 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="card-glass rounded-lg border border-border p-6 transition-shadow hover:shadow-[0_0_40px_-18px_var(--step-accent)]"
+              className="card-glass rounded-lg border border-border p-6 transition-shadow hover:shadow-[inset_0_1px_0_0_var(--step-accent),0_8px_24px_-16px_var(--step-accent)]"
               style={{ "--step-accent": step.accent } as CSSProperties}
             >
               <span className="font-mono text-2xl font-semibold" style={{ color: step.accent }}>
@@ -347,14 +354,14 @@ export default function LandingPage() {
           Every part of the flow is built to feel like an actual interview, not a coding quiz.
         </motion.p>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid auto-rows-[minmax(9rem,auto)] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-flow-dense lg:grid-cols-4">
           {FEATURES.map((f) => (
             <motion.div
               key={f.title}
               variants={fadeUp}
-              whileHover={{ y: -4 }}
+              whileHover={{ y: -3 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="card-glass rounded-lg border border-border p-5 transition-shadow hover:shadow-[0_0_44px_-18px_var(--feature-accent)]"
+              className={`card-glass flex flex-col justify-center rounded-lg border border-border p-5 transition-shadow hover:shadow-[inset_0_1px_0_0_var(--feature-accent),0_8px_24px_-16px_var(--feature-accent)] ${f.span}`}
               style={
                 {
                   borderTopColor: f.accent,
@@ -363,8 +370,12 @@ export default function LandingPage() {
                 } as CSSProperties
               }
             >
-              <h3 className="text-sm font-medium text-foreground">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{f.detail}</p>
+              <h3 className={f.big ? "font-display text-xl font-medium text-foreground" : "text-sm font-medium text-foreground"}>
+                {f.title}
+              </h3>
+              <p className={f.big ? "mt-3 max-w-md text-sm leading-relaxed text-muted" : "mt-2 text-sm leading-relaxed text-muted"}>
+                {f.detail}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -385,7 +396,7 @@ export default function LandingPage() {
         </motion.p>
         <motion.div
           variants={fadeUp}
-          className="card-glass flex flex-col gap-6 rounded-lg border border-border p-8 shadow-[0_0_50px_-20px_var(--accent-green)] sm:flex-row sm:items-center sm:justify-between"
+          className="card-glass flex flex-col gap-6 rounded-lg border border-border p-8 shadow-[0_8px_28px_-16px_var(--accent-green)] sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
             <p className="text-lg font-medium text-accent-green">First session: free</p>
@@ -437,7 +448,7 @@ export default function LandingPage() {
         <motion.div variants={fadeUp}>
           <Link
             href="/start"
-            className="inline-block rounded-md bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background shadow-[0_0_40px_-10px_var(--accent-amber)] transition hover:scale-[1.03] hover:shadow-[0_0_50px_-8px_var(--accent-green)] active:scale-[0.97]"
+            className="inline-block rounded-md bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background shadow-[0_6px_20px_-8px_var(--accent-amber)] transition hover:scale-[1.03] hover:shadow-[0_8px_24px_-8px_var(--accent-green)] active:scale-[0.97]"
           >
             Start your free mock interview →
           </Link>
