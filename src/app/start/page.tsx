@@ -10,6 +10,7 @@ import { RoleSummary } from "@/lib/types";
 import { createSession } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { AuthButton } from "@/components/AuthButton";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export default function StartPage() {
   const router = useRouter();
@@ -50,6 +51,7 @@ export default function StartPage() {
           </Link>
           <AuthButton />
         </div>
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Start" }]} />
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Paste the job posting you&apos;re preparing for.
         </h1>

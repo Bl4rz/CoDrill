@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { StoredSession } from "@/lib/store";
 import { DifficultyBadge } from "@/components/DifficultyBadge";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Attempt, InterviewQuestion } from "@/lib/types";
 
 type ScoreAxis = "correctness" | "communication" | "reasoning";
@@ -56,11 +57,20 @@ export function ReportView({ session }: { session: StoredSession }) {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-6 py-14">
-      <header className="flex flex-col gap-2">
+      <header className="flex flex-col gap-3">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Start", href: "/start" },
+            { label: "Report" },
+          ]}
+        />
         <p className="font-mono text-xs uppercase tracking-widest text-muted">
           {session.role_summary.role_title} · {session.role_summary.seniority}
         </p>
-        <h1 className="text-2xl font-semibold text-foreground">Session report</h1>
+        <h1 className="text-2xl font-semibold text-foreground">
+          {session.role_summary.role_title} — session report
+        </h1>
       </header>
 
       {nextActionAxis && (

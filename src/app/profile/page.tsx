@@ -8,6 +8,7 @@ import { fetchCloudSessions } from "@/lib/supabase/sessions";
 import { StoredSession } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { Spinner } from "@/components/Spinner";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 interface RoleStats {
   roleTitle: string;
@@ -95,6 +96,8 @@ export default function ProfilePage() {
         </Link>
         <span className="font-mono text-xs text-muted">{user.email}</span>
       </header>
+
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Profile" }]} />
 
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Your profile</h1>

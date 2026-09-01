@@ -8,6 +8,7 @@ import { Attempt } from "@/lib/types";
 import { DifficultyBadge } from "@/components/DifficultyBadge";
 import { InterviewRunner } from "@/components/InterviewRunner";
 import { Spinner } from "@/components/Spinner";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export function SessionShell({ sessionId }: { sessionId: string }) {
   const router = useRouter();
@@ -83,11 +84,20 @@ export function SessionShell({ sessionId }: { sessionId: string }) {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
-      <header className="flex flex-col gap-1">
+      <header className="flex flex-col gap-2">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Start", href: "/start" },
+            { label: "Session" },
+          ]}
+        />
         <p className="font-mono text-xs uppercase tracking-widest text-muted">
           {session.role_summary.role_title} · {session.role_summary.seniority}
         </p>
-        <h1 className="text-xl font-semibold text-foreground">Mock interview session</h1>
+        <h1 className="text-xl font-semibold text-foreground">
+          {session.role_summary.role_title} — mock interview
+        </h1>
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
