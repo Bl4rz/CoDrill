@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import { motion } from "motion/react";
 import { TypedTerminal } from "@/components/landing/TypedTerminal";
 import { CodeFollowupPreview } from "@/components/landing/CodeFollowupPreview";
@@ -11,6 +11,12 @@ import { FAQ } from "@/components/landing/FAQ";
 import { FlowingThreads } from "@/components/landing/FlowingThreads";
 import { Logo } from "@/components/Logo";
 import { AuthButton } from "@/components/AuthButton";
+
+function handleSpotlight(e: MouseEvent<HTMLDivElement>) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.style.setProperty("--spot-x", `${e.clientX - rect.left}px`);
+  e.currentTarget.style.setProperty("--spot-y", `${e.clientY - rect.top}px`);
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -324,8 +330,9 @@ export default function LandingPage() {
               variants={fadeUp}
               whileHover={{ y: -4 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="card-glass rounded-lg border border-border p-6 transition-shadow hover:shadow-[inset_0_1px_0_0_var(--step-accent),0_8px_24px_-16px_var(--step-accent)]"
-              style={{ "--step-accent": step.accent } as CSSProperties}
+              onMouseMove={handleSpotlight}
+              className="card-glass spotlight-card rounded-lg border border-border p-6 transition-shadow hover:shadow-[inset_0_1px_0_0_var(--step-accent),0_8px_24px_-16px_var(--step-accent)]"
+              style={{ "--step-accent": step.accent, "--spot-color": step.accent } as CSSProperties}
             >
               <span className="font-mono text-2xl font-semibold" style={{ color: step.accent }}>
                 {step.n}
@@ -361,12 +368,14 @@ export default function LandingPage() {
               variants={fadeUp}
               whileHover={{ y: -3 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className={`card-glass flex flex-col justify-center rounded-lg border border-border p-5 transition-shadow hover:shadow-[inset_0_1px_0_0_var(--feature-accent),0_8px_24px_-16px_var(--feature-accent)] ${f.span}`}
+              onMouseMove={handleSpotlight}
+              className={`card-glass spotlight-card flex flex-col justify-center rounded-lg border border-border p-5 transition-shadow hover:shadow-[inset_0_1px_0_0_var(--feature-accent),0_8px_24px_-16px_var(--feature-accent)] ${f.span}`}
               style={
                 {
                   borderTopColor: f.accent,
                   borderTopWidth: 2,
                   "--feature-accent": f.accent,
+                  "--spot-color": f.accent,
                 } as CSSProperties
               }
             >
@@ -396,7 +405,9 @@ export default function LandingPage() {
         </motion.p>
         <motion.div
           variants={fadeUp}
-          className="card-glass flex flex-col gap-6 rounded-lg border border-border p-8 shadow-[0_8px_28px_-16px_var(--accent-green)] sm:flex-row sm:items-center sm:justify-between"
+          onMouseMove={handleSpotlight}
+          className="card-glass spotlight-card flex flex-col gap-6 rounded-lg border border-border p-8 shadow-[0_8px_28px_-16px_var(--accent-green)] sm:flex-row sm:items-center sm:justify-between"
+          style={{ "--spot-color": "var(--accent-amber)" } as CSSProperties}
         >
           <div>
             <p className="text-lg font-medium text-accent-green">First session: free</p>

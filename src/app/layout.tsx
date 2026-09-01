@@ -97,6 +97,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <div className="noise-overlay" aria-hidden="true" />
         {children}
         <Analytics />
       </body>
