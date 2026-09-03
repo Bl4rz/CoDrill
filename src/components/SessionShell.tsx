@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { StoredSession, loadSession, saveSession } from "@/lib/store";
@@ -107,17 +108,18 @@ export function SessionShell({ sessionId }: { sessionId: string }) {
           return (
             <div
               key={q.id}
-              className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs ${
+              className={`pixel-panel flex items-center gap-1.5 px-3 py-1 text-xs ${
                 active
                   ? "border-accent-amber text-accent-amber"
                   : done
                   ? "border-accent-green/40 text-accent-green"
                   : "border-border text-muted"
               }`}
+              style={{ "--pixel-shadow": "currentColor" } as CSSProperties}
             >
-              <span>{i + 1}</span>
+              <span className="font-pixel text-[10px]">{i + 1}</span>
               <DifficultyBadge difficulty={q.difficulty} />
-              {done && <span>✓</span>}
+              {done && <span className="h-2 w-2 bg-accent-green" aria-label="Completed" />}
             </div>
           );
         })}

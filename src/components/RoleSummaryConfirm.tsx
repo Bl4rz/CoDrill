@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { CSSProperties } from "react";
 import { RoleSummary } from "@/lib/types";
 import { Spinner } from "@/components/Spinner";
 
@@ -138,7 +139,8 @@ export function RoleSummaryConfirm({
           type="button"
           onClick={handleGenerate}
           disabled={loading}
-          className="rounded-md bg-accent-green px-4 py-2 text-sm font-medium text-background transition hover:scale-[1.03] hover:bg-accent-green/90 active:scale-[0.97] disabled:opacity-40 disabled:hover:scale-100"
+          className="pixel-press border-2 border-background/40 bg-accent-green px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
+          style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
         >
           {loading ? "Generating questions…" : "Looks good — generate questions"}
         </button>

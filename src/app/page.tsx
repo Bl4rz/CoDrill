@@ -202,7 +202,8 @@ export default function LandingPage() {
         >
           <Link
             href="/start"
-            className="rounded-md bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background shadow-[0_6px_20px_-8px_var(--accent-green)] transition hover:scale-[1.03] hover:shadow-[0_8px_24px_-8px_var(--accent-amber)] active:scale-[0.97]"
+            className="pixel-press border-2 border-background/40 bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background"
+            style={{ "--pixel-shadow": "rgba(0,0,0,0.55)" } as CSSProperties}
           >
             Start your free mock interview →
           </Link>
@@ -459,7 +460,8 @@ export default function LandingPage() {
         <motion.div variants={fadeUp}>
           <Link
             href="/start"
-            className="inline-block rounded-md bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background shadow-[0_6px_20px_-8px_var(--accent-amber)] transition hover:scale-[1.03] hover:shadow-[0_8px_24px_-8px_var(--accent-green)] active:scale-[0.97]"
+            className="pixel-press inline-block border-2 border-background/40 bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background"
+            style={{ "--pixel-shadow": "rgba(0,0,0,0.55)" } as CSSProperties}
           >
             Start your free mock interview →
           </Link>
