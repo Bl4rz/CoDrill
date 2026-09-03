@@ -155,7 +155,8 @@ export default function LandingPage() {
           <AuthButton />
           <Link
             href="/start"
-            className="rounded-md bg-accent-amber px-4 py-2 text-xs font-semibold text-background transition hover:scale-[1.04] hover:bg-accent-amber-soft active:scale-[0.97]"
+            className="pixel-press border-2 border-background/40 bg-accent-amber px-4 py-2 text-xs font-semibold text-background"
+            style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
           >
             Start free session
           </Link>
@@ -167,9 +168,10 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 rounded-full border border-accent-amber/30 bg-surface-glass px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-muted backdrop-blur"
+          className="pixel-panel inline-flex items-center gap-2 border-accent-amber/60 bg-surface-glass px-3 py-1.5 font-pixel text-[9px] uppercase tracking-wider text-accent-amber backdrop-blur"
+          style={{ "--pixel-shadow": "var(--accent-amber)" } as CSSProperties}
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-accent-amber shadow-[0_0_8px_1px_var(--accent-amber)]" />
+          <span className="h-1.5 w-1.5 bg-accent-amber shadow-[0_0_8px_1px_var(--accent-amber)]" />
           First session free — no signup
         </motion.div>
 
@@ -247,7 +249,7 @@ export default function LandingPage() {
       >
         {STATS.map((s) => (
           <motion.div key={s.label} variants={fadeUp} className="max-w-[180px] text-center">
-            <p className={`font-mono text-3xl font-semibold sm:text-4xl ${s.color}`}>{s.value}</p>
+            <p className={`font-pixel text-xl sm:text-2xl ${s.color}`}>{s.value}</p>
             <p className="mt-1 text-xs leading-snug text-muted">{s.label}</p>
           </motion.div>
         ))}
@@ -332,10 +334,17 @@ export default function LandingPage() {
               whileHover={{ y: -4 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
               onMouseMove={handleSpotlight}
-              className="card-glass spotlight-card rounded-lg border border-border p-6 transition-shadow hover:shadow-[inset_0_1px_0_0_var(--step-accent),0_8px_24px_-16px_var(--step-accent)]"
-              style={{ "--step-accent": step.accent, "--spot-color": step.accent } as CSSProperties}
+              className="card-glass spotlight-card pixel-panel p-6 transition-shadow hover:shadow-[inset_0_1px_0_0_var(--step-accent),0_8px_24px_-16px_var(--step-accent)]"
+              style={
+                {
+                  "--step-accent": step.accent,
+                  "--spot-color": step.accent,
+                  borderColor: `color-mix(in srgb, ${step.accent} 45%, transparent)`,
+                  "--pixel-shadow": step.accent,
+                } as CSSProperties
+              }
             >
-              <span className="font-mono text-2xl font-semibold" style={{ color: step.accent }}>
+              <span className="font-pixel text-lg" style={{ color: step.accent }}>
                 {step.n}
               </span>
               <h3 className="mt-3 text-base font-medium text-foreground">{step.title}</h3>
@@ -407,21 +416,21 @@ export default function LandingPage() {
         <motion.div
           variants={fadeUp}
           onMouseMove={handleSpotlight}
-          className="card-glass spotlight-card flex flex-col gap-6 rounded-lg border border-border p-8 shadow-[0_8px_28px_-16px_var(--accent-green)] sm:flex-row sm:items-center sm:justify-between"
-          style={{ "--spot-color": "var(--accent-amber)" } as CSSProperties}
+          className="card-glass spotlight-card pixel-panel flex flex-col gap-6 border-accent-green/50 p-8 sm:flex-row sm:items-center sm:justify-between"
+          style={{ "--spot-color": "var(--accent-amber)", "--pixel-shadow": "var(--accent-green)" } as CSSProperties}
         >
           <div>
-            <p className="text-lg font-medium text-accent-green">First session: free</p>
-            <p className="mt-1 text-sm text-muted">
+            <p className="font-pixel text-sm text-accent-green">FREE</p>
+            <p className="mt-2 text-sm text-muted">
               Full flow, every question, the whole report. No card, no signup.
             </p>
           </div>
           <div className="h-px w-full bg-border sm:h-12 sm:w-px" />
           <div>
-            <p className="text-lg font-medium text-accent-amber">
-              $12 <span className="text-sm font-normal text-muted">per session after</span>
+            <p className="flex items-baseline gap-2 font-pixel text-sm text-accent-amber">
+              $12 <span className="font-sans text-sm font-normal text-muted">per session after</span>
             </p>
-            <p className="mt-1 text-sm text-muted">One new job posting, one new set of questions.</p>
+            <p className="mt-2 text-sm text-muted">One new job posting, one new set of questions.</p>
           </div>
         </motion.div>
       </motion.section>
