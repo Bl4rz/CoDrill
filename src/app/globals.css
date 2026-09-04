@@ -229,27 +229,66 @@ body {
   }
 }
 
-/*
- * The animated hero background renders ~100 gradient-stroked SVG paths plus
- * two feGaussianBlur-filtered ellipses across the full viewport — cheap on
- * desktop, but this combination (heavy SVG filters + a large filtered
- * region) is a known way to crash WebKit's renderer on iOS (confirmed live:
- * repeated "A problem occurred" crashes on iPhone Safari/Chrome). Below is a
- * pure-CSS switch — no JS, no hydration timing — so the heavy version is
- * simply never painted on touch/small/reduced-motion devices, rather than
- * relying on JS to swap it out after the fact.
- */
-.bg-heavy {
-  display: block;
+/* Synthwave perspective grid floor — plain repeating-linear-gradient lines
+   tilted with a CSS transform, no SVG/filters involved. The horizon line
+   sits at the floor's top edge; both are positioned by eye to line up. */
+.retro-grid__floor {
+  position: absolute;
+  left: -60%;
+  right: -60%;
+  bottom: 0;
+  height: 200%;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent-green) 70%, transparent) 0 2px,
+      transparent 2px 64px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--accent-green) 55%, transparent) 0 2px,
+      transparent 2px 64px
+    );
+  background-size:
+    64px 64px,
+    64px 64px;
+  transform: perspective(500px) rotateX(58deg);
+  transform-origin: bottom center;
+  mask-image: linear-gradient(to top, black 0%, black 18%, transparent 45%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 18%, transparent 45%);
+  opacity: 0.6;
+  animation: retro-grid-scroll 4s linear infinite;
 }
-.bg-light {
-  display: none;
-}
-@media (max-width: 767px), (pointer: coarse), (prefers-reduced-motion: reduce) {
-  .bg-heavy {
-    display: none;
+@keyframes retro-grid-scroll {
+  from {
+    background-position:
+      0 0,
+      0 0;
   }
-  .bg-light {
-    display: block;
+  to {
+    background-position:
+      0 0,
+      0 64px;
+  }
+}
+.retro-grid__horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 42%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-amber),
+    var(--accent-green),
+    transparent
+  );
+  opacity: 0.65;
+  box-shadow: 0 0 12px 1px color-mix(in srgb, var(--accent-amber) 55%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .retro-grid__floor {
+    animation: none;
   }
 }

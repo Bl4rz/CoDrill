@@ -8,11 +8,10 @@ import { CodeFollowupPreview } from "@/components/landing/CodeFollowupPreview";
 import { ReportPreview } from "@/components/landing/ReportPreview";
 import { ExampleWalkthrough } from "@/components/landing/ExampleWalkthrough";
 import { FAQ } from "@/components/landing/FAQ";
-import { FlowingThreads } from "@/components/landing/FlowingThreads";
 import { Logo } from "@/components/Logo";
 import { AuthButton } from "@/components/AuthButton";
 import { Mascot } from "@/components/Mascot";
-import { Starfield } from "@/components/landing/Starfield";
+import { SiteBackground } from "@/components/landing/SiteBackground";
 
 function handleSpotlight(e: MouseEvent<HTMLDivElement>) {
   const rect = e.currentTarget.getBoundingClientRect();
@@ -157,7 +156,7 @@ export default function LandingPage() {
   return (
     <main className="flex flex-1 flex-col overflow-x-hidden">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background">
-        <FlowingThreads />
+        <SiteBackground />
       </div>
 
       <nav className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 py-6">
@@ -188,9 +187,11 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <section className="relative mx-auto flex w-full max-w-5xl flex-col items-center gap-6 overflow-hidden px-6 pb-16 pt-14 text-center sm:pt-20">
-        <Starfield className="opacity-70" />
+      <section className="relative overflow-hidden px-6 pb-16 pt-14 text-center sm:pt-20">
+        <div className="retro-grid__horizon" aria-hidden="true" />
+        <div className="retro-grid__floor" aria-hidden="true" />
 
+        <div className="relative mx-auto flex w-full max-w-5xl flex-col items-center gap-6">
         <div className="relative flex w-full flex-col items-center gap-8 lg:flex-row lg:items-center lg:justify-center lg:gap-4">
           <motion.ul
             initial="hidden"
@@ -320,6 +321,7 @@ export default function LandingPage() {
           aria-label="Scroll to how it works"
           className="pixel-dot mt-6 inline-block h-2.5 w-2.5 bg-muted"
         />
+        </div>
       </section>
 
       <motion.section
