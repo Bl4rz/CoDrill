@@ -210,6 +210,25 @@ body {
   animation: mascot-bob 2.4s steps(6) infinite;
 }
 
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+.star-twinkle {
+  animation: star-twinkle ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-twinkle {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
 /*
  * The animated hero background renders ~100 gradient-stroked SVG paths plus
  * two feGaussianBlur-filtered ellipses across the full viewport — cheap on

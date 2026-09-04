@@ -12,6 +12,7 @@ import { FlowingThreads } from "@/components/landing/FlowingThreads";
 import { Logo } from "@/components/Logo";
 import { AuthButton } from "@/components/AuthButton";
 import { Mascot } from "@/components/Mascot";
+import { Starfield } from "@/components/landing/Starfield";
 
 function handleSpotlight(e: MouseEvent<HTMLDivElement>) {
   const rect = e.currentTarget.getBoundingClientRect();
@@ -29,6 +30,18 @@ const stagger = {
   show: {
     transition: { staggerChildren: 0.1 },
   },
+};
+
+const NAV_LINKS = [
+  { href: "#how-it-works", label: "How it works" },
+  { href: "#features", label: "Features" },
+  { href: "#pricing", label: "Pricing" },
+  { href: "#faq", label: "FAQ" },
+];
+
+const HERO_BULLETS = {
+  left: ["Freshly generated questions, every session", "A real code editor — Monaco, syntax-highlighted"],
+  right: ["Guiding questions before you write code", "A report that finds patterns, not just scores"],
 };
 
 const FEATURES = [
@@ -152,6 +165,17 @@ export default function LandingPage() {
           <Logo className="h-6 w-6" />
           <span className="font-mono text-xs uppercase tracking-widest text-muted">Codrill</span>
         </div>
+        <div className="hidden items-center gap-6 md:flex">
+          {NAV_LINKS.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-foreground"
+            >
+              {l.label}
+            </a>
+          ))}
+        </div>
         <div className="flex items-center gap-3">
           <AuthButton />
           <Link
@@ -164,71 +188,138 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <section className="mx-auto flex w-full max-w-4xl flex-col items-center gap-6 px-6 pb-20 pt-16 text-center sm:pt-24">
-        <motion.div
-          initial={{ opacity: 0, y: -12, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Mascot className="mascot-idle h-16 w-16 sm:h-20 sm:w-20" />
-        </motion.div>
+      <section className="relative mx-auto flex w-full max-w-5xl flex-col items-center gap-6 overflow-hidden px-6 pb-16 pt-14 text-center sm:pt-20">
+        <Starfield className="opacity-70" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="pixel-panel inline-flex items-center gap-2 border-accent-amber/60 bg-surface-glass px-3 py-1.5 font-pixel text-[9px] uppercase tracking-wider text-accent-amber backdrop-blur"
-          style={{ "--pixel-shadow": "var(--accent-amber)" } as CSSProperties}
-        >
-          <span className="h-1.5 w-1.5 bg-accent-amber shadow-[0_0_8px_1px_var(--accent-amber)]" />
-          First session free — no signup
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.05 }}
-          className="font-display text-4xl font-medium tracking-tight text-foreground italic sm:text-6xl"
-        >
-          Practice the interview for the job{" "}
-          <span className="text-accent-green not-italic">you actually want</span>.
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="max-w-2xl text-base leading-relaxed text-muted sm:text-lg"
-        >
-          Paste a job posting. Get original coding questions built for that exact role, then run
-          through a real interview — approach, code, follow-ups — with an AI interviewer that
-          scores how you think, not just whether the code runs.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          className="flex flex-col items-center gap-3 pt-2 sm:flex-row"
-        >
-          <Link
-            href="/start"
-            className="pixel-press border-2 border-background/40 bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background"
-            style={{ "--pixel-shadow": "rgba(0,0,0,0.55)" } as CSSProperties}
+        <div className="relative flex w-full flex-col items-center gap-8 lg:flex-row lg:items-center lg:justify-center lg:gap-4">
+          <motion.ul
+            initial="hidden"
+            animate="show"
+            variants={stagger}
+            className="hidden shrink-0 flex-col gap-5 lg:flex lg:w-56"
           >
-            Start your free mock interview →
-          </Link>
-          <span className="text-xs text-muted">Takes about 20 minutes per question</span>
-        </motion.div>
+            {HERO_BULLETS.left.map((b) => (
+              <motion.li key={b} variants={fadeUp} className="flex items-start gap-2 text-left">
+                <span className="mt-1 h-1.5 w-1.5 shrink-0 bg-accent-green shadow-[0_0_6px_1px_var(--accent-green)]" />
+                <span className="text-xs leading-relaxed text-muted">{b}</span>
+              </motion.li>
+            ))}
+          </motion.ul>
+
+          <div className="relative flex flex-1 flex-col items-center gap-6">
+            <div
+              className="pointer-events-none absolute left-1/2 top-8 -z-10 h-64 w-64 -translate-x-1/2 rounded-full opacity-60 blur-3xl sm:h-80 sm:w-80"
+              style={{
+                background:
+                  "radial-gradient(circle, color-mix(in srgb, var(--accent-green) 55%, transparent) 0%, color-mix(in srgb, var(--accent-amber) 30%, transparent) 45%, transparent 75%)",
+              }}
+              aria-hidden="true"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, y: -12, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Mascot className="mascot-idle h-20 w-20 sm:h-28 sm:w-28" />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+              aria-hidden="true"
+              className="select-none font-pixel text-2xl leading-none tracking-tight text-foreground sm:text-4xl"
+            >
+              C<span className="text-accent-green">O</span>DRILL
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="pixel-panel inline-flex items-center gap-2 border-accent-amber/60 bg-surface-glass px-3 py-1.5 font-pixel text-[9px] uppercase tracking-wider text-accent-amber backdrop-blur"
+              style={{ "--pixel-shadow": "var(--accent-amber)" } as CSSProperties}
+            >
+              <span className="h-1.5 w-1.5 bg-accent-amber shadow-[0_0_8px_1px_var(--accent-amber)]" />
+              First session free — no signup
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="font-display text-3xl font-medium tracking-tight text-foreground italic sm:text-5xl"
+            >
+              Practice the interview for the job{" "}
+              <span className="text-accent-green not-italic">you actually want</span>.
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+              className="max-w-2xl text-base leading-relaxed text-muted sm:text-lg"
+            >
+              Paste a job posting. Get original coding questions built for that exact role, then
+              run through a real interview — approach, code, follow-ups — with an AI interviewer
+              that scores how you think, not just whether the code runs.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col items-center gap-3 pt-2 sm:flex-row"
+            >
+              <Link
+                href="/start"
+                className="pixel-press border-2 border-background/40 bg-[linear-gradient(100deg,var(--accent-green)_0%,var(--accent-amber)_100%)] px-6 py-3 text-sm font-semibold text-background"
+                style={{ "--pixel-shadow": "rgba(0,0,0,0.55)" } as CSSProperties}
+              >
+                Start your free mock interview →
+              </Link>
+              <span className="text-xs text-muted">Takes about 20 minutes per question</span>
+            </motion.div>
+          </div>
+
+          <motion.ul
+            initial="hidden"
+            animate="show"
+            variants={stagger}
+            className="hidden shrink-0 flex-col gap-5 lg:flex lg:w-56"
+          >
+            {HERO_BULLETS.right.map((b) => (
+              <motion.li key={b} variants={fadeUp} className="flex items-start gap-2 text-left">
+                <span className="mt-1 h-1.5 w-1.5 shrink-0 bg-accent-amber shadow-[0_0_6px_1px_var(--accent-amber)]" />
+                <span className="text-xs leading-relaxed text-muted">{b}</span>
+              </motion.li>
+            ))}
+          </motion.ul>
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.35 }}
-          className="mt-10 w-full max-w-2xl"
+          transition={{ duration: 0.7, delay: 0.4 }}
+          className="pixel-panel relative mt-6 w-full max-w-2xl border-border bg-surface-glass p-3 backdrop-blur"
+          style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
         >
+          <p className="mb-2 flex items-center gap-1.5 font-pixel text-[8px] uppercase tracking-widest text-muted">
+            <span className="h-1.5 w-1.5 bg-accent-green" />
+            Live preview
+          </p>
           <TypedTerminal lines={APPROACH_LINES} label="interviewer.speaking()" />
         </motion.div>
+
+        <motion.a
+          href="#how-it-works"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          aria-label="Scroll to how it works"
+          className="pixel-dot mt-6 inline-block h-2.5 w-2.5 bg-muted"
+        />
       </section>
 
       <motion.section
@@ -323,11 +414,12 @@ export default function LandingPage() {
       </motion.section>
 
       <motion.section
+        id="how-it-works"
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         variants={stagger}
-        className="mx-auto w-full max-w-5xl px-6 py-20"
+        className="mx-auto w-full max-w-5xl scroll-mt-20 px-6 py-20"
       >
         <motion.p
           variants={fadeUp}
@@ -364,11 +456,12 @@ export default function LandingPage() {
       </motion.section>
 
       <motion.section
+        id="features"
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         variants={stagger}
-        className="mx-auto w-full max-w-5xl px-6 py-20"
+        className="mx-auto w-full max-w-5xl scroll-mt-20 px-6 py-20"
       >
         <motion.h2
           variants={fadeUp}
@@ -410,11 +503,12 @@ export default function LandingPage() {
       </motion.section>
 
       <motion.section
+        id="pricing"
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         variants={stagger}
-        className="mx-auto w-full max-w-3xl px-6 py-20"
+        className="mx-auto w-full max-w-3xl scroll-mt-20 px-6 py-20"
       >
         <motion.p
           variants={fadeUp}
@@ -445,11 +539,12 @@ export default function LandingPage() {
       </motion.section>
 
       <motion.section
+        id="faq"
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         variants={stagger}
-        className="mx-auto w-full max-w-3xl px-6 py-20"
+        className="mx-auto w-full max-w-3xl scroll-mt-20 px-6 py-20"
       >
         <motion.p
           variants={fadeUp}
