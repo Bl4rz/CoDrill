@@ -41,6 +41,30 @@ function looksLikeUrl(input: string): boolean {
   return /^https?:\/\/\S+$/i.test(trimmed) && !trimmed.includes("\n");
 }
 
+// Blocks loopback, private (RFC1918), and link-local ranges — the last of
+// which is how cloud metadata services (169.254.169.254 on AWS/GCP/Azure)
+// are reached. Without this, "paste a job posting URL" is a server-side
+// fetch an attacker fully controls: a request to an internal service or the
+// metadata endpoint, issued from our server, with our server's credentials.
+const BLOCKED_HOSTNAME_PATTERNS = [
+  /^localhost$/i,
+  /^127\./,
+  /^0\.0\.0\.0$/,
+  /^10\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^169\.254\./,
+  /^::1$/,
+  /^\[::1\]$/,
+  /^f[cd][0-9a-f]{2}:/i,
+  /^fe80:/i,
+];
+
+function isBlockedHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  return BLOCKED_HOSTNAME_PATTERNS.some((re) => re.test(h));
+}
+
 function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&nbsp;/g, " ")
@@ -82,15 +106,52 @@ function extractMetaDescription(html: string): string {
 async function resolveJobPostingText(input: string): Promise<string> {
   if (!looksLikeUrl(input)) return input;
 
-  const res = await fetch(input.trim(), {
-    headers: { "User-Agent": "Mozilla/5.0 (compatible; CodrillBot/1.0)" },
-  });
+  let parsed: URL;
+  try {
+    parsed = new URL(input.trim());
+  } catch {
+    throw new Error("That doesn't look like a valid URL. Paste the job posting text instead.");
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error("Only http/https URLs are supported. Paste the job posting text instead.");
+  }
+  if (isBlockedHost(parsed.hostname)) {
+    throw new Error("That URL can't be fetched. Paste the job posting text instead.");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  let res: Response;
+  try {
+    res = await fetch(parsed.toString(), {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; CodrillBot/1.0)" },
+      // Don't auto-follow redirects — a public-looking URL could 302 to an
+      // internal address, bypassing the hostname check above entirely.
+      redirect: "manual",
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("That URL took too long to respond. Paste the job posting text instead.");
+    }
+    throw new Error("Couldn't reach that URL. Paste the job posting text instead.");
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (res.status >= 300 && res.status < 400) {
+    throw new Error(
+      "That URL redirects elsewhere and can't be followed automatically. Paste the job posting text instead."
+    );
+  }
   if (!res.ok) {
     throw new Error(
       `Couldn't fetch that URL (status ${res.status}). Paste the job posting text instead.`
     );
   }
-  const html = await res.text();
+  // Bound worst-case memory/CPU regardless of what the server claims via
+  // Content-Length — the regex passes below run over this whole string.
+  const html = (await res.text()).slice(0, 2_000_000);
   const bodyText = stripHtml(html);
   const metaText = extractMetaDescription(html);
   const text = metaText.length > bodyText.length ? metaText : bodyText;
