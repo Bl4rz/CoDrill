@@ -11,6 +11,7 @@ import { FAQ } from "@/components/landing/FAQ";
 import { FlowingThreads } from "@/components/landing/FlowingThreads";
 import { Logo } from "@/components/Logo";
 import { AuthButton } from "@/components/AuthButton";
+import { Mascot } from "@/components/Mascot";
 
 function handleSpotlight(e: MouseEvent<HTMLDivElement>) {
   const rect = e.currentTarget.getBoundingClientRect();
@@ -165,9 +166,17 @@ export default function LandingPage() {
 
       <section className="mx-auto flex w-full max-w-4xl flex-col items-center gap-6 px-6 pb-20 pt-16 text-center sm:pt-24">
         <motion.div
+          initial={{ opacity: 0, y: -12, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Mascot className="mascot-idle h-16 w-16 sm:h-20 sm:w-20" />
+        </motion.div>
+
+        <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
           className="pixel-panel inline-flex items-center gap-2 border-accent-amber/60 bg-surface-glass px-3 py-1.5 font-pixel text-[9px] uppercase tracking-wider text-accent-amber backdrop-blur"
           style={{ "--pixel-shadow": "var(--accent-amber)" } as CSSProperties}
         >

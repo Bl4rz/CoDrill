@@ -195,6 +195,21 @@ body {
   animation: pixel-bounce 0.9s steps(4) infinite;
 }
 
+/* Idle float for the pixel-art mascot — stepped rather than eased, to read
+   as a sprite hopping in place rather than smoothly floating. */
+@keyframes mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.mascot-idle {
+  animation: mascot-bob 2.4s steps(6) infinite;
+}
+
 /*
  * The animated hero background renders ~100 gradient-stroked SVG paths plus
  * two feGaussianBlur-filtered ellipses across the full viewport — cheap on
