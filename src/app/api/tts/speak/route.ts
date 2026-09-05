@@ -67,6 +67,17 @@ export async function POST(req: NextRequest) {
         text: trimmed,
         modelId: process.env.ELEVENLABS_MODEL_ID || "eleven_multilingual_v2",
         outputFormat: "mp3_44100_128",
+        // Without explicit settings the API's own defaults can read as
+        // slightly flat or inconsistent take-to-take. stability=0.5 is
+        // ElevenLabs' own recommended middle ground (lower drifts erratic,
+        // higher goes monotone); style stays at 0 so delivery reads as a
+        // measured interviewer, not a performance.
+        voiceSettings: {
+          stability: 0.5,
+          similarityBoost: 0.75,
+          style: 0,
+          useSpeakerBoost: true,
+        },
       });
       return new Response(audio, {
         headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" },
