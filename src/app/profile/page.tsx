@@ -11,6 +11,10 @@ import { Logo } from "@/components/Logo";
 import { Spinner } from "@/components/Spinner";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DifficultyBadge } from "@/components/DifficultyBadge";
+import { ScoreBar } from "@/components/ScoreBar";
+import { MiniBarChart } from "@/components/dashboard/MiniBarChart";
+import { Gauge } from "@/components/dashboard/Gauge";
+import type { Difficulty } from "@/lib/types";
 
 interface RoleStats {
   roleTitle: string;
@@ -45,6 +49,43 @@ function attemptScore(attempt: StoredSession["attempts"][string] | undefined): n
       attempt.scores.reasoning_score) /
       3,
   );
+}
+
+function activityByDay(sessions: StoredSession[]): { label: string; value: number }[] {
+  const days: { key: string; label: string }[] = [];
+  const today = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    days.push({
+      key: d.toDateString(),
+      label: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+    });
+  }
+  const counts = new Map<string, number>();
+  for (const s of sessions) {
+    const key = new Date(s.created_at).toDateString();
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return days.map((d) => ({ label: d.label, value: counts.get(d.key) ?? 0 }));
+}
+
+function difficultyBreakdown(
+  sessions: StoredSession[],
+): { difficulty: Difficulty; avgScore: number | null }[] {
+  const buckets: Record<Difficulty, number[]> = { easy: [], medium: [], hard: [] };
+  for (const s of sessions) {
+    for (const q of s.questions) {
+      const score = attemptScore(s.attempts[q.id]);
+      if (score !== null) buckets[q.difficulty].push(score);
+    }
+  }
+  return (["easy", "medium", "hard"] as Difficulty[]).map((difficulty) => ({
+    difficulty,
+    avgScore: buckets[difficulty].length
+      ? Math.round(buckets[difficulty].reduce((a, b) => a + b, 0) / buckets[difficulty].length)
+      : null,
+  }));
 }
 
 function groupByRole(sessions: StoredSession[]): RoleStats[] {
@@ -135,11 +176,21 @@ export default function ProfilePage() {
   }
 
   const roleStats = groupByRole(sessions);
-  const strongest = roleStats.find((r) => r.sessionCount >= 2) ?? null;
   const completedCount = sessions.filter((s) => s.report !== null).length;
+  const allScores = sessions.map(sessionOverallScore).filter((n): n is number => n !== null);
+  const avgScoreAllTime = allScores.length
+    ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
+    : null;
+  const totalQuestionsAnswered = sessions.reduce(
+    (sum, s) => sum + Object.values(s.attempts).filter((a) => a.scores).length,
+    0,
+  );
+  const completionRate = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : 0;
+  const activityData = activityByDay(sessions);
+  const difficultyStats = difficultyBreakdown(sessions);
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-16">
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-16">
       <header className="flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Logo className="h-6 w-6" />
@@ -167,18 +218,79 @@ export default function ProfilePage() {
         </Link>
       </div>
 
-      {strongest && (
-        <section className="rounded-lg border border-accent-green/30 bg-accent-green/5 p-5">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-accent-green">
-            Your most consistent role
-          </p>
-          <p className="text-base text-foreground">
-            <span className="font-semibold">{strongest.roleTitle}</span> — averaging{" "}
-            {Math.round(strongest.avgScore)} across {strongest.sessionCount} sessions
-          </p>
+      {sessions.length > 0 && (
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div
+            className="pixel-panel border-accent-green/40 bg-surface-glass p-5 sm:col-span-2"
+            style={{ "--pixel-shadow": "var(--accent-green)" } as CSSProperties}
+          >
+            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted">
+              Activity, last 7 days
+            </p>
+            <MiniBarChart data={activityData} />
+          </div>
+
+          <div
+            className="pixel-panel border-accent-amber/40 bg-surface-glass p-5"
+            style={{ "--pixel-shadow": "var(--accent-amber)" } as CSSProperties}
+          >
+            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted">Top roles</p>
+            {roleStats.length === 0 ? (
+              <p className="text-sm text-muted">Complete a session to see this.</p>
+            ) : (
+              <div className="flex flex-col gap-2.5">
+                {roleStats.slice(0, 4).map((r) => (
+                  <div key={r.roleTitle} className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm text-foreground">{r.roleTitle}</p>
+                      <p className="text-[11px] text-muted">
+                        {r.sessionCount} session{r.sessionCount === 1 ? "" : "s"}
+                      </p>
+                    </div>
+                    <p className="font-pixel text-xs text-accent-green">{Math.round(r.avgScore)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div
+            className="pixel-panel flex flex-col items-center justify-center border-border bg-surface-glass p-5 text-center"
+            style={{ "--pixel-shadow": "rgba(0,0,0,0.4)" } as CSSProperties}
+          >
+            <p className="font-pixel text-3xl text-accent-green">{avgScoreAllTime ?? "—"}</p>
+            <p className="mt-1 text-xs text-muted">Average score, all-time</p>
+            <p className="mt-1 text-[11px] text-muted">
+              {totalQuestionsAnswered} question{totalQuestionsAnswered === 1 ? "" : "s"} answered
+            </p>
+          </div>
+
+          <div
+            className="pixel-panel border-border bg-surface-glass p-5"
+            style={{ "--pixel-shadow": "rgba(0,0,0,0.4)" } as CSSProperties}
+          >
+            <Gauge value={completionRate} label="Sessions completed" />
+          </div>
+
+          <div
+            className="pixel-panel border-border bg-surface-glass p-5"
+            style={{ "--pixel-shadow": "rgba(0,0,0,0.4)" } as CSSProperties}
+          >
+            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted">By difficulty</p>
+            <div className="flex flex-col gap-3">
+              {difficultyStats.map((d) => (
+                <ScoreBar
+                  key={d.difficulty}
+                  label={d.difficulty.charAt(0).toUpperCase() + d.difficulty.slice(1)}
+                  value={d.avgScore ?? 0}
+                />
+              ))}
+            </div>
+          </div>
         </section>
       )}
 
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       {completedCount >= 2 && (
         <section
           className="pixel-panel border-accent-amber/40 bg-surface-glass p-5"
@@ -232,26 +344,6 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
-        </section>
-      )}
-
-      {roleStats.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted">By job position</p>
-          {roleStats.map((r) => (
-            <div
-              key={r.roleTitle}
-              className="flex items-center justify-between rounded-lg border border-border bg-surface p-4"
-            >
-              <div>
-                <p className="text-sm font-medium text-foreground">{r.roleTitle}</p>
-                <p className="text-xs text-muted">
-                  {r.sessionCount} session{r.sessionCount === 1 ? "" : "s"}
-                </p>
-              </div>
-              <p className="font-mono text-lg text-accent-green">{Math.round(r.avgScore)}</p>
-            </div>
-          ))}
         </section>
       )}
 
@@ -318,6 +410,7 @@ export default function ProfilePage() {
           );
         })}
       </section>
+      </div>
     </main>
   );
 }
