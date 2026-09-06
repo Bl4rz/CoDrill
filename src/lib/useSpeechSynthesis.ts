@@ -4,6 +4,37 @@ import { useCallback, useEffect, useState } from "react";
 
 const VOICE_STORAGE_KEY = "codrill:tts-voice-uri";
 
+// macOS/iOS ship a fixed "Novelty" voice category for fun, not for actual
+// use — Zarvox, Bubbles, and the like read every line in a joke voice. They
+// were showing up in the voice picker alongside real ones with nothing to
+// tell them apart, so someone could pick "Zarvox" as their interviewer and
+// have no idea why. Filtered out entirely, not just deprioritized — same
+// treatment as the ElevenLabs voice curation in /api/tts/voices.
+const NOVELTY_VOICE_NAMES = new Set([
+  "albert",
+  "bad news",
+  "bahh",
+  "bells",
+  "boing",
+  "bubbles",
+  "cellos",
+  "deranged",
+  "good news",
+  "hysterical",
+  "jester",
+  "organ",
+  "pipe organ",
+  "superstar",
+  "trinoids",
+  "whisper",
+  "wobble",
+  "zarvox",
+]);
+
+function isNoveltyVoice(voice: SpeechSynthesisVoice): boolean {
+  return NOVELTY_VOICE_NAMES.has(voice.name.toLowerCase().trim());
+}
+
 // Browsers default to whatever voice is first in the list, which is often a
 // low-quality offline voice. Rank by name so we prefer natural-sounding
 // network/premium voices when one is available, instead of the robotic default.
@@ -34,14 +65,18 @@ export function useSpeechSynthesis() {
     setIsSupported(true);
 
     function loadVoices() {
-      const available = window.speechSynthesis.getVoices();
-      if (available.length === 0) return;
-      setVoices(available);
+      const all = window.speechSynthesis.getVoices();
+      if (all.length === 0) return;
+      const available = all.filter((v) => !isNoveltyVoice(v));
+      // If every voice on this device happens to be a novelty one, fall back
+      // to the unfiltered list rather than leaving the interviewer mute.
+      const usable = available.length > 0 ? available : all;
+      setVoices(usable);
       setVoiceURI((current) => {
-        if (current && available.some((v) => v.voiceURI === current)) return current;
+        if (current && usable.some((v) => v.voiceURI === current)) return current;
         const stored = localStorage.getItem(VOICE_STORAGE_KEY);
-        if (stored && available.some((v) => v.voiceURI === stored)) return stored;
-        return pickBestVoice(available)?.voiceURI ?? null;
+        if (stored && usable.some((v) => v.voiceURI === stored)) return stored;
+        return pickBestVoice(usable)?.voiceURI ?? null;
       });
     }
 
@@ -62,6 +97,10 @@ export function useSpeechSynthesis() {
       const utterance = new SpeechSynthesisUtterance(text);
       const voice = voices.find((v) => v.voiceURI === voiceURI);
       if (voice) utterance.voice = voice;
+      // A mild, deliberate pace reads as more measured/interviewer-like than
+      // the default — most system voices' rate=1.0 was tuned for reading
+      // software UI aloud, not holding a conversation.
+      utterance.rate = 0.95;
       // Utterances queue naturally on the browser's synthesis queue, so sequential
       // calls play in order — do not cancel() here or it would cut off the prior line.
       window.speechSynthesis.speak(utterance);

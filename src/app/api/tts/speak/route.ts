@@ -65,7 +65,11 @@ export async function POST(req: NextRequest) {
       const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY });
       const audio = await client.textToSpeech.convert(voiceId, {
         text: trimmed,
-        modelId: process.env.ELEVENLABS_MODEL_ID || "eleven_multilingual_v2",
+        // eleven_flash_v2_5 costs half the credits per character of
+        // eleven_multilingual_v2 (0.5 vs 1 credit/char) for near-identical
+        // quality on English text, and is lower-latency besides — this app
+        // never needs multilingual support, so there's no real tradeoff.
+        modelId: process.env.ELEVENLABS_MODEL_ID || "eleven_flash_v2_5",
         outputFormat: "mp3_44100_128",
         // Without explicit settings the API's own defaults can read as
         // slightly flat or inconsistent take-to-take. stability=0.5 is
