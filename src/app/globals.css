@@ -98,6 +98,37 @@ body {
     inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
     inset 0 -12px 20px -16px rgba(0, 0, 0, 0.25);
 }
+/* backdrop-filter blur, recomputed every frame against the fixed background
+   scrolling underneath every one of these cards, is a well-documented iOS
+   Safari scroll-jank source (reported live: the page visibly jittered while
+   scrolling on an iPhone). Touch/small-screen devices get a more opaque
+   background instead of the blur — reads the same as a card, costs nothing
+   to composite. */
+@media (max-width: 767px), (pointer: coarse) {
+  .card-glass {
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--surface-raised) 96%, transparent) 0%,
+      color-mix(in srgb, var(--surface) 94%, transparent) 100%
+    );
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Same iOS-jank tradeoff as .card-glass above, as a reusable utility for
+   the few spots that just need a plain blur (the hero badge, the live-
+   preview console) rather than the full glass treatment. */
+.glass-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+@media (max-width: 767px), (pointer: coarse) {
+  .glass-blur {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
 
 /*
  * A fixed, page-wide film-grain overlay — breaks up the flat digital look
@@ -113,6 +144,17 @@ body {
   opacity: 0.035;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* A fixed, full-viewport element blended with mix-blend-mode against content
+   that's actively scrolling underneath it is the other well-documented iOS
+   Safari scroll-jank pattern (see the .card-glass note above) — every
+   scroll frame forces a real blend recompute, not just a cheap composite.
+   The grain is a subtle finishing touch, not load-bearing; touch/small-
+   screen devices just don't render it rather than pay that cost. */
+@media (max-width: 767px), (pointer: coarse) {
+  .noise-overlay {
+    display: none;
+  }
 }
 
 /*

@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { CSSProperties, MouseEvent } from "react";
 import { motion } from "motion/react";
 import { TypedTerminal } from "@/components/landing/TypedTerminal";
+import { HeroPreview } from "@/components/landing/HeroPreview";
 import { CodeFollowupPreview } from "@/components/landing/CodeFollowupPreview";
 import { ReportPreview } from "@/components/landing/ReportPreview";
 import { ExampleWalkthrough } from "@/components/landing/ExampleWalkthrough";
@@ -239,7 +240,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.15 }}
-              className="pixel-panel inline-flex items-center gap-2 border-accent-amber/60 bg-surface-glass px-3 py-1.5 font-pixel text-[9px] uppercase tracking-wider text-accent-amber backdrop-blur"
+              className="pixel-panel inline-flex items-center gap-2 border-accent-amber/60 bg-surface-glass px-3 py-1.5 font-pixel text-[9px] uppercase tracking-wider text-accent-amber glass-blur"
               style={{ "--pixel-shadow": "var(--accent-amber)" } as CSSProperties}
             >
               <span className="h-1.5 w-1.5 bg-accent-amber shadow-[0_0_8px_1px_var(--accent-amber)]" />
@@ -303,14 +304,14 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
-          className="pixel-panel relative mt-6 w-full max-w-2xl border-border bg-surface-glass p-3 backdrop-blur"
+          className="pixel-panel relative mt-6 w-full max-w-2xl border-border bg-surface-glass p-3 glass-blur"
           style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
         >
           <p className="mb-2 flex items-center gap-1.5 font-pixel text-[8px] uppercase tracking-widest text-muted">
             <span className="h-1.5 w-1.5 bg-accent-green" />
             Live preview
           </p>
-          <TypedTerminal lines={APPROACH_LINES} label="interviewer.speaking()" />
+          <HeroPreview />
         </motion.div>
 
         <motion.a
@@ -525,7 +526,9 @@ export default function LandingPage() {
           style={{ "--spot-color": "var(--accent-amber)", "--pixel-shadow": "var(--accent-green)" } as CSSProperties}
         >
           <div>
-            <p className="font-pixel text-sm text-accent-green">FREE</p>
+            <p className="flex items-baseline gap-2 font-pixel text-sm text-accent-green">
+              FREE <span className="font-sans text-sm font-normal text-muted">first session</span>
+            </p>
             <p className="mt-2 text-sm text-muted">
               Full flow, every question, the whole report. No card, no signup.
             </p>
