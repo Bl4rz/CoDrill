@@ -13,6 +13,7 @@ const ROUTE_LIMITS: Record<string, number> = {
   "/api/extract-role": 15,
   "/api/generate-questions": 15,
   "/api/report": 15,
+  "/api/profile/recommend": 15,
   "/api/interview/approach": 60,
   "/api/interview/followup": 60,
   "/api/interview/score": 60,
