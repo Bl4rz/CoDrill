@@ -1,11 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 
 // Natural-sounding, professional defaults — used only as invisible fallback
 // voices, never exposed in the voice picker (that only lists ElevenLabs
 // voices; see /api/tts/voices).
+const EDGE_FALLBACK_VOICE = "en-US-AriaNeural";
 const GOOGLE_FALLBACK_VOICE = "en-US-Neural2-C";
 const AZURE_FALLBACK_VOICE = "en-US-AriaNeural";
+
+// Uses Microsoft Edge's own "Read Aloud" service — the same neural voices
+// Azure Speech sells, reached through the free consumer-facing endpoint
+// instead of the paid API. No key, no account, no quota. This is NOT an
+// officially sanctioned API for third-party use, though: it's a reverse-
+// engineered endpoint (via the msedge-tts package) that Microsoft could
+// rate-limit or block at any time with no notice. That's exactly why it
+// sits in the middle of this chain rather than replacing anything — if it
+// ever stops working, this just throws like any other provider here and
+// falls through to Google/Azure/the browser voice, same as normal.
+async function speakWithEdge(text: string): Promise<Response> {
+  const tts = new MsEdgeTTS();
+  await tts.setMetadata(EDGE_FALLBACK_VOICE, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+  const { audioStream } = tts.toStream(text);
+
+  const chunks: Buffer[] = [];
+  await new Promise<void>((resolve, reject) => {
+    audioStream.on("data", (chunk: Buffer) => chunks.push(chunk));
+    audioStream.on("end", resolve);
+    audioStream.on("error", reject);
+  });
+  tts.close();
+
+  if (chunks.length === 0) {
+    throw new Error("Edge TTS returned no audio.");
+  }
+  return new Response(Buffer.concat(chunks), {
+    headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" },
+  });
+}
 
 function escapeXml(text: string): string {
   return text
@@ -90,10 +122,10 @@ export async function POST(req: NextRequest) {
 
   // ElevenLabs first (highest-quality, most expressive voices, but a small
   // free-tier quota). If it's unconfigured, missing a voiceId, or fails for
-  // any reason (quota exhausted, transient error), fall through to Google
-  // Cloud TTS, then Azure Speech, then finally a clean error — the client
-  // never needs to know which provider actually generated the audio, it
-  // just gets an mp3 back either way.
+  // any reason (quota exhausted, transient error), fall through to Edge TTS,
+  // then Google Cloud TTS, then Azure Speech, then finally a clean error —
+  // the client never needs to know which provider actually generated the
+  // audio, it just gets an mp3 back either way.
   if (process.env.ELEVENLABS_API_KEY && voiceId) {
     try {
       const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY });
@@ -121,8 +153,14 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" },
       });
     } catch (err) {
-      console.error("ElevenLabs TTS failed, falling back to Google Cloud TTS:", err);
+      console.error("ElevenLabs TTS failed, falling back to Edge TTS:", err);
     }
+  }
+
+  try {
+    return await speakWithEdge(trimmed);
+  } catch (err) {
+    console.error("Edge TTS failed, falling back to Google Cloud TTS:", err);
   }
 
   try {
