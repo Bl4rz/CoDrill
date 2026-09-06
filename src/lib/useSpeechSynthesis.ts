@@ -8,8 +8,7 @@ const VOICE_STORAGE_KEY = "codrill:tts-voice-uri";
 // use — Zarvox, Bubbles, and the like read every line in a joke voice. They
 // were showing up in the voice picker alongside real ones with nothing to
 // tell them apart, so someone could pick "Zarvox" as their interviewer and
-// have no idea why. Filtered out entirely, not just deprioritized — same
-// treatment as the ElevenLabs voice curation in /api/tts/voices.
+// have no idea why. Filtered out entirely, not just deprioritized.
 const NOVELTY_VOICE_NAMES = new Set([
   "albert",
   "bad news",

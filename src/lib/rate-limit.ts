@@ -4,8 +4,9 @@
  * serverless/edge it resets when an isolate recycles and isn't shared across
  * regions, so it's not a bulletproof global limit. It's the practical first
  * line of defense against the actual threat model here (a script or bot
- * hammering an open, unauthenticated route that calls paid Groq/ElevenLabs/
- * Azure APIs), without standing up external infra like Upstash Redis.
+ * hammering an open, unauthenticated route that calls paid Groq/Google
+ * Cloud TTS/Azure APIs), without standing up external infra like Upstash
+ * Redis.
  */
 
 interface Bucket {

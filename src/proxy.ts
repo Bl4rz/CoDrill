@@ -4,11 +4,11 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 const WINDOW_MS = 10 * 60 * 1000;
 
-// Routes that call a paid third-party API (Groq / ElevenLabs / Azure Speech)
-// get a tighter cap — these are the ones an open, unauthenticated route
-// could actually cost real money if scripted. Everything else under /api/
-// gets a looser default cap. Keyed by exact pathname since none of these
-// routes have dynamic segments.
+// Routes that call a paid third-party API (Groq / Google Cloud TTS / Azure
+// Speech) get a tighter cap — these are the ones an open, unauthenticated
+// route could actually cost real money if scripted. Everything else under
+// /api/ gets a looser default cap. Keyed by exact pathname since none of
+// these routes have dynamic segments.
 const ROUTE_LIMITS: Record<string, number> = {
   "/api/extract-role": 15,
   "/api/generate-questions": 15,

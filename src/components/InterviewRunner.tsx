@@ -14,9 +14,11 @@ import { CodeEditor } from "@/components/CodeEditor";
 import { Spinner } from "@/components/Spinner";
 import { VoiceTextArea } from "@/components/VoiceTextArea";
 import { useSpeechSynthesis } from "@/lib/useSpeechSynthesis";
-import { useElevenLabsSpeech } from "@/lib/useElevenLabsSpeech";
+import { useServerSpeech } from "@/lib/useServerSpeech";
 
 type Stage = "approach" | "coding" | "followup" | "scored";
+
+const APPROACH_PROMPT = "Before you write any code, walk me through how you'd approach this.";
 
 interface TranscriptEntry {
   speaker: "interviewer" | "you";
@@ -44,10 +46,7 @@ export function InterviewRunner({
   const [stage, setStage] = useState<Stage>("approach");
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([
     { speaker: "interviewer", text: question.question_text },
-    {
-      speaker: "interviewer",
-      text: "Before you write any code, walk me through how you'd approach this.",
-    },
+    { speaker: "interviewer", text: APPROACH_PROMPT },
   ]);
   const [approachDraft, setApproachDraft] = useState("");
   const [approachRounds, setApproachRounds] = useState<ApproachFeedback[]>([]);
@@ -64,11 +63,12 @@ export function InterviewRunner({
   const [attempt, setAttempt] = useState<Attempt | null>(null);
 
   const browserTts = useSpeechSynthesis();
-  const cloudTts = useElevenLabsSpeech();
-  // Prefer the human-sounding ElevenLabs voice; fall back to the free browser
-  // voice whenever it's not configured, or if a request fails mid-session
-  // (e.g. the free monthly quota runs out).
-  const tts = cloudTts.isSupported ? cloudTts : browserTts;
+  const serverTts = useServerSpeech();
+  // Prefer the server-synthesized voice (Edge TTS, then Google Cloud TTS,
+  // then Azure — see /api/tts/speak); fall back to the browser's own voice
+  // only if that request fails outright (e.g. genuinely offline, or every
+  // provider in that chain is down at once).
+  const tts = serverTts.isSupported ? serverTts : browserTts;
   const [voiceOn, setVoiceOn] = useState(true);
   const [lastSpokenText, setLastSpokenText] = useState("");
   const hasSpokenIntroRef = useRef(false);
@@ -98,16 +98,15 @@ export function InterviewRunner({
   }, [tts, voiceOn]);
 
   useEffect(() => {
-    // Wait for the ElevenLabs voice-list fetch to settle before deciding which
-    // backend to use, so the very first lines of a question don't speak in the
-    // browser voice just because that check resolves synchronously and the
-    // cloud one is still an in-flight network request.
-    if (!cloudTts.ready || hasSpokenIntroRef.current) return;
+    // One combined utterance, not two separate say() calls — say() only
+    // remembers the most recent thing spoken, so back-to-back calls left
+    // "Repeat" only able to replay the second line ("walk me through your
+    // approach") and never the actual question that came before it.
+    if (hasSpokenIntroRef.current) return;
     hasSpokenIntroRef.current = true;
-    say(question.question_text);
-    say("Before you write any code, walk me through how you'd approach this.");
+    say(`${question.question_text} ${APPROACH_PROMPT}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cloudTts.ready]);
+  }, []);
 
   useEffect(() => {
     return () => tts.cancel();
@@ -160,7 +159,9 @@ export function InterviewRunner({
       );
       setFollowupQuestions(questions);
       setFollowupAnswers(questions.map(() => ""));
-      questions.forEach(say);
+      // One combined utterance for the same reason as the intro above — so
+      // Repeat can replay every follow-up question, not just the last one.
+      say(questions.join(" "));
       setStage("followup");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -220,32 +221,30 @@ export function InterviewRunner({
           {tts.isSupported && (
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-[10px] uppercase tracking-wide text-muted">
-                {cloudTts.isSupported ? "ElevenLabs voice" : "Browser voice"}
+                {tts === browserTts ? "Browser voice" : "Cloud voice"}
               </span>
-              {tts.voices.length > 1 && (
-                <>
-                  <select
-                    value={tts.voiceURI ?? ""}
-                    onChange={(e) => tts.selectVoice(e.target.value)}
-                    title="Interviewer voice"
-                    className="max-w-[140px] rounded-md border border-border bg-surface px-1.5 py-1 text-xs text-foreground focus:border-accent-green focus:outline-none"
-                  >
-                    {tts.voices.map((v) => (
-                      <option key={v.voiceURI} value={v.voiceURI}>
-                        {v.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => tts.speak("Hi, I'm your interviewer for today's session.")}
-                    title="Preview this voice"
-                    className="rounded-full border border-border px-2 py-1 text-xs text-muted transition hover:border-accent-green hover:text-accent-green"
-                  >
-                    ▶ Preview
-                  </button>
-                </>
+              {tts === browserTts && browserTts.voices.length > 1 && (
+                <select
+                  value={browserTts.voiceURI ?? ""}
+                  onChange={(e) => browserTts.selectVoice(e.target.value)}
+                  title="Interviewer voice"
+                  className="max-w-[140px] rounded-md border border-border bg-surface px-1.5 py-1 text-xs text-foreground focus:border-accent-green focus:outline-none"
+                >
+                  {browserTts.voices.map((v) => (
+                    <option key={v.voiceURI} value={v.voiceURI}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
               )}
+              <button
+                type="button"
+                onClick={() => tts.speak("Hi, I'm your interviewer for today's session.")}
+                title="Preview this voice"
+                className="rounded-full border border-border px-2 py-1 text-xs text-muted transition hover:border-accent-green hover:text-accent-green"
+              >
+                ▶ Preview
+              </button>
               {lastSpokenText && (
                 <button
                   type="button"
