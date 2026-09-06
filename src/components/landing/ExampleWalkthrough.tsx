@@ -95,32 +95,37 @@ export function ExampleWalkthrough() {
           </p>
         </div>
 
-        {showCode && (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="rounded bg-accent-green/15 px-2 py-0.5 text-[11px] text-accent-green">
-                JavaScript
-              </span>
-              <span className="text-[11px] text-muted">Python</span>
-              <span className="text-[11px] text-muted">Java</span>
-            </div>
-            <pre className="mt-1 overflow-x-auto rounded-md bg-surface-raised/60 p-2 text-foreground">
-              {ANSWER}
-            </pre>
-          </div>
-        )}
-
-        {showFeedback && (
-          <div className="flex min-h-[4lh] flex-col gap-1 border-t border-border pt-3">
-            <span className="text-[11px] uppercase tracking-wider text-accent-amber">
-              → The feedback it produces
+        {/* Always mounted, toggled with `invisible` rather than conditionally
+            rendered — so this block's height is reserved from the first
+            frame instead of the whole card growing/shrinking as the demo
+            cycles through phases. That growth was landing-page-reported: it
+            kept shoving page content down mid-read. */}
+        <div className={`flex flex-col gap-1 ${showCode ? "" : "invisible"}`}>
+          <div className="flex items-center gap-2">
+            <span className="rounded bg-accent-green/15 px-2 py-0.5 text-[11px] text-accent-green">
+              JavaScript
             </span>
-            <p className="text-foreground">
-              {FEEDBACK.slice(0, fChars)}
-              {phase === "feedback" && <span className="text-accent-amber">▊</span>}
-            </p>
+            <span className="text-[11px] text-muted">Python</span>
+            <span className="text-[11px] text-muted">Java</span>
           </div>
-        )}
+          <pre className="mt-1 overflow-x-auto rounded-md bg-surface-raised/60 p-2 text-foreground">
+            {ANSWER}
+          </pre>
+        </div>
+
+        <div
+          className={`flex min-h-[4lh] flex-col gap-1 border-t border-border pt-3 ${
+            showFeedback ? "" : "invisible"
+          }`}
+        >
+          <span className="text-[11px] uppercase tracking-wider text-accent-amber">
+            → The feedback it produces
+          </span>
+          <p className="text-foreground">
+            {FEEDBACK.slice(0, fChars)}
+            {phase === "feedback" && <span className="text-accent-amber">▊</span>}
+          </p>
+        </div>
       </div>
     </div>
   );

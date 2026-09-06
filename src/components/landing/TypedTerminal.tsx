@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Line {
   speaker: "interviewer" | "you";
@@ -21,6 +21,12 @@ const SPEAKER_STYLES = {
 export function TypedTerminal({ lines, label }: { lines: Line[]; label: string }) {
   const [visibleCount, setVisibleCount] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  });
 
   useEffect(() => {
     if (visibleCount >= lines.length) {
@@ -52,7 +58,15 @@ export function TypedTerminal({ lines, label }: { lines: Line[]; label: string }
         <span className="h-2.5 w-2.5 rounded-full bg-accent-green/60" />
         <span className="ml-2 font-mono text-[11px] text-muted">{label}</span>
       </div>
-      <div className="flex min-h-[168px] flex-col gap-3 p-5 font-mono text-[13px] leading-relaxed">
+      <div
+        ref={scrollRef}
+        // Fixed height, not min-height — lines.slice(0, visibleCount) grows
+        // as the loop progresses, and a min-height lets that growth keep
+        // pushing the whole page down every few seconds. overflow-y-auto is
+        // the safety net for whatever doesn't fit; the scroll effect above
+        // keeps the actively-typing line in view rather than scrolled off.
+        className="flex h-[220px] flex-col gap-3 overflow-y-auto p-5 font-mono text-[13px] leading-relaxed"
+      >
         {lines.slice(0, visibleCount).map((line, i) => {
           const s = SPEAKER_STYLES[line.speaker];
           return (
