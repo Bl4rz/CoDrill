@@ -72,11 +72,30 @@ export function InterviewRunner({
   const [voiceOn, setVoiceOn] = useState(true);
   const [lastSpokenText, setLastSpokenText] = useState("");
   const hasSpokenIntroRef = useRef(false);
+  const lastSpokenTextRef = useRef("");
 
   function say(text: string) {
     setLastSpokenText(text);
+    lastSpokenTextRef.current = text;
     if (voiceOn && tts.isSupported) tts.speak(text);
   }
+
+  useEffect(() => {
+    // Switching tabs doesn't unmount this component, so nothing was stopping
+    // the interviewer's audio when you looked away — it just kept talking to
+    // an empty room. Stop it the moment the tab is hidden, and since you
+    // likely missed part of it, replay the same line when you come back
+    // instead of leaving you to guess what you missed.
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        tts.cancel();
+      } else if (voiceOn && tts.isSupported && lastSpokenTextRef.current) {
+        tts.speak(lastSpokenTextRef.current);
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [tts, voiceOn]);
 
   useEffect(() => {
     // Wait for the ElevenLabs voice-list fetch to settle before deciding which

@@ -18,6 +18,16 @@ export function useSpeechRecognition() {
   const sessionBaseRef = useRef("");
   const latestTranscriptRef = useRef("");
   const restartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Some Chromium-based browsers (Opera/Opera GX among them) expose the
+  // SpeechRecognition constructor but can't actually reach a recognition
+  // server — the API depends on a vendor-specific backend, and Opera's build
+  // isn't authorized for Google's, so every start() fails immediately with a
+  // "network" error. That's indistinguishable from a real transient network
+  // blip by error code alone, so it kept retrying forever — a mic that spins
+  // and never works, with no way to tell it's not going to. Two network
+  // errors in a row without ever getting a real result means it's the
+  // former, not the latter; give up and say so instead of retrying forever.
+  const consecutiveNetworkErrorsRef = useRef(0);
 
   useEffect(() => {
     const SpeechRecognitionCtor =
@@ -30,6 +40,7 @@ export function useSpeechRecognition() {
     recognition.lang = "en-US";
 
     recognition.onresult = (event) => {
+      consecutiveNetworkErrorsRef.current = 0;
       let combined = "";
       for (let i = 0; i < event.results.length; i++) {
         combined += event.results[i][0].transcript;
@@ -56,6 +67,15 @@ export function useSpeechRecognition() {
         return;
       }
       if (event.error === "network") {
+        consecutiveNetworkErrorsRef.current += 1;
+        if (consecutiveNetworkErrorsRef.current >= 2) {
+          wantsListeningRef.current = false;
+          setError(
+            "Voice input isn't working in this browser (this is common in Opera/Opera GX — its speech " +
+              "recognition backend isn't authorized to reach Google's servers). Try Chrome or Safari, or just type your answer."
+          );
+          return;
+        }
         setError("Speech recognition needs an internet connection — retrying…");
         return;
       }
@@ -100,6 +120,7 @@ export function useSpeechRecognition() {
     setTranscript("");
     sessionBaseRef.current = "";
     latestTranscriptRef.current = "";
+    consecutiveNetworkErrorsRef.current = 0;
     wantsListeningRef.current = true;
     try {
       recognitionRef.current.start();
