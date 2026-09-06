@@ -57,6 +57,7 @@ export function useSpeechSynthesis() {
   const [isSupported, setIsSupported] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceURI, setVoiceURI] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -100,6 +101,9 @@ export function useSpeechSynthesis() {
       // the default — most system voices' rate=1.0 was tuned for reading
       // software UI aloud, not holding a conversation.
       utterance.rate = 0.95;
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
       // Utterances queue naturally on the browser's synthesis queue, so sequential
       // calls play in order — do not cancel() here or it would cut off the prior line.
       window.speechSynthesis.speak(utterance);
@@ -111,7 +115,8 @@ export function useSpeechSynthesis() {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
+    setIsSpeaking(false);
   }, []);
 
-  return { isSupported, voices, voiceURI, selectVoice, speak, cancel };
+  return { isSupported, voices, voiceURI, selectVoice, speak, cancel, isSpeaking };
 }

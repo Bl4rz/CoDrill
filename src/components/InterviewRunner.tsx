@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { motion } from "motion/react";
 import {
   ApproachFeedback,
@@ -241,18 +242,32 @@ export function InterviewRunner({
                 type="button"
                 onClick={() => tts.speak("Hi, I'm your interviewer for today's session.")}
                 title="Preview this voice"
-                className="rounded-full border border-border px-2 py-1 text-xs text-muted transition hover:border-accent-green hover:text-accent-green"
+                className="pixel-press border-2 border-background/40 bg-surface-raised px-2 py-1 text-[10px] font-medium text-muted hover:text-accent-green"
+                style={{ "--pixel-shadow": "rgba(0,0,0,0.45)" } as CSSProperties}
               >
                 ▶ Preview
               </button>
               {lastSpokenText && (
                 <button
                   type="button"
-                  onClick={() => tts.speak(lastSpokenText)}
-                  title="Repeat the last thing the interviewer said"
-                  className="rounded-full border border-border px-2 py-1 text-xs text-muted transition hover:border-accent-green hover:text-accent-green"
+                  onClick={() => {
+                    if (tts.isSpeaking) {
+                      tts.cancel();
+                    } else {
+                      tts.speak(lastSpokenText);
+                    }
+                  }}
+                  title={tts.isSpeaking ? "Stop" : "Repeat the last thing the interviewer said"}
+                  className={`pixel-press border-2 border-background/40 px-2 py-1 text-[10px] font-medium ${
+                    tts.isSpeaking
+                      ? "bg-accent-red/20 text-accent-red"
+                      : "bg-surface-raised text-muted hover:text-accent-green"
+                  }`}
+                  style={
+                    { "--pixel-shadow": tts.isSpeaking ? "var(--accent-red)" : "rgba(0,0,0,0.45)" } as CSSProperties
+                  }
                 >
-                  🔁 Repeat
+                  {tts.isSpeaking ? "⏹ Stop" : "🔁 Repeat"}
                 </button>
               )}
               <button
@@ -264,11 +279,12 @@ export function InterviewRunner({
                   });
                 }}
                 title={voiceOn ? "Mute interviewer voice" : "Unmute interviewer voice"}
-                className={`rounded-full border px-2 py-1 text-xs transition ${
-                  voiceOn
-                    ? "border-accent-green/40 text-accent-green"
-                    : "border-border text-muted hover:text-foreground"
+                className={`pixel-press border-2 border-background/40 px-2 py-1 text-[10px] font-medium ${
+                  voiceOn ? "bg-accent-green/20 text-accent-green" : "bg-surface-raised text-muted"
                 }`}
+                style={
+                  { "--pixel-shadow": voiceOn ? "var(--accent-green)" : "rgba(0,0,0,0.45)" } as CSSProperties
+                }
               >
                 {voiceOn ? "🔊 Voice on" : "🔇 Voice off"}
               </button>
@@ -334,7 +350,8 @@ export function InterviewRunner({
                 type="button"
                 onClick={submitApproach}
                 disabled={loading || approachDraft.trim().length < 5}
-                className="rounded-md bg-accent-green px-4 py-2 text-sm font-medium text-background transition hover:scale-[1.03] hover:bg-accent-green/90 active:scale-[0.97] disabled:opacity-40 disabled:hover:scale-100"
+                className="pixel-press border-2 border-background/40 bg-accent-green px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
+                style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
               >
                 {loading ? "Thinking…" : "Send"}
               </button>
@@ -366,7 +383,8 @@ export function InterviewRunner({
                 type="button"
                 onClick={submitFollowups}
                 disabled={loading || followupAnswers.some((a) => a.trim().length === 0)}
-                className="rounded-md bg-accent-green px-4 py-2 text-sm font-medium text-background transition hover:scale-[1.03] hover:bg-accent-green/90 active:scale-[0.97] disabled:opacity-40 disabled:hover:scale-100"
+                className="pixel-press border-2 border-background/40 bg-accent-green px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
+                style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
               >
                 {loading ? "Scoring…" : "Submit answers"}
               </button>
@@ -379,7 +397,8 @@ export function InterviewRunner({
           <button
             type="button"
             onClick={() => attempt && onComplete(attempt)}
-            className="rounded-md bg-accent-green/15 px-4 py-2 text-sm font-medium text-accent-green hover:bg-accent-green/25"
+            className="pixel-press border-2 border-background/40 bg-accent-green px-4 py-2 text-sm font-medium text-background"
+            style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
           >
             Next question →
           </button>
@@ -402,7 +421,8 @@ export function InterviewRunner({
                 type="button"
                 onClick={submitCode}
                 disabled={loading || code.trim().length < 3}
-                className="rounded-md bg-accent-green px-4 py-2 text-sm font-medium text-background transition hover:scale-[1.03] hover:bg-accent-green/90 active:scale-[0.97] disabled:opacity-40 disabled:hover:scale-100"
+                className="pixel-press border-2 border-background/40 bg-accent-green px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
+                style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
               >
                 {loading ? "Reviewing…" : "Submit code"}
               </button>

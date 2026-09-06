@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
  */
 export function useServerSpeech() {
   const [failed, setFailed] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const queueRef = useRef<string[]>([]);
   const isPlayingRef = useRef(false);
@@ -27,8 +28,12 @@ export function useServerSpeech() {
     playNextRef.current = () => {
       if (isPlayingRef.current) return;
       const text = queueRef.current.shift();
-      if (!text) return;
+      if (!text) {
+        setIsSpeaking(false);
+        return;
+      }
       isPlayingRef.current = true;
+      setIsSpeaking(true);
 
       fetch("/api/tts/speak", {
         method: "POST",
@@ -47,6 +52,9 @@ export function useServerSpeech() {
             URL.revokeObjectURL(url);
             isPlayingRef.current = false;
             currentAudioRef.current = null;
+            // Checks the queue and flips isSpeaking false itself if empty —
+            // don't set it false here first, that'd flicker the "speaking"
+            // state off between this utterance and the next queued one.
             playNextRef.current();
           };
           audio.onended = finish;
@@ -56,6 +64,7 @@ export function useServerSpeech() {
         .catch(() => {
           setFailed(true);
           isPlayingRef.current = false;
+          setIsSpeaking(false);
         });
     };
   });
@@ -68,11 +77,12 @@ export function useServerSpeech() {
   const cancel = useCallback(() => {
     queueRef.current = [];
     isPlayingRef.current = false;
+    setIsSpeaking(false);
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current = null;
     }
   }, []);
 
-  return { isSupported: !failed, speak, cancel };
+  return { isSupported: !failed, isSpeaking, speak, cancel };
 }
