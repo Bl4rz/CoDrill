@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
-// A natural-sounding, professional default — used only as the invisible
-// fallback voice, never exposed in the voice picker (that only lists
-// ElevenLabs voices; see /api/tts/voices).
+// Natural-sounding, professional defaults — used only as invisible fallback
+// voices, never exposed in the voice picker (that only lists ElevenLabs
+// voices; see /api/tts/voices).
+const GOOGLE_FALLBACK_VOICE = "en-US-Neural2-C";
 const AZURE_FALLBACK_VOICE = "en-US-AriaNeural";
 
 function escapeXml(text: string): string {
@@ -13,6 +14,38 @@ function escapeXml(text: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
+}
+
+async function speakWithGoogle(text: string): Promise<Response> {
+  const apiKey = process.env.GOOGLE_TTS_API_KEY;
+  if (!apiKey) {
+    throw new Error("Google Cloud TTS is not configured.");
+  }
+
+  const res = await fetch(
+    `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: { text },
+        voice: { languageCode: "en-US", name: GOOGLE_FALLBACK_VOICE },
+        audioConfig: { audioEncoding: "MP3" },
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Google Cloud TTS request failed: ${res.status} ${await res.text()}`);
+  }
+
+  // Google's REST API returns base64-encoded audio in a JSON envelope, not a
+  // raw audio stream like ElevenLabs/Azure — decode it before handing it back.
+  const { audioContent } = (await res.json()) as { audioContent: string };
+  const audio = Buffer.from(audioContent, "base64");
+  return new Response(audio, {
+    headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" },
+  });
 }
 
 async function speakWithAzure(text: string): Promise<Response> {
@@ -55,11 +88,12 @@ export async function POST(req: NextRequest) {
   // far shorter than that, so this is just a defensive ceiling.
   const trimmed = text.slice(0, 2000);
 
-  // ElevenLabs first (higher-quality, more expressive voices, but a small
+  // ElevenLabs first (highest-quality, most expressive voices, but a small
   // free-tier quota). If it's unconfigured, missing a voiceId, or fails for
-  // any reason (quota exhausted, transient error), fall through to Azure
-  // Speech automatically — the client never needs to know which provider
-  // actually generated the audio, it just gets an mp3 back either way.
+  // any reason (quota exhausted, transient error), fall through to Google
+  // Cloud TTS, then Azure Speech, then finally a clean error — the client
+  // never needs to know which provider actually generated the audio, it
+  // just gets an mp3 back either way.
   if (process.env.ELEVENLABS_API_KEY && voiceId) {
     try {
       const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY });
@@ -87,8 +121,14 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" },
       });
     } catch (err) {
-      console.error("ElevenLabs TTS failed, falling back to Azure:", err);
+      console.error("ElevenLabs TTS failed, falling back to Google Cloud TTS:", err);
     }
+  }
+
+  try {
+    return await speakWithGoogle(trimmed);
+  } catch (err) {
+    console.error("Google Cloud TTS failed, falling back to Azure:", err);
   }
 
   try {
