@@ -1,4 +1,9 @@
 -- Run this once in the Supabase dashboard: SQL Editor -> New Query -> paste -> Run.
+-- Safe to re-run in full any time this file changes -- every statement is
+-- either idempotent (IF NOT EXISTS) or preceded by a DROP POLICY IF EXISTS,
+-- since CREATE POLICY (unlike CREATE TABLE) has no IF NOT EXISTS of its own
+-- and errors on a second run otherwise.
+--
 -- Stores interview sessions for signed-in users, mirroring the local StoredSession
 -- shape as JSONB rather than a fully normalized schema -- simplest thing that
 -- works, since sessions are only ever read/written as a whole by their owner.
@@ -17,15 +22,19 @@ create table if not exists public.interview_sessions (
 
 alter table public.interview_sessions enable row level security;
 
+drop policy if exists "select own sessions" on public.interview_sessions;
 create policy "select own sessions" on public.interview_sessions
   for select using (auth.uid() = user_id);
 
+drop policy if exists "insert own sessions" on public.interview_sessions;
 create policy "insert own sessions" on public.interview_sessions
   for insert with check (auth.uid() = user_id);
 
+drop policy if exists "update own sessions" on public.interview_sessions;
 create policy "update own sessions" on public.interview_sessions
   for update using (auth.uid() = user_id);
 
+drop policy if exists "delete own sessions" on public.interview_sessions;
 create policy "delete own sessions" on public.interview_sessions
   for delete using (auth.uid() = user_id);
 
@@ -50,9 +59,11 @@ create table if not exists public.session_credits (
 
 alter table public.session_credits enable row level security;
 
+drop policy if exists "select own credits" on public.session_credits;
 create policy "select own credits" on public.session_credits
   for select using (auth.uid() = user_id);
 
+drop policy if exists "consume own credits" on public.session_credits;
 create policy "consume own credits" on public.session_credits
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
