@@ -1,4 +1,4 @@
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://co-drill.vercel.app").replace(
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.codrill.app").replace(
   /\/$/,
   "",
 );

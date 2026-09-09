@@ -18,15 +18,25 @@ const ROUTE_LIMITS: Record<string, number> = {
   "/api/interview/followup": 60,
   "/api/interview/score": 60,
   "/api/tts/speak": 120,
+  "/api/billing/create-checkout-session": 10,
 };
 const DEFAULT_API_LIMIT = 60;
+
+// Stripe's own webhook signature verification (inside the route itself) is
+// the real authentication boundary here, not this per-IP limiter — and
+// Stripe sends every webhook from a small set of shared IPs, so a per-IP
+// cap sized for "one visitor scripting requests" could genuinely throttle
+// legitimate webhook delivery at any real volume and silently break every
+// paid credit behind it. Not worth that risk for a route that costs
+// nothing to call and is already signature-gated.
+const RATE_LIMIT_EXEMPT = new Set(["/api/billing/webhook"]);
 
 // Named `proxy`, not `middleware` — Next.js 16 deprecated and renamed the
 // middleware.ts file convention. Same mechanism, new name.
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/api/")) {
+  if (pathname.startsWith("/api/") && !RATE_LIMIT_EXEMPT.has(pathname)) {
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       request.headers.get("x-real-ip") ||

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callStructured, StructuredTool } from "@/lib/ai";
+import { canGenerateQuestions } from "@/lib/supabase/credits";
 import { Difficulty, InterviewQuestion, RoleSummary } from "@/lib/types";
 
 const GENERATE_TOOL: StructuredTool = {
@@ -49,6 +50,18 @@ export async function POST(req: NextRequest) {
 
     if (!role_summary || !role_summary.tech_stack) {
       return NextResponse.json({ error: "Missing role_summary." }, { status: 400 });
+    }
+
+    // Anonymous visitors are untouched (first session free, no signup, as
+    // advertised). Signed-in users get one free generation ever, then need
+    // a paid credit for each one after — see canGenerateQuestions for the
+    // atomic claim that prevents double-spending one credit.
+    const access = await canGenerateQuestions();
+    if (!access.allowed) {
+      return NextResponse.json(
+        { error: "Your free session is used. Pay to generate a new set of questions.", reason: access.reason },
+        { status: 402 }
+      );
     }
 
     const result = await callStructured<{
