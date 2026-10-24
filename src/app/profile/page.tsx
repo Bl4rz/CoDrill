@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { fetchCloudSessions } from "@/lib/supabase/sessions";
 import { StoredSession } from "@/lib/store";
 import { AppHeader } from "@/components/AppHeader";
+import { PlayerSection } from "@/components/hub/PlayerSection";
 import { Spinner } from "@/components/Spinner";
 import { DifficultyBadge } from "@/components/DifficultyBadge";
 import { MiniBarChart } from "@/components/dashboard/MiniBarChart";
@@ -196,6 +197,8 @@ export default function ProfilePage() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-8 sm:py-12">
       <AppHeader crumbs={[{ label: "Home", href: "/" }, { label: "Profile" }]} />
+
+      <PlayerSection />
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-2">

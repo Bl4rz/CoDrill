@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createTestDb, Json, type TestDb } from "../helpers/db";
+import type { HubRaw, StatsRaw } from "../helpers/fixtures";
 
 let db: TestDb;
 beforeAll(async () => {
@@ -155,8 +156,8 @@ describe("achievements", () => {
   it("shows up in the hub with its unlock time", async () => {
     const user = await db.newUser();
     await unlock(user, ["level_5"]);
-    const hub = await db.rpc<any>("get_hub", { p_user: user, p_day: DAY });
-    expect(hub.achievements.map((a: any) => a.id)).toEqual(["level_5"]);
+    const hub = await db.rpc<HubRaw>("get_hub", { p_user: user, p_day: DAY });
+    expect(hub.achievements.map((a) => a.id)).toEqual(["level_5"]);
   });
 });
 
@@ -185,18 +186,18 @@ describe("hub fixes the day's quests in one call", () => {
   it("get_hub with picked quests creates them once and returns them", async () => {
     const user = await db.newUser();
     const picks = new Json([{ id: "finish_1", target: 1 }, { id: "hard_1", target: 1 }, { id: "reasoning_70", target: 1 }]);
-    const first = await db.rpc<any>("get_hub", { p_user: user, p_day: DAY, p_defs: picks });
-    expect(first.quests.map((q: any) => q.quest_id)).toEqual(["finish_1", "hard_1", "reasoning_70"]);
+    const first = await db.rpc<HubRaw>("get_hub", { p_user: user, p_day: DAY, p_defs: picks });
+    expect(first.quests.map((q) => q.quest_id)).toEqual(["finish_1", "hard_1", "reasoning_70"]);
     const other = new Json([{ id: "finish_3", target: 3 }, { id: "correctness_70", target: 1 }, { id: "new_language", target: 1 }]);
-    const second = await db.rpc<any>("get_hub", { p_user: user, p_day: DAY, p_defs: other });
-    expect(second.quests.map((q: any) => q.quest_id)).toEqual(["finish_1", "hard_1", "reasoning_70"]);
+    const second = await db.rpc<HubRaw>("get_hub", { p_user: user, p_day: DAY, p_defs: other });
+    expect(second.quests.map((q) => q.quest_id)).toEqual(["finish_1", "hard_1", "reasoning_70"]);
   });
 
   it("get_player_stats reports the stored time zone (UTC before one is set)", async () => {
     const user = await db.newUser();
     const since = "2026-01-01T00:00:00Z";
-    expect((await db.rpc<any>("get_player_stats", { p_user: user, p_since: since })).timezone).toBe("UTC");
+    expect((await db.rpc<StatsRaw>("get_player_stats", { p_user: user, p_since: since })).timezone).toBe("UTC");
     await db.rpc("set_timezone", { p_user: user, p_tz: "Asia/Tokyo", p_cooldown_hours: 24 });
-    expect((await db.rpc<any>("get_player_stats", { p_user: user, p_since: since })).timezone).toBe("Asia/Tokyo");
+    expect((await db.rpc<StatsRaw>("get_player_stats", { p_user: user, p_since: since })).timezone).toBe("Asia/Tokyo");
   });
 });

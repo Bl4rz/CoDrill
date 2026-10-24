@@ -19,6 +19,10 @@ const ROUTE_LIMITS: Record<string, number> = {
   "/api/interview/followup": 60,
   "/api/interview/score": 60,
   "/api/tts/speak": 120,
+  "/api/player": 60,
+  "/api/player/quests/claim": 30,
+  "/api/player/timezone": 10,
+  "/api/player/run": 60,
 };
 const DEFAULT_API_LIMIT = 60;
 

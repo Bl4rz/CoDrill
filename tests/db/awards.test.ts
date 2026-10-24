@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createTestDb, type TestDb } from "../helpers/db";
-import { completeQuestion, issueRun } from "../helpers/fixtures";
+import { completeQuestion, issueRun, type HubRaw, type RunSummaryRaw } from "../helpers/fixtures";
 
 let db: TestDb;
 beforeAll(async () => {
@@ -252,7 +252,7 @@ describe("the repeat-posting rule inputs", () => {
 describe("hub and run summary read real rows only", () => {
   it("a brand new player has zeros and empty lists, not demo data", async () => {
     const user = await db.newUser();
-    const hub = await db.rpc<any>("get_hub", { p_user: user, p_day: "2026-10-24" });
+    const hub = await db.rpc<HubRaw>("get_hub", { p_user: user, p_day: "2026-10-24" });
     expect(hub.progression).toMatchObject({ total_xp: 0, level: 1, coins: 0 });
     expect(hub.quests).toEqual([]);
     expect(hub.recent_runs).toEqual([]);
@@ -270,7 +270,7 @@ describe("hub and run summary read real rows only", () => {
       ]);
     }
     await completeQuestion(db, user, runs[5], 0, { p_correctness: 90, p_communication: 60, p_reasoning: 60, p_xp: 40 });
-    const hub = await db.rpc<any>("get_hub", { p_user: user, p_day: "2026-10-24" });
+    const hub = await db.rpc<HubRaw>("get_hub", { p_user: user, p_day: "2026-10-24" });
     expect(hub.recent_runs).toHaveLength(5);
     expect(hub.recent_runs[0]).toMatchObject({
       role_title: "Role 5",
@@ -280,7 +280,7 @@ describe("hub and run summary read real rows only", () => {
       xp_earned: 40,
     });
     expect(hub.recent_runs[1]).toMatchObject({ role_title: "Role 4", questions_done: 0, avg_score: null, xp_earned: 0 });
-    expect(hub.recent_runs.some((r: any) => r.role_title === "Role 0")).toBe(false);
+    expect(hub.recent_runs.some((r) => r.role_title === "Role 0")).toBe(false);
   });
 
   it("summarises one run's XP and the player's current level", async () => {
@@ -288,7 +288,7 @@ describe("hub and run summary read real rows only", () => {
     const run = await issueRun(db, user, { difficulties: ["easy", "easy", "easy"] });
     await completeQuestion(db, user, run, 0, { p_xp: 60, p_coins: 5 });
     await completeQuestion(db, user, run, 1, { p_xp: 60, p_coins: 5 });
-    const summary = await db.rpc<any>("get_run_summary", { p_user: user, p_session_id: run.sessionId });
+    const summary = await db.rpc<RunSummaryRaw>("get_run_summary", { p_user: user, p_session_id: run.sessionId });
     expect(summary).toMatchObject({ questions_total: 3, questions_done: 2, xp_earned: 120, coins_earned: 10, total_xp: 120, level: 2 });
   });
 });

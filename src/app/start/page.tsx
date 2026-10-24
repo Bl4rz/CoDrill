@@ -23,10 +23,11 @@ export default function StartPage() {
     setGenerating(true);
     setError(null);
     try {
-      const data = await postJson<{ questions: InterviewQuestion[] }>("/api/generate-questions", {
-        role_summary: finalSummary,
-      });
-      const session = createSession(text, finalSummary, data.questions);
+      const data = await postJson<{ questions: InterviewQuestion[]; session_id?: string }>(
+        "/api/generate-questions",
+        { role_summary: finalSummary },
+      );
+      const session = createSession(text, finalSummary, data.questions, data.session_id);
       router.push(`/session/${session.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");

@@ -53,6 +53,9 @@ export function AuthButton() {
   if (user) {
     return (
       <div className="flex items-center gap-3">
+        <PixelLink href="/hub" variant="ghost" size="sm">
+          Hub
+        </PixelLink>
         <PixelLink href="/profile" variant="ghost" size="sm">
           Profile
         </PixelLink>

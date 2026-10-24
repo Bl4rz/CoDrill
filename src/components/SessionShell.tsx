@@ -109,6 +109,7 @@ export function SessionShell({ sessionId }: { sessionId: string }) {
       ) : (
         <InterviewRunner
           key={currentQuestion.id}
+          sessionId={sessionId}
           question={currentQuestion}
           levelNumber={current_question_index + 1}
           levelCount={questions.length}

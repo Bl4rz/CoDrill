@@ -16,9 +16,12 @@ import { PixelButton } from "@/components/pixel/PixelButton";
 import { SegmentBar } from "@/components/pixel/SegmentBar";
 import { StepProgress } from "@/components/pixel/StepProgress";
 import { Typewriter } from "@/components/pixel/Typewriter";
-import { ArrowIcon, CheckIcon } from "@/components/pixel/icons";
+import { ArrowIcon, CheckIcon, CoinIcon } from "@/components/pixel/icons";
 import { shadowColor } from "@/components/pixel/style";
 import { postJson } from "@/lib/api-client";
+import { showToast } from "@/lib/toast";
+import { useIsSignedIn } from "@/lib/useIsSignedIn";
+import type { QuestionProgression } from "@/lib/progression/types";
 import { useSpeechSynthesis } from "@/lib/useSpeechSynthesis";
 import { useServerSpeech } from "@/lib/useServerSpeech";
 
@@ -121,12 +124,14 @@ function YouLine({ text }: { text: string }) {
 }
 
 export function InterviewRunner({
+  sessionId,
   question,
   levelNumber,
   levelCount,
   isBoss,
   onComplete,
 }: {
+  sessionId: string;
   question: InterviewQuestion;
   levelNumber: number;
   levelCount: number;
@@ -154,6 +159,8 @@ export function InterviewRunner({
   const [followupAnswers, setFollowupAnswers] = useState<string[]>([]);
 
   const [attempt, setAttempt] = useState<Attempt | null>(null);
+  const [reward, setReward] = useState<QuestionProgression | null>(null);
+  const signedIn = useIsSignedIn();
 
   const browserTts = useSpeechSynthesis();
   const serverTts = useServerSpeech();
@@ -285,13 +292,26 @@ export function InterviewRunner({
       ...followupAnswers.map((a) => ({ speaker: "you" as const, text: a })),
     ]);
     try {
-      const { scores } = await postJson<{ scores: Attempt["scores"] }>("/api/interview/score", {
+      // session_id and question_id only say WHICH question this is. XP and coins are
+      // worked out on the server from the stored score; nothing here can change them.
+      const { scores, progression } = await postJson<{
+        scores: Attempt["scores"];
+        progression: QuestionProgression | null;
+      }>("/api/interview/score", {
         question_text: question.question_text,
         approach_text: approachFinal,
         code_submission: code,
         code_language: language,
         follow_up_qa,
+        session_id: sessionId,
+        question_id: question.id,
       });
+      if (progression) {
+        setReward(progression);
+        for (const a of progression.unlocked) {
+          showToast({ label: "Achievement unlocked", title: a.name, body: a.description });
+        }
+      }
       const finalAttempt: Attempt = {
         question_id: question.id,
         approach_text: approachFinal,
@@ -428,6 +448,22 @@ export function InterviewRunner({
               <SegmentBar label="Correctness" value={attempt.scores.correctness_score} animate />
               <SegmentBar label="Communication" value={attempt.scores.communication_score} animate delay={900} />
               <SegmentBar label="Reasoning" value={attempt.scores.reasoning_score} animate delay={1800} />
+              {reward && reward.granted && (
+                <p className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t-[3px] border-paper pt-3 font-display text-base uppercase tracking-widest">
+                  <span className="text-green">+{reward.xp_gained} XP</span>
+                  {reward.coins_gained > 0 && (
+                    <span className="flex items-center gap-1 text-amber">
+                      <CoinIcon /> +{reward.coins_gained}
+                    </span>
+                  )}
+                </p>
+              )}
+              {reward && !reward.granted && (
+                <p className="border-t-[3px] border-paper pt-3 text-base">This question was already counted.</p>
+              )}
+              {!reward && signedIn === false && (
+                <p className="border-t-[3px] border-paper pt-3 text-base">Sign in to earn XP and coins for runs like this.</p>
+              )}
             </div>
           )}
 

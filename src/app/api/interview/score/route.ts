@@ -2,6 +2,9 @@ import { guardAi } from "@/lib/usage";
 import { NextRequest, NextResponse } from "next/server";
 import { callStructured, StructuredTool } from "@/lib/ai";
 import { AttemptScores, FollowUpQA } from "@/lib/types";
+import { scoreIds } from "@/lib/progression/schemas";
+import { getSignedInUserId, progressionConfigured, recordQuestionCompletion } from "@/lib/progression/server";
+import type { QuestionProgression } from "@/lib/progression/types";
 
 const SCORE_TOOL: StructuredTool = {
   name: "submit_scores",
@@ -34,12 +37,20 @@ const SCORE_TOOL: StructuredTool = {
           "2-4 sentences of specific, actionable feedback on this question, written directly to the " +
           "candidate. Mention one concrete strength and one concrete improvement.",
       },
+      detected_language: {
+        type: "string",
+        enum: ["javascript", "python", "java", "other"],
+        description:
+          "The programming language the submitted code is actually written in, judged from the code " +
+          "itself, not from the label it was given. Use 'other' if it is none of these or not code.",
+      },
     },
     required: [
       "correctness_score",
       "communication_score",
       "reasoning_score",
       "feedback_text",
+      "detected_language",
     ],
     additionalProperties: false,
   },
@@ -47,13 +58,14 @@ const SCORE_TOOL: StructuredTool = {
 
 export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
     const {
       question_text,
       approach_text,
       code_submission,
       code_language,
       follow_up_qa,
-    } = (await req.json()) as {
+    } = body as {
       question_text: string;
       approach_text: string;
       code_submission: string;
@@ -72,7 +84,7 @@ export async function POST(req: NextRequest) {
     const blocked = await guardAi();
     if (blocked) return blocked;
 
-    const scores = await callStructured<AttemptScores>({
+    const graded = await callStructured<AttemptScores & { detected_language?: string }>({
       system:
         "You are a senior software engineering interviewer scoring a completed interview question. Score " +
         "three dimensions independently and honestly — a technically correct solution with poor communication " +
@@ -104,7 +116,49 @@ export async function POST(req: NextRequest) {
       maxTokens: 1024,
     });
 
-    return NextResponse.json({ scores });
+    const { detected_language, ...scores } = graded;
+
+    // Signed-in players earn XP for questions the server issued to them. The
+    // browser only says WHICH question this was; the amount is worked out here
+    // from the stored scores and the issued difficulty, never from the request.
+    let progression: QuestionProgression | null = null;
+    let finalScores: AttemptScores = scores;
+    const ids = scoreIds.safeParse(body);
+    if (ids.success && ids.data.session_id && ids.data.question_id && progressionConfigured()) {
+      const userId = await getSignedInUserId();
+      if (userId) {
+        try {
+          const done = await recordQuestionCompletion({
+            userId,
+            sessionId: ids.data.session_id,
+            questionId: ids.data.question_id,
+            claimedLanguage: code_language,
+            detectedLanguage: detected_language,
+            scores: {
+              correctness: scores.correctness_score,
+              communication: scores.communication_score,
+              reasoning: scores.reasoning_score,
+            },
+          });
+          if (done) {
+            const { scores: stored, language: _language, ...rest } = done;
+            void _language;
+            progression = rest;
+            // If this question was already scored, show the numbers that were stored.
+            finalScores = {
+              ...scores,
+              correctness_score: stored.correctness,
+              communication_score: stored.communication,
+              reasoning_score: stored.reasoning,
+            };
+          }
+        } catch (err) {
+          console.error("Progression update failed:", err instanceof Error ? err.message : err);
+        }
+      }
+    }
+
+    return NextResponse.json({ scores: finalScores, progression });
   } catch (err) {
     console.error(err);
     const message = err instanceof Error ? err.message : "Unknown error";

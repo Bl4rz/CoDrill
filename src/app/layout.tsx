@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SITE_URL, SITE_NAME, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/site";
 import { PALETTE_CSS_VARS } from "@/lib/palette";
 import { BlockedScreen } from "@/components/BlockedScreen";
+import { ToastHost } from "@/components/pixel/ToastHost";
 import "./globals.css";
 
 // Display: titles, buttons, labels and HUD text only. Pixelify Sans stays legible
@@ -111,6 +112,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
         {children}
         <BlockedScreen />
+        <ToastHost />
         <Analytics />
       </body>
     </html>

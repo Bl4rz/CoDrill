@@ -3,16 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, MenuIcon } from "@/components/pixel/icons";
 import { playBlip } from "@/lib/sound";
+import { signInWithGoogle } from "@/lib/auth";
+import { useIsSignedIn } from "@/lib/useIsSignedIn";
 
 export interface MenuLink {
-  href: string;
+  href?: string;
   label: string;
+  /** Where this goes for signed-in players instead */
+  signedInHref?: string;
+  /** Run an action instead of following a link; hidden once signed in */
+  action?: "signin";
 }
 
 /** Pixel hamburger: opens a cream dialog of links. Closes on Escape, outside click, or choosing a link. */
 export function HudMenu({ links, className = "" }: { links: MenuLink[]; className?: string }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const signedIn = useIsSignedIn();
 
   useEffect(() => {
     if (!open) return;
@@ -51,16 +58,35 @@ export function HudMenu({ links, className = "" }: { links: MenuLink[]; classNam
           aria-label="Menu"
           className="px-dialog absolute right-0 top-full z-30 mt-3 flex w-56 flex-col"
         >
-          {links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="px-4 py-3 font-display text-base uppercase tracking-widest text-ink hover:bg-ink hover:text-paper"
-            >
-              {link.label}
-            </a>
-          ))}
+          {links.map((link) => {
+            if (link.action === "signin") {
+              if (signedIn !== false) return null;
+              return (
+                <button
+                  key={link.label}
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    signInWithGoogle();
+                  }}
+                  className="px-4 py-3 text-left font-display text-base uppercase tracking-widest text-ink hover:bg-ink hover:text-paper"
+                >
+                  {link.label}
+                </button>
+              );
+            }
+            const href = signedIn && link.signedInHref ? link.signedInHref : link.href!;
+            return (
+              <a
+                key={link.label}
+                href={href}
+                onClick={() => setOpen(false)}
+                className="px-4 py-3 font-display text-base uppercase tracking-widest text-ink hover:bg-ink hover:text-paper"
+              >
+                {link.label}
+              </a>
+            );
+          })}
         </nav>
       )}
     </div>

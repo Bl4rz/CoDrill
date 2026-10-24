@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callStructured, StructuredTool } from "@/lib/ai";
 import { guardNewSession } from "@/lib/usage";
-import { Difficulty, InterviewQuestion, RoleSummary } from "@/lib/types";
+import { Difficulty, InterviewQuestion } from "@/lib/types";
+import { roleSummarySchema } from "@/lib/progression/schemas";
+import { hashPosting, issueRunIfConfigured } from "@/lib/progression/server";
 
 const GENERATE_TOOL: StructuredTool = {
   name: "submit_questions",
@@ -46,15 +48,16 @@ const GENERATE_TOOL: StructuredTool = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { role_summary } = (await req.json()) as { role_summary: RoleSummary };
-
-    if (!role_summary || !role_summary.tech_stack) {
-      return NextResponse.json({ error: "Missing role_summary." }, { status: 400 });
+    const body = await req.json().catch(() => null);
+    const parsed = roleSummarySchema.safeParse(body?.role_summary);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Missing or invalid role_summary." }, { status: 400 });
     }
+    const role_summary = parsed.data;
 
     // Per-user (or per-IP when signed out) daily session limit, then the
     // site-wide daily AI cap. See src/lib/usage.ts.
-    const blocked = await guardNewSession(req);
+    const { response: blocked, userId } = await guardNewSession(req);
     if (blocked) return blocked;
 
     const result = await callStructured<{
@@ -90,7 +93,21 @@ export async function POST(req: NextRequest) {
         order_index: i,
       }));
 
-    return NextResponse.json({ questions });
+    // The session id is created here so the server can record exactly what it
+    // issued. Signed-in players' runs are remembered; a score can only earn XP
+    // for a question that appears in this record.
+    const session_id = crypto.randomUUID();
+    if (userId) {
+      await issueRunIfConfigured({
+        userId,
+        sessionId: session_id,
+        role: role_summary,
+        postingHash: hashPosting(role_summary),
+        questions,
+      });
+    }
+
+    return NextResponse.json({ questions, session_id });
   } catch (err) {
     console.error(err);
     const message = err instanceof Error ? err.message : "Unknown error";

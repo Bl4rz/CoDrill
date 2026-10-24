@@ -24,10 +24,11 @@ function isBrowser() {
 export function createSession(
   job_posting_text: string,
   role_summary: RoleSummary,
-  questions: InterviewQuestion[]
+  questions: InterviewQuestion[],
+  id: string = crypto.randomUUID(),
 ): StoredSession {
   const session: StoredSession = {
-    id: crypto.randomUUID(),
+    id,
     job_posting_text,
     role_summary,
     questions,

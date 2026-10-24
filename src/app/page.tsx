@@ -3,7 +3,7 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Example } from "@/components/landing/Example";
 import { About } from "@/components/landing/About";
 import { FAQ } from "@/components/landing/FAQ";
-import { PixelLink } from "@/components/pixel/PixelButton";
+import { StartLink } from "@/components/landing/StartLink";
 import { ArrowIcon } from "@/components/pixel/icons";
 import { SUPPORT_URL } from "@/lib/site";
 
@@ -17,12 +17,12 @@ export default function LandingPage() {
       <FAQ />
 
       <section className="flex flex-col items-center gap-4 px-6 pb-24 pt-10 text-center">
-        <PixelLink href="/start" size="lg">
+        <StartLink size="lg">
           <span className="blink-cursor">
             <ArrowIcon unit="4px" />
           </span>
           Press start
-        </PixelLink>
+        </StartLink>
         <p className="font-display text-sm uppercase tracking-widest text-green">Free. No card.</p>
       </section>
 

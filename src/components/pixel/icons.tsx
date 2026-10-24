@@ -72,6 +72,17 @@ const MIC = [
   "..XXXXX..",
 ];
 
+const COIN = [
+  "..XXXX..",
+  ".XXXXXX.",
+  "XXX..XXX",
+  "XXXXXXXX",
+  "XXXXXXXX",
+  "XXX..XXX",
+  ".XXXXXX.",
+  "..XXXX..",
+];
+
 type IconProps = { unit?: string; className?: string };
 
 export const SpeakerIcon = ({ on, unit = "2px", className }: IconProps & { on: boolean }) => (
@@ -100,4 +111,7 @@ export const MinusIcon = ({ unit = "2px", className }: IconProps) => (
 );
 export const MicIcon = ({ unit = "2px", className }: IconProps) => (
   <Sprite rows={MIC} colors={INK} unit={unit} className={className} />
+);
+export const CoinIcon = ({ unit = "2px", className }: IconProps) => (
+  <Sprite rows={COIN} colors={INK} unit={unit} className={className} />
 );

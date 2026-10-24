@@ -660,7 +660,8 @@ begin
     'xp_earned', (select coalesce(sum(xp_awarded), 0) from public.question_results where session_id = p_session_id and user_id = p_user),
     'coins_earned', (select coalesce(sum(coins_awarded), 0) from public.question_results where session_id = p_session_id and user_id = p_user),
     'total_xp', prog.total_xp,
-    'level', prog.level
+    'level', prog.level,
+    'coins', prog.coins
   );
 end;
 $$;

@@ -94,29 +94,39 @@ export async function guardAi(): Promise<NextResponse | null> {
   return null;
 }
 
-/** Call right before generating a new set of questions: per-user (or per-IP) daily sessions, then the global cap. */
-export async function guardNewSession(req: NextRequest): Promise<NextResponse | null> {
-  if (!enforced()) return null;
-
-  let who = `ip:${clientIp(req)}`;
+/**
+ * Call right before generating a new set of questions. Limits (when enforced) are
+ * per signed-in user, or per IP when signed out, then the site-wide cap. Also
+ * returns who the signed-in user is, so the run can be recorded for progression.
+ */
+export async function guardNewSession(
+  req: NextRequest,
+): Promise<{ response: NextResponse | null; userId: string | null }> {
+  let userId: string | null = null;
   try {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (user) who = `user:${user.id}`;
+    userId = user?.id ?? null;
   } catch {
-    // Not signed in, or Supabase isn't configured: fall back to the IP.
+    // Not signed in, or Supabase isn't configured: treated as signed out.
   }
 
+  if (!enforced()) return { response: null, userId };
+
+  const who = userId ? `user:${userId}` : `ip:${clientIp(req)}`;
   if (!(await bump(`sessions:${who}`, DAILY_SESSION_LIMIT))) {
-    return NextResponse.json(
-      {
-        error: `You've used your ${DAILY_SESSION_LIMIT} runs for today. Come back tomorrow.`,
-        reason: "daily_limit",
-      },
-      { status: 429 },
-    );
+    return {
+      response: NextResponse.json(
+        {
+          error: `You've used your ${DAILY_SESSION_LIMIT} runs for today. Come back tomorrow.`,
+          reason: "daily_limit",
+        },
+        { status: 429 },
+      ),
+      userId,
+    };
   }
-  return guardAi();
+  return { response: await guardAi(), userId };
 }

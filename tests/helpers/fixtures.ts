@@ -70,3 +70,29 @@ export async function completeQuestion(
     ...over,
   });
 }
+
+export interface HubRaw {
+  progression: { total_xp: number; level: number; coins: number; timezone: string };
+  quests: { quest_id: string; progress: number; target: number; completed: boolean; claimed: boolean }[];
+  recent_runs: {
+    role_title: string;
+    questions_total: number;
+    questions_done: number;
+    avg_score: number | null;
+    xp_earned: number;
+  }[];
+  achievements: { id: string; unlocked_at: string }[];
+}
+
+export interface RunSummaryRaw {
+  questions_total: number;
+  questions_done: number;
+  xp_earned: number;
+  coins_earned: number;
+  total_xp: number;
+  level: number;
+}
+
+export interface StatsRaw {
+  timezone: string;
+}

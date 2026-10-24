@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, MouseEvent, ReactNode } from "react";
+import type { AnchorHTMLAttributes, ComponentProps, MouseEvent, ReactNode } from "react";
 import { playBlip } from "@/lib/sound";
 
 type Variant = "primary" | "amber" | "ghost" | "danger";
@@ -20,7 +20,7 @@ export function PixelButton({
   onClick,
   type = "button",
   ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size }) {
+}: ComponentProps<"button"> & { variant?: Variant; size?: Size }) {
   return (
     <button
       {...rest}

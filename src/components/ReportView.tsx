@@ -12,7 +12,9 @@ import { GradeBox } from "@/components/pixel/GradeBox";
 import { Mascot, type Expression } from "@/components/pixel/Mascot";
 import { PixelButton, PixelLink } from "@/components/pixel/PixelButton";
 import { SegmentBar } from "@/components/pixel/SegmentBar";
-import { ArrowIcon } from "@/components/pixel/icons";
+import { ArrowIcon, CoinIcon } from "@/components/pixel/icons";
+import { LevelUpDialog } from "@/components/pixel/LevelUpDialog";
+import type { RunSummaryResponse } from "@/lib/progression/types";
 import { shadowColor } from "@/components/pixel/style";
 
 type ScoreAxis = "correctness" | "communication" | "reasoning";
@@ -69,6 +71,46 @@ function expressionForScore(overall: number): Expression {
 export function ReportView({ session }: { session: StoredSession }) {
   const report = session.report;
   const [copied, setCopied] = useState<"idle" | "copied" | "failed">("idle");
+  const [run, setRun] = useState<RunSummaryResponse | null>(null);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const sessionId = session.id;
+
+  // What this run earned, from the server's own record. Signed-out visitors and
+  // runs the server never issued just get a non-OK response and see nothing extra.
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    (async () => {
+      try {
+        const res = await fetch(`/api/player/run?session_id=${encodeURIComponent(sessionId)}`);
+        if (!res.ok || cancelled) return;
+        const summary = (await res.json()) as RunSummaryResponse;
+        if (cancelled) return;
+        setRun(summary);
+        const seenKey = `codrill:levelup-shown:${sessionId}`;
+        if (summary.level_now > summary.level_before && !localStorage.getItem(seenKey)) {
+          const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          // After the grade and bars have finished filling in.
+          timer = setTimeout(() => !cancelled && setShowLevelUp(true), reduced ? 0 : 3600);
+        }
+      } catch {
+        // No progress info to show; the report itself is unaffected.
+      }
+    })();
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [sessionId]);
+
+  function closeLevelUp() {
+    try {
+      localStorage.setItem(`codrill:levelup-shown:${sessionId}`, "1");
+    } catch {
+      // storage blocked: the dialog may show again on a revisit
+    }
+    setShowLevelUp(false);
+  }
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -157,6 +199,20 @@ export function ReportView({ session }: { session: StoredSession }) {
         </div>
       </section>
 
+      {run && run.xp_earned > 0 && (
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 font-display text-lg uppercase tracking-widest">
+          <span className="text-green">+{run.xp_earned} XP this run</span>
+          {run.coins_earned > 0 && (
+            <span className="flex items-center gap-1 text-amber">
+              <CoinIcon unit="3px" /> +{run.coins_earned}
+            </span>
+          )}
+          <span>
+            Level {run.level_now}
+          </span>
+        </p>
+      )}
+
       {mainPattern && (
         <section className="flex items-end gap-4" aria-label="Pattern">
           <div className="hidden shrink-0 sm:block">
@@ -243,6 +299,15 @@ export function ReportView({ session }: { session: StoredSession }) {
           {copied === "copied" ? "Copied" : copied === "failed" ? "Couldn't copy" : "Copy report"}
         </PixelButton>
       </div>
+
+      {showLevelUp && run && (
+        <LevelUpDialog
+          level={run.level_now}
+          previousLevel={run.level_before}
+          xpEarned={run.xp_earned}
+          onClose={closeLevelUp}
+        />
+      )}
     </div>
   );
 }

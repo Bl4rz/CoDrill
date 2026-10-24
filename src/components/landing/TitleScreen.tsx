@@ -4,7 +4,8 @@ import { Logo } from "@/components/Logo";
 import { Mascot } from "@/components/pixel/Mascot";
 import { Sprite } from "@/components/pixel/Sprite";
 import { ArrowIcon } from "@/components/pixel/icons";
-import { PixelLink } from "@/components/pixel/PixelButton";
+import { StartLink } from "@/components/landing/StartLink";
+import { HudSignIn } from "@/components/landing/HudSignIn";
 import { SoundToggle } from "@/components/pixel/SoundToggle";
 import { HudMenu } from "@/components/pixel/HudMenu";
 import {
@@ -26,7 +27,8 @@ const MENU_LINKS = [
   { href: "#how-it-works", label: "How it works" },
   { href: "#about", label: "About" },
   { href: "#faq", label: "FAQ" },
-  { href: "/start", label: "Press start" },
+  { href: "/start", signedInHref: "/hub", label: "Press start" },
+  { label: "Sign in", action: "signin" as const },
 ];
 
 const u = (n: number) => `calc(var(--u) * ${n})`;
@@ -151,6 +153,7 @@ export function TitleScreen() {
           >
             How it works
           </a>
+          <HudSignIn className="hidden sm:inline" />
           <HudMenu links={MENU_LINKS} className="sm:hidden" />
         </div>
       </header>
@@ -162,12 +165,12 @@ export function TitleScreen() {
           code.
         </p>
         <div className="flex flex-col items-center gap-3 pt-1">
-          <PixelLink href="/start" size="lg">
+          <StartLink size="lg">
             <span className="blink-cursor">
               <ArrowIcon unit="4px" />
             </span>
             Press start
-          </PixelLink>
+          </StartLink>
           <p className="font-display text-sm uppercase tracking-widest text-green">Free. No card.</p>
         </div>
       </div>
