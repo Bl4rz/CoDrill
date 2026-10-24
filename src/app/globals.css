@@ -98,7 +98,18 @@ code,
 pre,
 textarea.code {
   font-family: var(--font-mono);
+  font-variant-ligatures: none;
   text-align: left;
+}
+
+/* Section heading: same offset-shadow treatment as the title, smaller. */
+.pixel-heading {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 var(--amber);
 }
 
 /* Big pixel title with a hard offset shadow, no blur. */

@@ -55,6 +55,9 @@ const LOCK = [
   "XXXXXXX",
 ];
 
+const PLUS = ["...X...", "...X...", "...X...", "XXXXXXX", "...X...", "...X...", "...X..."];
+const MINUS = ["XXXXXXX"];
+
 type IconProps = { unit?: string; className?: string };
 
 export const SpeakerIcon = ({ on, unit = "2px", className }: IconProps & { on: boolean }) => (
@@ -74,4 +77,10 @@ export const CheckIcon = ({ unit = "2px", className }: IconProps) => (
 );
 export const LockIcon = ({ unit = "2px", className }: IconProps) => (
   <Sprite rows={LOCK} colors={INK} unit={unit} className={className} />
+);
+export const PlusIcon = ({ unit = "2px", className }: IconProps) => (
+  <Sprite rows={PLUS} colors={INK} unit={unit} className={className} />
+);
+export const MinusIcon = ({ unit = "2px", className }: IconProps) => (
+  <Sprite rows={MINUS} colors={INK} unit={unit} className={className} />
 );
