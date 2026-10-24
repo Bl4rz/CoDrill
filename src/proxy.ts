@@ -47,7 +47,14 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return updateSession(request);
+  // Refreshing the session is a network round trip to Supabase on every request
+  // for a signed-in user. Pages and most API routes never read the session on
+  // the server (the browser client handles its own tokens), so only pay for it
+  // where the server does: the sign-in callback and generate-questions.
+  if (pathname.startsWith("/auth/") || pathname === "/api/generate-questions") {
+    return updateSession(request);
+  }
+  return NextResponse.next();
 }
 
 export const config = {

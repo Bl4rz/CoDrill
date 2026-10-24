@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -69,10 +69,29 @@ const capacityResponse = () =>
     { status: 503 },
   );
 
+// Set once the site-wide cap is known to be used up, so later requests on this
+// instance are refused instantly without another database trip.
+let capacityDay: string | null = null;
+// An instance checks the database before its first request, then counts
+// requests after the response has been sent instead of making each one wait.
+let warmed = false;
+
 /** Call right before any AI request. Returns a response to send back if the site-wide daily cap is hit. */
 export async function guardAi(): Promise<NextResponse | null> {
   if (!enforced()) return null;
-  return (await bump("global:ai", GLOBAL_DAILY_AI_CAP)) ? null : capacityResponse();
+  if (capacityDay === today()) return capacityResponse();
+
+  if (!warmed) {
+    warmed = true;
+    if (await bump("global:ai", GLOBAL_DAILY_AI_CAP)) return null;
+    capacityDay = today();
+    return capacityResponse();
+  }
+
+  after(async () => {
+    if (!(await bump("global:ai", GLOBAL_DAILY_AI_CAP))) capacityDay = today();
+  });
+  return null;
 }
 
 /** Call right before generating a new set of questions: per-user (or per-IP) daily sessions, then the global cap. */

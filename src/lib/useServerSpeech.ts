@@ -11,8 +11,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * every server-side provider down at once), so the caller can fall back to
  * the browser's own voice (useSpeechSynthesis) instead.
  */
+// Once the server voice has failed, skip it for the rest of the visit instead of
+// trying (and waiting on) it again at the start of every level.
+let serverVoiceFailed = false;
+
 export function useServerSpeech() {
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState(serverVoiceFailed);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const queueRef = useRef<string[]>([]);
@@ -62,6 +66,7 @@ export function useServerSpeech() {
           audio.play().catch(finish);
         })
         .catch(() => {
+          serverVoiceFailed = true;
           setFailed(true);
           isPlayingRef.current = false;
           setIsSpeaking(false);

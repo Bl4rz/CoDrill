@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const TICK_MS = 28;
-const CHARS_PER_TICK = 2;
+const TICK_MS = 20;
+const CHARS_PER_TICK = 6;
 
 /**
  * Types text out in fast hard steps. Click it to skip to the end. The full
