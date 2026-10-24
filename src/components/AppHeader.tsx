@@ -13,7 +13,7 @@ export function AppHeader({ crumbs }: { crumbs: Crumb[] }) {
           <Logo />
           <span className="font-display text-lg uppercase tracking-widest">Codrill</span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <SoundToggle />
           <AuthButton />
         </div>

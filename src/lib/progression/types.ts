@@ -81,7 +81,11 @@ export interface RunSummaryResponse {
   questions_done: number;
   xp_earned: number;
   coins_earned: number;
+  /** Level when this run started */
   level_before: number;
+  /** Level when this run's last question was paid (quests claimed later don't count) */
+  level_after: number;
+  /** The player's level right now */
   level_now: number;
   player: PlayerSummary;
 }

@@ -661,7 +661,21 @@ begin
     'coins_earned', (select coalesce(sum(coins_awarded), 0) from public.question_results where session_id = p_session_id and user_id = p_user),
     'total_xp', prog.total_xp,
     'level', prog.level,
-    'coins', prog.coins
+    'coins', prog.coins,
+    -- Total XP just before this run's first question was paid, and just after its last one.
+    -- Quest XP claimed before or after the run is therefore not counted as part of it.
+    'xp_before_run', coalesce((
+      select sum(x.amount) from public.xp_transactions x
+       where x.user_id = p_user
+         and x.created_at < (select min(created_at) from public.question_results
+                              where user_id = p_user and session_id = p_session_id)
+    ), 0),
+    'xp_at_run_end', coalesce((
+      select sum(x.amount) from public.xp_transactions x
+       where x.user_id = p_user
+         and x.created_at <= (select max(created_at) from public.question_results
+                               where user_id = p_user and session_id = p_session_id)
+    ), 0)
   );
 end;
 $$;

@@ -249,6 +249,16 @@ describe("the repeat-posting rule inputs", () => {
   });
 });
 
+/** Move a ledger row in time. The ledger is append-only, so the guard is switched off just for this setup step. */
+async function backdate(sql: string, params: unknown[]) {
+  await db.pool.query("alter table public.xp_transactions disable trigger xp_transactions_no_update");
+  try {
+    await db.pool.query(sql, params);
+  } finally {
+    await db.pool.query("alter table public.xp_transactions enable trigger xp_transactions_no_update");
+  }
+}
+
 describe("hub and run summary read real rows only", () => {
   it("a brand new player has zeros and empty lists, not demo data", async () => {
     const user = await db.newUser();
@@ -290,5 +300,35 @@ describe("hub and run summary read real rows only", () => {
     await completeQuestion(db, user, run, 1, { p_xp: 60, p_coins: 5 });
     const summary = await db.rpc<RunSummaryRaw>("get_run_summary", { p_user: user, p_session_id: run.sessionId });
     expect(summary).toMatchObject({ questions_total: 3, questions_done: 2, xp_earned: 120, coins_earned: 10, total_xp: 120, level: 2 });
+  });
+
+  it("separates this run's XP from XP earned before or after it (for the level-up dialog)", async () => {
+    const user = await db.newUser();
+    // 60 XP from something else, earlier
+    await grant(user, 60, 0, "earlier");
+    await backdate("update public.xp_transactions set created_at = now() - interval '2 hours' where user_id = $1", [user]);
+
+    const run = await issueRun(db, user, { difficulties: ["easy", "easy"] });
+    await completeQuestion(db, user, run, 0, { p_xp: 30 });
+    await completeQuestion(db, user, run, 1, { p_xp: 30 }); // 120 total: crosses level 2 at 100 during the run
+    // a quest claimed afterwards pushes the player further, but is not part of the run
+    await grant(user, 110, 0, "later-quest", "quest");
+    await backdate(
+      "update public.xp_transactions set created_at = now() + interval '1 hour' where user_id = $1 and source_type = 'quest'",
+      [user],
+    );
+
+    const s = await db.rpc<RunSummaryRaw>("get_run_summary", { p_user: user, p_session_id: run.sessionId });
+    expect(s.xp_before_run).toBe(60);
+    expect(s.xp_at_run_end).toBe(120);
+    expect(s.xp_earned).toBe(60);
+    expect(s.total_xp).toBe(230);
+  });
+
+  it("a run with no finished questions reports zeros", async () => {
+    const user = await db.newUser();
+    const run = await issueRun(db, user);
+    const s = await db.rpc<RunSummaryRaw>("get_run_summary", { p_user: user, p_session_id: run.sessionId });
+    expect(s).toMatchObject({ questions_done: 0, xp_earned: 0, xp_before_run: 0, xp_at_run_end: 0 });
   });
 });

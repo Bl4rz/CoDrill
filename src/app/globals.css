@@ -314,6 +314,7 @@ textarea.code {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
   user-select: none;
   border-radius: 0;

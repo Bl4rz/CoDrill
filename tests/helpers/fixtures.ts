@@ -91,6 +91,9 @@ export interface RunSummaryRaw {
   coins_earned: number;
   total_xp: number;
   level: number;
+  coins: number;
+  xp_before_run: number;
+  xp_at_run_end: number;
 }
 
 export interface StatsRaw {

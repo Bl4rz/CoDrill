@@ -88,7 +88,7 @@ export function ReportView({ session }: { session: StoredSession }) {
         if (cancelled) return;
         setRun(summary);
         const seenKey = `codrill:levelup-shown:${sessionId}`;
-        if (summary.level_now > summary.level_before && !localStorage.getItem(seenKey)) {
+        if (summary.level_after > summary.level_before && !localStorage.getItem(seenKey)) {
           const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
           // After the grade and bars have finished filling in.
           timer = setTimeout(() => !cancelled && setShowLevelUp(true), reduced ? 0 : 3600);
@@ -302,7 +302,7 @@ export function ReportView({ session }: { session: StoredSession }) {
 
       {showLevelUp && run && (
         <LevelUpDialog
-          level={run.level_now}
+          level={run.level_after}
           previousLevel={run.level_before}
           xpEarned={run.xp_earned}
           onClose={closeLevelUp}

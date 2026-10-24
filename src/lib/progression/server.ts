@@ -280,13 +280,16 @@ export async function runSummary(userId: string, sessionId: string): Promise<Run
     total_xp: number;
     level: number;
     coins: number;
+    xp_before_run: number;
+    xp_at_run_end: number;
   }>("get_run_summary", { p_user: userId, p_session_id: sessionId });
   return {
     questions_total: Number(s.questions_total),
     questions_done: Number(s.questions_done),
     xp_earned: Number(s.xp_earned),
     coins_earned: Number(s.coins_earned),
-    level_before: levelForXp(Math.max(0, s.total_xp - Number(s.xp_earned))),
+    level_before: levelForXp(Number(s.xp_before_run)),
+    level_after: levelForXp(Number(s.xp_at_run_end)),
     level_now: s.level,
     player: toPlayerSummary(s.total_xp, s.coins),
   };

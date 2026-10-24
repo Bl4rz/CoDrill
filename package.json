@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev:supabase": "node scripts/dev-supabase.mjs",
+    "dev:local": "NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321 NEXT_PUBLIC_SUPABASE_ANON_KEY=dev-anon-key SUPABASE_SERVICE_ROLE_KEY=dev-service-role-key next dev"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
