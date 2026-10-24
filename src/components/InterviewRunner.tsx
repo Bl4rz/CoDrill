@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { motion } from "motion/react";
 import {
   ApproachFeedback,
   Attempt,
@@ -294,13 +293,7 @@ export function InterviewRunner({
 
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
           {transcript.map((entry, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25 }}
-              className={entry.speaker === "you" ? "text-right" : ""}
-            >
+            <div key={i} className={entry.speaker === "you" ? "text-right" : ""}>
               <p className="mb-1 text-[10px] font-mono uppercase tracking-wider text-muted">
                 {entry.speaker === "interviewer" ? "Interviewer" : "You"}
               </p>
@@ -313,16 +306,11 @@ export function InterviewRunner({
               >
                 {entry.text}
               </p>
-            </motion.div>
+            </div>
           ))}
 
           {stage === "scored" && attempt?.scores && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mt-2 rounded-lg border border-accent-green/30 bg-accent-green/5 p-3"
-            >
+            <div className="mt-2 border-[3px] border-accent-green p-3">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-accent-green">
                 Question complete
               </p>
@@ -332,7 +320,7 @@ export function InterviewRunner({
                 <ScorePill label="Reasoning" value={attempt.scores.reasoning_score} />
               </div>
               <p className="text-sm text-foreground">{attempt.scores.feedback_text}</p>
-            </motion.div>
+            </div>
           )}
         </div>
 

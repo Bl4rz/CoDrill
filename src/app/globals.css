@@ -1,336 +1,174 @@
 @import "tailwindcss";
 
+/*
+ * Five colors, defined once in src/lib/palette.ts and injected on <html> by
+ * layout.tsx (--ink, --paper, --green, --amber, --red). Nothing in this file
+ * is allowed to introduce a sixth.
+ */
 :root {
-  /* Warm, green-tinted near-black — deliberately not the GitHub/VSCode blue-black
-     every other dev tool uses. Green is the primary brand accent, amber the
-     secondary one; blue/purple/orange/yellow survive only for realistic code
-     syntax-highlighting in mockups, not for UI chrome. */
-  --background: #0c130f;
-  --surface: #142019;
-  --surface-raised: #1b2a20;
-  --surface-glass: rgba(27, 42, 32, 0.55);
-  --border: #2c3d30;
-  --border-subtle: #1e2c22;
-  --foreground: #eef6ef;
-  --muted: #93a698;
-  --accent-green: #4ade80;
-  --accent-green-soft: #86efac;
-  --accent-amber: #f5a623;
-  --accent-amber-soft: #fbc85e;
-  --accent-blue: #61afef;
-  --accent-orange: #d19a66;
-  --accent-purple: #c678dd;
-  --accent-red: #e06c75;
-  --accent-yellow: #e5c07b;
+  /* One "art pixel". Sprites and scenery are sized in whole multiples of it
+     so they always land on whole screen pixels. */
+  --u: 4px;
+}
+@media (min-width: 640px) {
+  :root {
+    --u: 6px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --u: 8px;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-surface-glass: var(--surface-glass);
-  --color-border: var(--border);
-  --color-border-subtle: var(--border-subtle);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-accent-green: var(--accent-green);
-  --color-accent-green-soft: var(--accent-green-soft);
-  --color-accent-amber: var(--accent-amber);
-  --color-accent-amber-soft: var(--accent-amber-soft);
-  --color-accent-blue: var(--accent-blue);
-  --color-accent-orange: var(--accent-orange);
-  --color-accent-purple: var(--accent-purple);
-  --color-accent-red: var(--accent-red);
-  --color-accent-yellow: var(--accent-yellow);
+  /* Wipe Tailwind's default palette so only the five colors can be used. */
+  --color-*: initial;
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-green: var(--green);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+
+  /* Square everything. */
+  --radius-*: initial;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  /* No soft shadows exist as utilities; hard ones are written per component. */
+  --shadow-*: initial;
+  --blur-*: initial;
+  --drop-shadow-*: initial;
+
+  /* TEMPORARY aliases for the old token names, so pages not yet rebuilt in the
+     new style keep working. Deleted in Phase 5. */
+  --color-background: var(--ink);
+  --color-surface: var(--ink);
+  --color-surface-raised: var(--ink);
+  --color-surface-glass: var(--ink);
+  --color-border: var(--paper);
+  --color-border-subtle: var(--paper);
+  --color-foreground: var(--paper);
+  --color-muted: var(--paper);
+  --color-accent-green: var(--green);
+  --color-accent-green-soft: var(--green);
+  --color-accent-amber: var(--amber);
+  --color-accent-amber-soft: var(--amber);
+  --color-accent-blue: var(--green);
+  --color-accent-orange: var(--amber);
+  --color-accent-purple: var(--green);
+  --color-accent-red: var(--red);
+  --color-accent-yellow: var(--amber);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-display);
   --font-pixel: var(--font-pixel);
 }
 
+/* TEMPORARY: old variable names still referenced by inline styles. */
+:root {
+  --background: var(--ink);
+  --surface: var(--ink);
+  --surface-raised: var(--ink);
+  --border: var(--paper);
+  --foreground: var(--paper);
+  --muted: var(--paper);
+  --accent-green: var(--green);
+  --accent-amber: var(--amber);
+  --accent-red: var(--red);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--ink);
+  color: var(--paper);
 }
 
 ::selection {
-  background: rgba(74, 222, 128, 0.25);
+  background: var(--amber);
+  color: var(--ink);
 }
 
 * {
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--paper) var(--ink);
   scrollbar-width: thin;
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 6px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
 }
-
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--ink);
 }
 
-.text-gradient-brand {
-  background: linear-gradient(100deg, var(--accent-green-soft) 10%, var(--accent-amber) 90%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-.card-glass {
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--surface-raised) 78%, transparent) 0%,
-    color-mix(in srgb, var(--surface) 70%, transparent) 100%
-  );
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  position: relative;
-  /* True glassmorphism, not just a blur: a bright top-edge line simulates
-     light catching the glass edge, a soft inner shadow gives it depth. */
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
-    inset 0 -12px 20px -16px rgba(0, 0, 0, 0.25);
-}
-/* backdrop-filter blur, recomputed every frame against the fixed background
-   scrolling underneath every one of these cards, is a well-documented iOS
-   Safari scroll-jank source (reported live: the page visibly jittered while
-   scrolling on an iPhone). Touch/small-screen devices get a more opaque
-   background instead of the blur — reads the same as a card, costs nothing
-   to composite. */
-@media (max-width: 767px), (pointer: coarse) {
-  .card-glass {
-    background: linear-gradient(
-      160deg,
-      color-mix(in srgb, var(--surface-raised) 96%, transparent) 0%,
-      color-mix(in srgb, var(--surface) 94%, transparent) 100%
-    );
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-}
-
-/* Same iOS-jank tradeoff as .card-glass above, as a reusable utility for
-   the few spots that just need a plain blur (the hero badge, the live-
-   preview console) rather than the full glass treatment. */
-.glass-blur {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-@media (max-width: 767px), (pointer: coarse) {
-  .glass-blur {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-}
-
-/*
- * A fixed, page-wide film-grain overlay — breaks up the flat digital look
- * that gives dark UIs an "AI-generated" sheen. z-index 60 is intentional
- * (must sit above every card/section) rather than an arbitrary 9999; nothing
- * else on the site uses a stacking value this high.
- */
-.noise-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  opacity: 0.035;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-/* A fixed, full-viewport element blended with mix-blend-mode against content
-   that's actively scrolling underneath it is the other well-documented iOS
-   Safari scroll-jank pattern (see the .card-glass note above) — every
-   scroll frame forces a real blend recompute, not just a cheap composite.
-   The grain is a subtle finishing touch, not load-bearing; touch/small-
-   screen devices just don't render it rather than pay that cost. */
-@media (max-width: 767px), (pointer: coarse) {
-  .noise-overlay {
-    display: none;
-  }
-}
-
-/*
- * Cursor-reactive spotlight border: a 1px gradient ring that only glows near
- * the pointer, via the classic mask-exclude gradient-border trick. --spot-x/
- * --spot-y are set from JS on mousemove; --spot-color picks the highlight
- * tint per card.
- */
-.spotlight-card {
-  position: relative;
-}
-.spotlight-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: radial-gradient(
-    220px circle at var(--spot-x, 50%) var(--spot-y, 50%),
-    var(--spot-color, var(--accent-green)) 0%,
-    transparent 70%
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-.spotlight-card:hover::before {
-  opacity: 1;
-}
-
-/*
- * Retro/arcade accents — scoped to game-like UI only (scores, difficulty,
- * session progress, primary CTAs), not a site-wide reskin. Sharp corners
- * and a hard, unblurred offset shadow read as "pixel/8-bit block" without
- * needing an actual pixelated raster look.
- */
+/* Hard-edged panel: 3px square border, hard offset shadow, zero blur. */
 .pixel-panel {
-  border-radius: 2px;
-  border-width: 2px;
+  border-radius: 0;
+  border-width: 3px;
   border-style: solid;
-  box-shadow: 3px 3px 0 0 var(--pixel-shadow, rgba(0, 0, 0, 0.45));
+  box-shadow: 4px 4px 0 0 var(--pixel-shadow, var(--green));
 }
 
+/* Press-down button: the shadow collapses and the face moves into it. */
 .pixel-press {
-  border-radius: 2px;
-  box-shadow: 3px 3px 0 0 var(--pixel-shadow, rgba(0, 0, 0, 0.5));
+  border-radius: 0;
+  box-shadow: 4px 4px 0 0 var(--pixel-shadow, var(--paper));
   transition:
     transform 0.08s steps(2),
     box-shadow 0.08s steps(2);
 }
-.pixel-press:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 0 var(--pixel-shadow, rgba(0, 0, 0, 0.5));
-}
 .pixel-press:active {
-  transform: translate(3px, 3px);
-  box-shadow: 0 0 0 0 var(--pixel-shadow, rgba(0, 0, 0, 0.5));
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 0 var(--pixel-shadow, var(--paper));
 }
 
-/* Retro loading state: three blocky pixels stepping through a bounce
-   instead of a smooth spin — steps() timing keeps the motion chunky. */
+/* Loading dots: three blocks stepping through a hop. */
 @keyframes pixel-bounce {
   0%,
   80%,
   100% {
     transform: translateY(0);
-    opacity: 0.5;
   }
   40% {
     transform: translateY(-4px);
-    opacity: 1;
   }
 }
 .pixel-dot {
   animation: pixel-bounce 0.9s steps(4) infinite;
 }
 
-/* Idle float for the pixel-art mascot — stepped rather than eased, to read
-   as a sprite hopping in place rather than smoothly floating. */
+/* Mascot idle: a two-frame hop, no easing. */
 @keyframes mascot-bob {
   0%,
   100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-6px);
+    transform: translateY(-2px);
   }
 }
 .mascot-idle {
-  animation: mascot-bob 2.4s steps(6) infinite;
+  animation: mascot-bob 1.2s steps(1) infinite;
 }
 
-@keyframes star-twinkle {
-  0%,
-  100% {
-    opacity: 0.15;
-  }
-  50% {
-    opacity: 0.9;
-  }
-}
-.star-twinkle {
-  animation: star-twinkle ease-in-out infinite;
-}
+/* Everything that moves stops for people who ask for that. */
 @media (prefers-reduced-motion: reduce) {
-  .star-twinkle {
-    animation: none;
-    opacity: 0.5;
-  }
-}
-
-/* Synthwave perspective grid floor — plain repeating-linear-gradient lines
-   tilted with a CSS transform, no SVG/filters involved. The horizon line
-   sits at the floor's top edge; both are positioned by eye to line up. */
-.retro-grid__floor {
-  position: absolute;
-  left: -60%;
-  right: -60%;
-  bottom: 0;
-  height: 200%;
-  background-image:
-    repeating-linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--accent-green) 70%, transparent) 0 2px,
-      transparent 2px 64px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      color-mix(in srgb, var(--accent-green) 55%, transparent) 0 2px,
-      transparent 2px 64px
-    );
-  background-size:
-    64px 64px,
-    64px 64px;
-  transform: perspective(500px) rotateX(58deg);
-  transform-origin: bottom center;
-  mask-image: linear-gradient(to top, black 0%, black 18%, transparent 45%);
-  -webkit-mask-image: linear-gradient(to top, black 0%, black 18%, transparent 45%);
-  opacity: 0.6;
-  animation: retro-grid-scroll 4s linear infinite;
-}
-@keyframes retro-grid-scroll {
-  from {
-    background-position:
-      0 0,
-      0 0;
-  }
-  to {
-    background-position:
-      0 0,
-      0 64px;
-  }
-}
-.retro-grid__horizon {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 42%;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--accent-amber),
-    var(--accent-green),
-    transparent
-  );
-  opacity: 0.65;
-  box-shadow: 0 0 12px 1px color-mix(in srgb, var(--accent-amber) 55%, transparent);
-}
-@media (prefers-reduced-motion: reduce) {
-  .retro-grid__floor {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

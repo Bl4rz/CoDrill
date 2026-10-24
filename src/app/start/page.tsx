@@ -167,7 +167,7 @@ export default function StartPage() {
       </header>
 
       <div className="rounded-lg border border-border-subtle bg-surface-raised/40 p-px">
-        <div className="rounded-[7px] bg-background p-6">
+        <div className="bg-background p-6">
           {stage === "input" && (
             <JobPostingForm
               onExtracted={(text, extractedSummary) => {

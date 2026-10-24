@@ -29,13 +29,13 @@ function TagEditor({
         {values.map((v) => (
           <span
             key={v}
-            className="group inline-flex items-center gap-1 rounded-full border border-border bg-surface-raised px-2.5 py-1 text-xs text-foreground"
+            className="group inline-flex items-center gap-1 border-2 border-border bg-surface-raised px-2.5 py-1 text-xs text-foreground"
           >
             {v}
             <button
               type="button"
               onClick={() => onChange(values.filter((x) => x !== v))}
-              className="text-muted opacity-60 hover:text-accent-red hover:opacity-100"
+              className="text-muted hover:text-accent-red"
               aria-label={`Remove ${v}`}
             >
               ×

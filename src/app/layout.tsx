@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fraunces, Press_Start_2P } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+import { PALETTE_CSS_VARS } from "@/lib/palette";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -100,13 +101,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${pixelFont.variable} h-full antialiased dark`}
+      style={PALETTE_CSS_VARS}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full flex flex-col bg-ink text-paper">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <div className="noise-overlay" aria-hidden="true" />
         {children}
         <Analytics />
       </body>

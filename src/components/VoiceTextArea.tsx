@@ -62,9 +62,9 @@ export function VoiceTextArea({
             onClick={toggleMic}
             disabled={disabled}
             title={stt.isListening ? "Stop recording" : "Speak your answer"}
-            className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border transition disabled:opacity-40 ${
+            className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center border-2 disabled:opacity-40 ${
               stt.isListening
-                ? "animate-pulse border-accent-red bg-accent-red/15 text-accent-red"
+                ? "border-accent-red bg-accent-red text-ink"
                 : "border-border text-muted hover:border-accent-green hover:text-accent-green"
             }`}
           >
