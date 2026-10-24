@@ -458,6 +458,7 @@ security definer
 set search_path = public
 as $$
   select jsonb_build_object(
+    'timezone', coalesce((select timezone from public.player_progression where user_id = p_user), 'UTC'),
     'questions_completed', (select count(*) from public.question_results where user_id = p_user),
     'max_communication', (select coalesce(max(communication), 0) from public.question_results where user_id = p_user),
     'max_reasoning', (select coalesce(max(reasoning), 0) from public.question_results where user_id = p_user),
@@ -589,7 +590,7 @@ end;
 $$;
 
 -- Everything the Hub shows, in one round trip.
-create or replace function public.get_hub(p_user uuid, p_day date)
+create or replace function public.get_hub(p_user uuid, p_day date, p_defs jsonb default null)
 returns jsonb
 language plpgsql
 security definer
@@ -599,6 +600,10 @@ declare
   prog public.player_progression%rowtype;
 begin
   perform public.ensure_player(p_user);
+  -- If the caller passes today's picked quests, fix them now (first caller of the day wins).
+  if p_defs is not null then
+    perform public.ensure_daily_quests(p_user, p_day, p_defs);
+  end if;
   select * into prog from public.player_progression where user_id = p_user;
 
   return jsonb_build_object(
@@ -677,7 +682,7 @@ begin
     'claim_quest(uuid,text,date,int,int)',
     'unlock_achievements(uuid,text[])',
     'set_timezone(uuid,text,int)',
-    'get_hub(uuid,date)',
+    'get_hub(uuid,date,jsonb)',
     'get_run_summary(uuid,uuid)'
   ] loop
     execute format('revoke all on function public.%s from public, anon, authenticated', f);

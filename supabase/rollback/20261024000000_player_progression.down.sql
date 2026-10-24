@@ -3,7 +3,7 @@
 -- server-side record of issued runs and question results.
 
 drop function if exists public.get_run_summary(uuid, uuid);
-drop function if exists public.get_hub(uuid, date);
+drop function if exists public.get_hub(uuid, date, jsonb);
 drop function if exists public.set_timezone(uuid, text, int);
 drop function if exists public.unlock_achievements(uuid, text[]);
 drop function if exists public.claim_quest(uuid, text, date, int, int);
