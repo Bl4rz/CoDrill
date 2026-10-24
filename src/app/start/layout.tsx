@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Start your mock interview",
+  title: "Select your quest",
   description:
-    "Paste a job posting and get 5-8 original coding questions tailored to that exact role, then run through a full mock interview.",
+    "Paste a job posting and get 5 to 8 coding questions made for that role, then run a full mock interview. Free.",
   alternates: { canonical: "/start" },
 };
 

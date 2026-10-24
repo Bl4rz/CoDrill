@@ -1,0 +1,103 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+
+/**
+ * Daily abuse protection for the routes that spend money on AI calls.
+ *
+ * Counters live in Postgres (public.usage_counters, bumped by the atomic
+ * bump_usage() function in supabase/schema.sql) so they survive serverless
+ * restarts and are shared across instances. If the service-role key isn't
+ * set, or the function hasn't been created yet, they fall back to in-memory
+ * counters: per instance and reset on restart, but never wide open.
+ *
+ * Limits (env vars, all optional):
+ *   DAILY_SESSION_LIMIT   new interview sessions per user (or per IP when signed out) per UTC day. Default 3.
+ *   GLOBAL_DAILY_AI_CAP   AI requests across the whole site per UTC day. Default 3000.
+ *   ENFORCE_LIMITS=true   also enforce while running `next dev` (off by default so local testing isn't throttled).
+ */
+
+function intFromEnv(name: string, fallback: number): number {
+  const n = Number.parseInt(process.env[name] ?? "", 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+const DAILY_SESSION_LIMIT = intFromEnv("DAILY_SESSION_LIMIT", 3);
+const GLOBAL_DAILY_AI_CAP = intFromEnv("GLOBAL_DAILY_AI_CAP", 3000);
+
+const enforced = () => process.env.NODE_ENV === "production" || process.env.ENFORCE_LIMITS === "true";
+
+const memory = new Map<string, { day: string; count: number }>();
+
+const today = () => new Date().toISOString().slice(0, 10);
+
+function bumpMemory(scope: string, limit: number): boolean {
+  const day = today();
+  if (memory.size > 5000) {
+    for (const [key, entry] of memory) if (entry.day !== day) memory.delete(key);
+  }
+  const entry = memory.get(scope);
+  if (!entry || entry.day !== day) {
+    memory.set(scope, { day, count: 1 });
+    return true;
+  }
+  if (entry.count >= limit) return false;
+  entry.count += 1;
+  return true;
+}
+
+/** Atomically add one to today's counter for `scope`; false means the limit is already reached. */
+async function bump(scope: string, limit: number): Promise<boolean> {
+  const admin = createAdminClient();
+  if (admin) {
+    const { data, error } = await admin.rpc("bump_usage", { p_scope: scope, p_limit: limit });
+    if (!error && typeof data === "boolean") return data;
+    console.error("usage counter unavailable, using in-memory counts:", error?.message);
+  }
+  return bumpMemory(scope, limit);
+}
+
+function clientIp(req: NextRequest): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown"
+  );
+}
+
+const capacityResponse = () =>
+  NextResponse.json(
+    { error: "The server needs a break. Come back tomorrow.", reason: "capacity" },
+    { status: 503 },
+  );
+
+/** Call right before any AI request. Returns a response to send back if the site-wide daily cap is hit. */
+export async function guardAi(): Promise<NextResponse | null> {
+  if (!enforced()) return null;
+  return (await bump("global:ai", GLOBAL_DAILY_AI_CAP)) ? null : capacityResponse();
+}
+
+/** Call right before generating a new set of questions: per-user (or per-IP) daily sessions, then the global cap. */
+export async function guardNewSession(req: NextRequest): Promise<NextResponse | null> {
+  if (!enforced()) return null;
+
+  let who = `ip:${clientIp(req)}`;
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) who = `user:${user.id}`;
+  } catch {
+    // Not signed in, or Supabase isn't configured: fall back to the IP.
+  }
+
+  if (!(await bump(`sessions:${who}`, DAILY_SESSION_LIMIT))) {
+    return NextResponse.json(
+      {
+        error: `You've used your ${DAILY_SESSION_LIMIT} runs for today. Come back tomorrow.`,
+        reason: "daily_limit",
+      },
+      { status: 429 },
+    );
+  }
+  return guardAi();
+}

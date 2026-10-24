@@ -1,17 +1,17 @@
 # Codrill
 
-> Codrill is an AI mock technical interview tool. You paste a job posting and it generates 5-8 original coding questions tailored to that specific role, then runs a full interview flow: explain your approach before coding, write real code in an editor, answer follow-up questions about the code you actually wrote, and get scored on correctness, communication, and reasoning.
+> Codrill is a free AI mock technical interview tool. You paste a job posting and it generates 5-8 coding questions made for that role, then runs a full interview flow: explain your approach before coding, write real code in an editor, answer follow-up questions about the code you wrote, and get scored on correctness, communication, and reasoning.
 
 ## Key facts
 
-- First session is free, no signup required.
-- After the first session, it's $12 per session (one job posting, one new set of questions).
+- Free to use. No card.
+- Works without an account. Sessions are saved in your browser; optional Google sign-in keeps your history across devices.
 - Supports JavaScript, Python, and Java in a Monaco-based code editor.
-- Optional voice mode: speak your approach and follow-up answers instead of typing.
-- Optional Google sign-in adds cross-device session history and a profile page grouping past sessions by job title/role.
-- Not a static question bank — every question set is freshly generated from the specific job posting provided.
+- Optional voice: speak your approach and follow-up answers instead of typing.
+- Not a static question bank: every question set is generated from the job posting you provide.
+- Daily limits apply to keep it free: a few new sessions per person per day.
 
 ## Pages
 
-- [Home](/): marketing/landing page with product walkthrough and FAQ.
+- [Home](/): title screen, how it works, an example, FAQ.
 - [Start a session](/start): paste a job posting to begin.

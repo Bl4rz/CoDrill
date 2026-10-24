@@ -15,6 +15,7 @@ import { StepProgress } from "@/components/pixel/StepProgress";
 import { MinusIcon, PlusIcon, ArrowIcon } from "@/components/pixel/icons";
 import { shadowColor } from "@/components/pixel/style";
 import { letterGrade } from "@/lib/grade";
+import { postJson } from "@/lib/api-client";
 import type { Difficulty } from "@/lib/types";
 
 interface RoleStats {
@@ -142,13 +143,10 @@ export default function ProfilePage() {
           report_summary: s.report!.summary_text,
           pattern_insights: s.report!.pattern_insights.map((p) => `${p.title}: ${p.detail}`),
         }));
-      const res = await fetch("/api/profile/recommend", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessions: payload }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      const data = await postJson<{ recommendation: ProficiencyRecommendation }>(
+        "/api/profile/recommend",
+        { sessions: payload },
+      );
       setRecommendation(data.recommendation);
     } catch (err) {
       setRecError(err instanceof Error ? err.message : "Something went wrong.");

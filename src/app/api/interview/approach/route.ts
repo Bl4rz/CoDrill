@@ -1,3 +1,4 @@
+import { guardAi } from "@/lib/usage";
 import { NextRequest, NextResponse } from "next/server";
 import { callStructured, StructuredTool } from "@/lib/ai";
 import { ApproachFeedback, ApproachVerdict } from "@/lib/types";
@@ -61,6 +62,9 @@ export async function POST(req: NextRequest) {
     const history = (prior_rounds ?? [])
       .map((r, i) => `Round ${i + 1} interviewer response (${r.verdict}): ${r.message}`)
       .join("\n");
+
+    const blocked = await guardAi();
+    if (blocked) return blocked;
 
     const feedback = await callStructured<{ verdict: ApproachVerdict; message: string }>({
       system:

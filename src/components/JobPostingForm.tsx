@@ -4,6 +4,8 @@ import { useState } from "react";
 import { RoleSummary } from "@/lib/types";
 import { PixelButton } from "@/components/pixel/PixelButton";
 import { StepProgress } from "@/components/pixel/StepProgress";
+import { postJson } from "@/lib/api-client";
+import { MAX_POSTING_CHARS } from "@/lib/limits";
 
 export function JobPostingForm({
   onExtracted,
@@ -19,14 +21,10 @@ export function JobPostingForm({
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/extract-role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_posting_text: text }),
+      const data = await postJson<{ summary: RoleSummary }>("/api/extract-role", {
+        job_posting_text: text,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
-      onExtracted(text, data.summary as RoleSummary);
+      onExtracted(text, data.summary);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -45,6 +43,7 @@ export function JobPostingForm({
         onChange={(e) => setText(e.target.value)}
         placeholder="https://... or paste the full job description here"
         rows={10}
+        maxLength={MAX_POSTING_CHARS}
         className="code w-full resize-y border-[3px] border-paper bg-ink px-4 py-3 text-sm text-paper placeholder:text-green focus:outline-3 focus:outline-offset-2 focus:outline-amber"
         disabled={loading}
       />

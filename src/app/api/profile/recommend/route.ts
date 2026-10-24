@@ -1,3 +1,4 @@
+import { guardAi } from "@/lib/usage";
 import { NextRequest, NextResponse } from "next/server";
 import { callStructured, StructuredTool } from "@/lib/ai";
 
@@ -104,6 +105,9 @@ export async function POST(req: NextRequest) {
           `Patterns observed: ${s.pattern_insights.join(" | ") || "(none)"}`
       )
       .join("\n\n");
+
+    const blocked = await guardAi();
+    if (blocked) return blocked;
 
     const recommendation = await callStructured<ProficiencyRecommendation>({
       system:

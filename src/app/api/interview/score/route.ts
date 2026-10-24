@@ -1,3 +1,4 @@
+import { guardAi } from "@/lib/usage";
 import { NextRequest, NextResponse } from "next/server";
 import { callStructured, StructuredTool } from "@/lib/ai";
 import { AttemptScores, FollowUpQA } from "@/lib/types";
@@ -67,6 +68,9 @@ export async function POST(req: NextRequest) {
     const followupText = (follow_up_qa ?? [])
       .map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`)
       .join("\n\n");
+
+    const blocked = await guardAi();
+    if (blocked) return blocked;
 
     const scores = await callStructured<AttemptScores>({
       system:

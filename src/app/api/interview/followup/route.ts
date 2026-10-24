@@ -1,3 +1,4 @@
+import { guardAi } from "@/lib/usage";
 import { NextRequest, NextResponse } from "next/server";
 import { callStructured, StructuredTool } from "@/lib/ai";
 
@@ -34,6 +35,9 @@ export async function POST(req: NextRequest) {
     if (!code_submission || code_submission.trim().length < 3) {
       return NextResponse.json({ error: "Submit code before requesting follow-ups." }, { status: 400 });
     }
+
+    const blocked = await guardAi();
+    if (blocked) return blocked;
 
     const result = await callStructured<{ questions: string[] }>({
       system:

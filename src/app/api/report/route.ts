@@ -1,3 +1,4 @@
+import { guardAi } from "@/lib/usage";
 import { NextRequest, NextResponse } from "next/server";
 import { callStructured, StructuredTool } from "@/lib/ai";
 import { Attempt, InterviewQuestion, RoleSummary, SessionReport } from "@/lib/types";
@@ -76,6 +77,9 @@ export async function POST(req: NextRequest) {
     })
       .filter(Boolean)
       .join("\n\n");
+
+    const blocked = await guardAi();
+    if (blocked) return blocked;
 
     const report = await callStructured<SessionReport>({
       system:

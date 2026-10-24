@@ -1,6 +1,8 @@
+import { guardAi } from "@/lib/usage";
 import { NextRequest, NextResponse } from "next/server";
 import { callStructured, StructuredTool } from "@/lib/ai";
 import { RoleSummary } from "@/lib/types";
+import { MAX_POSTING_CHARS } from "@/lib/limits";
 
 const EXTRACT_TOOL: StructuredTool = {
   name: "submit_role_summary",
@@ -174,6 +176,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (rawInput.length > MAX_POSTING_CHARS) {
+      return NextResponse.json(
+        {
+          error: `That's too long. Paste just the main part of the posting (under ${MAX_POSTING_CHARS.toLocaleString("en-US")} characters).`,
+        },
+        { status: 400 }
+      );
+    }
+
     const job_posting_text = await resolveJobPostingText(rawInput);
 
     if (job_posting_text.trim().length < 30) {
@@ -183,13 +194,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const blocked = await guardAi();
+    if (blocked) return blocked;
+
     const summary = await callStructured<RoleSummary>({
       system:
         "You are an expert technical recruiter and engineering interviewer. Read the job posting and extract a structured summary that will be used to generate tailored coding interview questions. Be specific and avoid generic filler.",
       messages: [
         {
           role: "user",
-          content: `Job posting:\n\n${job_posting_text.slice(0, 12000)}`,
+          content: `Job posting:\n\n${job_posting_text.slice(0, MAX_POSTING_CHARS)}`,
         },
       ],
       tool: EXTRACT_TOOL,

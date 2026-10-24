@@ -11,6 +11,8 @@ import { LevelStrip } from "@/components/LevelStrip";
 import { PixelLink } from "@/components/pixel/PixelButton";
 import { StepProgress } from "@/components/pixel/StepProgress";
 import { Spinner } from "@/components/Spinner";
+import { postJson } from "@/lib/api-client";
+import type { SessionReport } from "@/lib/types";
 
 export function SessionShell({ sessionId }: { sessionId: string }) {
   const router = useRouter();
@@ -65,17 +67,11 @@ export function SessionShell({ sessionId }: { sessionId: string }) {
     setReportLoading(true);
     setReportError(null);
     try {
-      const res = await fetch("/api/report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          role_summary: updated.role_summary,
-          questions: updated.questions,
-          attempts: Object.values(updated.attempts),
-        }),
+      const data = await postJson<{ report: SessionReport }>("/api/report", {
+        role_summary: updated.role_summary,
+        questions: updated.questions,
+        attempts: Object.values(updated.attempts),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
       const withReport: StoredSession = { ...updated, report: data.report };
       saveSession(withReport);
       router.push(`/session/${sessionId}/report`);

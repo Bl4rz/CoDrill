@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Pixelify_Sans, Press_Start_2P, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+import { SITE_URL, SITE_NAME, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/site";
 import { PALETTE_CSS_VARS } from "@/lib/palette";
+import { BlockedScreen } from "@/components/BlockedScreen";
 import "./globals.css";
 
 // Display: titles, buttons, labels and HUD text only. Pixelify Sans stays legible
@@ -37,7 +38,7 @@ const codeMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — AI Mock Technical Interviews`,
+    default: SITE_TITLE,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -48,12 +49,12 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — AI Mock Technical Interviews`,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — AI Mock Technical Interviews`,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
 };
@@ -90,7 +91,7 @@ const jsonLd = {
         "@type": "Offer",
         price: "0",
         priceCurrency: "USD",
-        description: "First mock interview session is free",
+        description: "Free",
       },
     },
   ],
@@ -109,6 +110,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         {children}
+        <BlockedScreen />
         <Analytics />
       </body>
     </html>

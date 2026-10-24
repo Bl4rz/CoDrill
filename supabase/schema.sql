@@ -41,31 +41,49 @@ create policy "delete own sessions" on public.interview_sessions
 create index if not exists interview_sessions_user_id_idx
   on public.interview_sessions(user_id);
 
--- One row per paid Stripe Checkout session, created by the webhook
--- (/api/billing/webhook) once payment is confirmed -- never by the client
--- directly, which is why there's no insert policy below. A credit is
--- "available" while consumed_at is null; /api/generate-questions atomically
--- claims one (UPDATE ... WHERE consumed_at IS NULL ... RETURNING) the same
--- request it's needed in, so there's no window between "check" and "use"
--- for a race to slip through. Primary key is the Stripe checkout session id
--- itself, which makes the webhook's insert naturally idempotent if Stripe
--- ever redelivers the same event.
-create table if not exists public.session_credits (
-  id text primary key,
-  user_id uuid not null references auth.users(id) on delete cascade,
-  consumed_at timestamptz,
-  created_at timestamptz not null default now()
+-- Daily usage counters for abuse protection (src/lib/usage.ts). One row per
+-- (UTC day, scope): 'global:ai' for the whole site, 'sessions:user:<id>' or
+-- 'sessions:ip:<ip>' for new interview sessions. RLS is on with no policies,
+-- so only the service-role key (server only) can read or write it.
+create table if not exists public.usage_counters (
+  day date not null,
+  scope text not null,
+  count int not null default 0,
+  primary key (day, scope)
 );
 
-alter table public.session_credits enable row level security;
+alter table public.usage_counters enable row level security;
 
-drop policy if exists "select own credits" on public.session_credits;
-create policy "select own credits" on public.session_credits
-  for select using (auth.uid() = user_id);
+-- Atomically adds one to today's counter for p_scope and returns true, or
+-- returns false without changing anything if it is already at p_limit. Callable
+-- by the service role only: if the browser could call it, anyone could burn
+-- through the global cap.
+create or replace function public.bump_usage(p_scope text, p_limit int)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v int;
+begin
+  insert into public.usage_counters as u (day, scope, count)
+  values ((now() at time zone 'utc')::date, p_scope, 1)
+  on conflict (day, scope) do update set count = u.count + 1
+    where u.count < p_limit
+  returning u.count into v;
 
-drop policy if exists "consume own credits" on public.session_credits;
-create policy "consume own credits" on public.session_credits
-  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  if v = 1 then
+    delete from public.usage_counters where day < (now() at time zone 'utc')::date - 7;
+  end if;
 
-create index if not exists session_credits_user_id_idx
-  on public.session_credits(user_id);
+  return v is not null;
+end;
+$$;
+
+revoke all on function public.bump_usage(text, int) from public, anon, authenticated;
+grant execute on function public.bump_usage(text, int) to service_role;
+
+-- The old paid flow created public.session_credits. Nothing uses it any more.
+-- It is harmless to leave; to remove it, run:
+--   drop table if exists public.session_credits;
