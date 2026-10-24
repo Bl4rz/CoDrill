@@ -17,14 +17,6 @@ export function About() {
             in computer science, coding and software, because the job market is rough right now.
             So why not use what&apos;s getting in the way to help us instead? It&apos;s free.
           </p>
-          <p className="mt-3 text-base">
-            <a
-              href="https://github.com/Bl4rz/CoDrill"
-              className="font-medium underline decoration-[3px] underline-offset-4 hover:bg-ink hover:text-paper"
-            >
-              Read the code on GitHub
-            </a>
-          </p>
         </div>
       </div>
     </section>
