@@ -46,44 +46,10 @@
   --blur-*: initial;
   --drop-shadow-*: initial;
 
-  /* TEMPORARY aliases for the old token names, so pages not yet rebuilt in the
-     new style keep working. Deleted in Phase 5. */
-  --color-background: var(--ink);
-  --color-surface: var(--ink);
-  --color-surface-raised: var(--ink);
-  --color-surface-glass: var(--ink);
-  --color-border: var(--paper);
-  --color-border-subtle: var(--paper);
-  --color-foreground: var(--paper);
-  --color-muted: var(--paper);
-  --color-accent-green: var(--green);
-  --color-accent-green-soft: var(--green);
-  --color-accent-amber: var(--amber);
-  --color-accent-amber-soft: var(--amber);
-  --color-accent-blue: var(--green);
-  --color-accent-orange: var(--amber);
-  --color-accent-purple: var(--green);
-  --color-accent-red: var(--red);
-  --color-accent-yellow: var(--amber);
-
   --font-display: var(--f-display), ui-monospace, monospace;
+  --font-title: var(--f-title), var(--f-display), ui-monospace, monospace;
   --font-sans: var(--f-body), system-ui, sans-serif;
   --font-mono: var(--f-code), ui-monospace, monospace;
-  /* TEMPORARY alias for the old class name. Deleted in Phase 5. */
-  --font-pixel: var(--f-display), ui-monospace, monospace;
-}
-
-/* TEMPORARY: old variable names still referenced by inline styles. */
-:root {
-  --background: var(--ink);
-  --surface: var(--ink);
-  --surface-raised: var(--ink);
-  --border: var(--paper);
-  --foreground: var(--paper);
-  --muted: var(--paper);
-  --accent-green: var(--green);
-  --accent-amber: var(--amber);
-  --accent-red: var(--red);
 }
 
 body {
@@ -105,19 +71,20 @@ textarea.code {
 /* Section heading: same offset-shadow treatment as the title, smaller. */
 .pixel-heading {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-shadow: 3px 3px 0 var(--amber);
 }
 
-/* Big pixel title with a hard offset shadow, no blur. */
+/* Display weight stays at 500: heavier weights close up Pixelify Sans's already
+   tight C. The three big titles use the title font instead. */
 .pixel-title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.06em;
+  font-family: var(--font-title);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
   text-shadow: 4px 4px 0 var(--amber);
 }
 
@@ -341,7 +308,7 @@ textarea.code {
   color: var(--ink);
   box-shadow: 4px 4px 0 0 var(--paper);
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 1rem;
   line-height: 1;
   letter-spacing: 0.08em;

@@ -114,7 +114,7 @@ export function HowItWorks() {
             <p className="font-display text-sm uppercase tracking-widest text-amber">
               Stage {stage.n}
             </p>
-            <h3 className="font-display text-2xl font-semibold uppercase leading-tight tracking-wide">
+            <h3 className="font-display text-2xl uppercase leading-tight tracking-wide">
               {stage.title}
             </h3>
             <p className="text-base leading-relaxed">{stage.detail}</p>

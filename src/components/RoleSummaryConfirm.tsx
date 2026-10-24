@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { CSSProperties } from "react";
 import { RoleSummary } from "@/lib/types";
-import { Spinner } from "@/components/Spinner";
+import { PixelButton } from "@/components/pixel/PixelButton";
+
+const FIELD =
+  "w-full border-[3px] border-paper bg-ink px-3 py-2 text-base text-paper focus:outline-3 focus:outline-offset-2 focus:outline-amber";
+const LABEL = "mb-1.5 block font-display text-sm uppercase tracking-widest";
 
 function TagEditor({
   label,
@@ -24,25 +27,25 @@ function TagEditor({
 
   return (
     <div>
-      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
-      <div className="flex flex-wrap gap-1.5 mb-2">
+      <p className={LABEL}>{label}</p>
+      <ul className="mb-3 flex flex-wrap gap-2">
         {values.map((v) => (
-          <span
+          <li
             key={v}
-            className="group inline-flex items-center gap-1 border-2 border-border bg-surface-raised px-2.5 py-1 text-xs text-foreground"
+            className="flex items-center gap-2 border-[3px] border-green px-2 py-1 text-sm text-green"
           >
             {v}
             <button
               type="button"
               onClick={() => onChange(values.filter((x) => x !== v))}
-              className="text-muted hover:text-accent-red"
+              className="font-display text-base leading-none text-paper hover:text-red"
               aria-label={`Remove ${v}`}
             >
-              ×
+              x
             </button>
-          </span>
+          </li>
         ))}
-      </div>
+      </ul>
       <input
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
@@ -53,8 +56,8 @@ function TagEditor({
           }
         }}
         onBlur={addTag}
-        placeholder="Add and press Enter"
-        className="w-full rounded-md border border-border-subtle bg-surface px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted focus:border-accent-green focus:outline-none"
+        placeholder="Add one and press Enter"
+        className={`${FIELD} placeholder:text-green`}
       />
     </div>
   );
@@ -66,51 +69,47 @@ export function RoleSummaryConfirm({
   onBack,
 }: {
   summary: RoleSummary;
-  onConfirm: (summary: RoleSummary) => void;
+  onConfirm: (summary: RoleSummary) => void | Promise<void>;
   onBack: () => void;
 }) {
   const [edited, setEdited] = useState<RoleSummary>(summary);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleGenerate() {
     setLoading(true);
-    setError(null);
     try {
-      onConfirm(edited);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      await onConfirm(edited);
+    } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="flex flex-col gap-5 rounded-lg border border-border bg-surface p-5">
-      <div>
-        <p className="text-xs font-medium uppercase tracking-wide text-muted mb-1">
-          Extracted from the posting — edit anything that looks off
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted">
-              Role title
-            </label>
-            <input
-              value={edited.role_title}
-              onChange={(e) => setEdited({ ...edited, role_title: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground focus:border-accent-green focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted">
-              Seniority
-            </label>
-            <input
-              value={edited.seniority}
-              onChange={(e) => setEdited({ ...edited, seniority: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground focus:border-accent-green focus:outline-none"
-            />
-          </div>
+    <div className="flex flex-col gap-6">
+      <p className="text-base">Here&apos;s what I pulled out of the posting. Fix anything that looks off.</p>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="role-title" className={LABEL}>
+            Role title
+          </label>
+          <input
+            id="role-title"
+            value={edited.role_title}
+            onChange={(e) => setEdited({ ...edited, role_title: e.target.value })}
+            className={FIELD}
+          />
+        </div>
+        <div>
+          <label htmlFor="seniority" className={LABEL}>
+            Seniority
+          </label>
+          <input
+            id="seniority"
+            value={edited.seniority}
+            onChange={(e) => setEdited({ ...edited, seniority: e.target.value })}
+            className={FIELD}
+          />
         </div>
       </div>
 
@@ -125,26 +124,13 @@ export function RoleSummaryConfirm({
         onChange={(v) => setEdited({ ...edited, focus_areas: v })}
       />
 
-      {error && <p className="text-sm text-accent-red">{error}</p>}
-
-      <div className="flex items-center gap-3 pt-1">
-        <button
-          type="button"
-          onClick={onBack}
-          className="rounded-md border border-border px-4 py-2 text-sm text-foreground hover:bg-surface-raised"
-        >
+      <div className="flex flex-wrap items-center gap-4">
+        <PixelButton variant="ghost" onClick={onBack} disabled={loading}>
           Back
-        </button>
-        <button
-          type="button"
-          onClick={handleGenerate}
-          disabled={loading}
-          className="pixel-press border-2 border-background/40 bg-accent-green px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
-          style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
-        >
-          {loading ? "Generating questions…" : "Looks good — generate questions"}
-        </button>
-        {loading && <Spinner />}
+        </PixelButton>
+        <PixelButton onClick={handleGenerate} disabled={loading}>
+          Generate questions
+        </PixelButton>
       </div>
     </div>
   );

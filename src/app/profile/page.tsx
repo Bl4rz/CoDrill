@@ -1,19 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
-import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { fetchCloudSessions } from "@/lib/supabase/sessions";
 import { StoredSession } from "@/lib/store";
-import { Logo } from "@/components/Logo";
+import { AppHeader } from "@/components/AppHeader";
 import { Spinner } from "@/components/Spinner";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DifficultyBadge } from "@/components/DifficultyBadge";
-import { ScoreBar } from "@/components/ScoreBar";
 import { MiniBarChart } from "@/components/dashboard/MiniBarChart";
-import { Gauge } from "@/components/dashboard/Gauge";
+import { PixelButton, PixelLink } from "@/components/pixel/PixelButton";
+import { SegmentBar } from "@/components/pixel/SegmentBar";
+import { StepProgress } from "@/components/pixel/StepProgress";
+import { MinusIcon, PlusIcon, ArrowIcon } from "@/components/pixel/icons";
+import { shadowColor } from "@/components/pixel/style";
+import { letterGrade } from "@/lib/grade";
 import type { Difficulty } from "@/lib/types";
 
 interface RoleStats {
@@ -159,19 +160,24 @@ export default function ProfilePage() {
   if (user === undefined) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <Spinner label="Loading profile" />
+        <Spinner label="Loading dashboard" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="mx-auto flex max-w-lg flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="text-foreground">Sign in to see your dashboard and past sessions.</p>
-        <Link href="/" className="text-sm text-accent-green hover:underline">
-          ← Back to home
-        </Link>
-      </div>
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-8 sm:py-12">
+        <AppHeader crumbs={[{ label: "Home", href: "/" }, { label: "Profile" }]} />
+        <div className="pixel-panel flex flex-col items-start gap-4 border-paper bg-ink p-6" style={shadowColor("var(--amber)")}>
+          <h1 className="pixel-heading text-2xl">Your dashboard</h1>
+          <p className="text-base leading-relaxed">
+            Sign in with Google (button at the top) to see runs you did while signed in. Signing in is optional. You
+            can practice without it.
+          </p>
+          <PixelLink href="/start">Start a quest</PixelLink>
+        </div>
+      </main>
     );
   }
 
@@ -190,98 +196,70 @@ export default function ProfilePage() {
   const difficultyStats = difficultyBreakdown(sessions);
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-16">
-      <header className="flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <Logo className="h-6 w-6" />
-          <span className="font-mono text-xs uppercase tracking-widest text-muted">Codrill</span>
-        </Link>
-        <span className="font-mono text-xs text-muted">{user.email}</span>
-      </header>
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-8 sm:py-12">
+      <AppHeader crumbs={[{ label: "Home", href: "/" }, { label: "Profile" }]} />
 
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Profile" }]} />
-
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-medium text-foreground">Your dashboard</h1>
-          <p className="mt-1 text-sm text-muted">
-            {completedCount} completed session{completedCount === 1 ? "" : "s"} across{" "}
-            {roleStats.length} role{roleStats.length === 1 ? "" : "s"}.
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="pixel-heading text-3xl">Your dashboard</h1>
+          <p className="text-base">
+            {completedCount} finished run{completedCount === 1 ? "" : "s"} across {roleStats.length} role
+            {roleStats.length === 1 ? "" : "s"}. Signed in as {user.email}.
           </p>
         </div>
-        <Link
-          href="/start"
-          className="pixel-press border-2 border-background/40 bg-accent-green px-4 py-2 text-sm font-medium text-background"
-          style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
-        >
-          + New job posting
-        </Link>
+        <PixelLink href="/start">New job posting</PixelLink>
       </div>
 
       {sessions.length > 0 && (
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div
-            className="pixel-panel border-accent-green/40 bg-surface-glass p-5 sm:col-span-2"
-            style={{ "--pixel-shadow": "var(--accent-green)" } as CSSProperties}
-          >
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted">
-              Activity, last 7 days
-            </p>
+        <section className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <div className="pixel-panel border-paper bg-ink p-5 sm:col-span-2" style={shadowColor("var(--green)")}>
+            <p className="mb-3 font-display text-sm uppercase tracking-widest">Activity, last 7 days</p>
             <MiniBarChart data={activityData} />
           </div>
 
-          <div
-            className="pixel-panel border-accent-amber/40 bg-surface-glass p-5"
-            style={{ "--pixel-shadow": "var(--accent-amber)" } as CSSProperties}
-          >
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted">Top roles</p>
+          <div className="pixel-panel border-paper bg-ink p-5" style={shadowColor("var(--amber)")}>
+            <p className="mb-3 font-display text-sm uppercase tracking-widest">Top roles</p>
             {roleStats.length === 0 ? (
-              <p className="text-sm text-muted">Complete a session to see this.</p>
+              <p className="text-base">Finish a run to see this.</p>
             ) : (
-              <div className="flex flex-col gap-2.5">
+              <ul className="flex flex-col gap-3">
                 {roleStats.slice(0, 4).map((r) => (
-                  <div key={r.roleTitle} className="flex items-center justify-between gap-2">
+                  <li key={r.roleTitle} className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="truncate text-sm text-foreground">{r.roleTitle}</p>
-                      <p className="text-[11px] text-muted">
-                        {r.sessionCount} session{r.sessionCount === 1 ? "" : "s"}
+                      <p className="truncate text-base">{r.roleTitle}</p>
+                      <p className="text-sm">
+                        {r.sessionCount} run{r.sessionCount === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <p className="font-pixel text-xs text-accent-green">{Math.round(r.avgScore)}</p>
-                  </div>
+                    <p className="font-display text-lg text-green">{Math.round(r.avgScore)}</p>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </div>
 
-          <div
-            className="pixel-panel flex flex-col items-center justify-center border-border bg-surface-glass p-5 text-center"
-            style={{ "--pixel-shadow": "rgba(0,0,0,0.4)" } as CSSProperties}
-          >
-            <p className="font-pixel text-3xl text-accent-green">{avgScoreAllTime ?? "—"}</p>
-            <p className="mt-1 text-xs text-muted">Average score, all-time</p>
-            <p className="mt-1 text-[11px] text-muted">
+          <div className="pixel-panel flex flex-col items-center justify-center gap-1 border-paper bg-ink p-5 text-center" style={shadowColor("var(--paper)")}>
+            <p className="font-display text-6xl text-green">{avgScoreAllTime ?? "-"}</p>
+            <p className="font-display text-sm uppercase tracking-widest">Average score</p>
+            <p className="text-sm">
               {totalQuestionsAnswered} question{totalQuestionsAnswered === 1 ? "" : "s"} answered
             </p>
           </div>
 
-          <div
-            className="pixel-panel border-border bg-surface-glass p-5"
-            style={{ "--pixel-shadow": "rgba(0,0,0,0.4)" } as CSSProperties}
-          >
-            <Gauge value={completionRate} label="Sessions completed" />
+          <div className="pixel-panel flex flex-col justify-center gap-3 border-paper bg-ink p-5" style={shadowColor("var(--paper)")}>
+            <SegmentBar label="Runs finished" value={completionRate} />
+            <p className="text-sm">
+              {completedCount} of {sessions.length} started
+            </p>
           </div>
 
-          <div
-            className="pixel-panel border-border bg-surface-glass p-5"
-            style={{ "--pixel-shadow": "rgba(0,0,0,0.4)" } as CSSProperties}
-          >
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted">By difficulty</p>
+          <div className="pixel-panel border-paper bg-ink p-5" style={shadowColor("var(--paper)")}>
+            <p className="mb-3 font-display text-sm uppercase tracking-widest">By difficulty</p>
             <div className="flex flex-col gap-3">
               {difficultyStats.map((d) => (
-                <ScoreBar
+                <SegmentBar
                   key={d.difficulty}
-                  label={d.difficulty.charAt(0).toUpperCase() + d.difficulty.slice(1)}
+                  label={d.difficulty}
                   value={d.avgScore ?? 0}
                 />
               ))}
@@ -291,125 +269,125 @@ export default function ProfilePage() {
       )}
 
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-      {completedCount >= 2 && (
-        <section
-          className="pixel-panel border-accent-amber/40 bg-surface-glass p-5"
-          style={{ "--pixel-shadow": "var(--accent-amber)" } as CSSProperties}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="font-pixel text-[9px] uppercase tracking-wider text-accent-amber">
-              AI proficiency recommendation
-            </p>
-            <button
-              type="button"
-              onClick={handleGetRecommendation}
-              disabled={recLoading}
-              className="pixel-press border-2 border-background/40 bg-accent-amber px-3 py-1.5 text-xs font-medium text-background disabled:opacity-40"
-              style={{ "--pixel-shadow": "rgba(0,0,0,0.5)" } as CSSProperties}
-            >
-              {recLoading ? "Analyzing…" : recommendation ? "Refresh" : "Get recommendation"}
-            </button>
-          </div>
-
-          {recError && <p className="mt-3 text-sm text-accent-red">{recError}</p>}
-          {recLoading && !recommendation && (
-            <div className="mt-4 flex justify-center">
-              <Spinner label="Reviewing your session history" />
-            </div>
-          )}
-
-          {recommendation && (
-            <div className="mt-4 flex flex-col gap-4">
-              <p className="text-sm leading-relaxed text-foreground">{recommendation.summary_text}</p>
-
-              <div className="flex flex-col gap-2">
-                {recommendation.recommended_roles.map((r, i) => (
-                  <div key={i} className="rounded-lg border border-accent-green/30 bg-accent-green/5 p-3">
-                    <p className="text-sm font-semibold text-accent-green">{r.role_title}</p>
-                    <p className="mt-0.5 text-sm text-muted">{r.reason}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted">Focus on next</p>
-                <ul className="mt-1.5 flex flex-col gap-1.5">
-                  {recommendation.focus_areas.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                      <span className="mt-0.5 text-accent-amber">→</span>
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-        </section>
-      )}
-
-      <section className="flex flex-col gap-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted">Past sessions</p>
-        {sessions.length === 0 && (
-          <p className="text-sm text-muted">
-            No sessions saved to your account yet — sessions you run while signed in will show up
-            here.
-          </p>
-        )}
-        {sessions.map((s) => {
-          const score = sessionOverallScore(s);
-          const isExpanded = expandedId === s.id;
-          return (
-            <div key={s.id} className="rounded-lg border border-border bg-surface">
-              <button
-                type="button"
-                onClick={() => setExpandedId(isExpanded ? null : s.id)}
-                className="flex w-full items-center justify-between gap-3 p-4 text-left"
-              >
-                <div>
-                  <p className="text-sm font-medium text-foreground">{s.role_summary.role_title}</p>
-                  <p className="text-xs text-muted">
-                    {new Date(s.created_at).toLocaleDateString()} · {s.role_summary.seniority} ·{" "}
-                    {s.questions.length} question{s.questions.length === 1 ? "" : "s"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <p className="font-mono text-sm text-muted">
-                    {score !== null ? Math.round(score) : s.report ? "—" : "in progress"}
-                  </p>
-                  <span className="text-xs text-muted">{isExpanded ? "▲" : "▼"}</span>
-                </div>
-              </button>
-
-              {isExpanded && (
-                <div className="flex flex-col gap-2 border-t border-border-subtle p-4">
-                  {s.questions.map((q) => {
-                    const qScore = attemptScore(s.attempts[q.id]);
-                    return (
-                      <div
-                        key={q.id}
-                        className="flex flex-col gap-1.5 rounded-md bg-surface-raised px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
-                      >
-                        <div className="flex items-center gap-2">
-                          <DifficultyBadge difficulty={q.difficulty} />
-                          <span className="text-xs uppercase tracking-wide text-muted">{q.topic}</span>
-                        </div>
-                        <p className="flex-1 text-sm text-foreground sm:truncate">{q.question_text}</p>
-                        <span className="font-mono text-xs text-muted">{qScore ?? "—"}</span>
-                      </div>
-                    );
-                  })}
-                  <Link
-                    href={s.report ? `/session/${s.id}/report` : `/session/${s.id}`}
-                    className="mt-1 text-xs text-accent-green hover:underline"
-                  >
-                    {s.report ? "View full report →" : "Resume session →"}
-                  </Link>
-                </div>
+        {completedCount >= 2 && (
+          <section className="pixel-panel border-paper bg-ink p-5" style={shadowColor("var(--amber)")}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-base uppercase tracking-widest text-amber">
+                Which roles are you ready for?
+              </h2>
+              {!recLoading && (
+                <PixelButton variant="amber" size="sm" onClick={handleGetRecommendation}>
+                  {recommendation ? "Refresh" : "Get recommendation"}
+                </PixelButton>
               )}
             </div>
-          );
-        })}
-      </section>
+
+            {recError && (
+              <p role="alert" className="mt-3 border-[3px] border-red px-3 py-2 text-base text-red">
+                {recError}
+              </p>
+            )}
+            {recLoading && (
+              <div className="mt-4">
+                <StepProgress messages={["Reading your history...", "Comparing roles...", "Writing advice..."]} />
+              </div>
+            )}
+
+            {recommendation && (
+              <div className="mt-4 flex flex-col gap-4">
+                <p className="text-base leading-relaxed">{recommendation.summary_text}</p>
+
+                <div className="flex flex-col gap-3">
+                  {recommendation.recommended_roles.map((r, i) => (
+                    <div key={i} className="border-[3px] border-green p-3">
+                      <p className="font-display text-base uppercase tracking-wide text-green">{r.role_title}</p>
+                      <p className="mt-1 text-base">{r.reason}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div>
+                  <p className="font-display text-sm uppercase tracking-widest">Focus on next</p>
+                  <ul className="mt-2 flex flex-col gap-2">
+                    {recommendation.focus_areas.map((f, i) => (
+                      <li key={i} className="flex items-start gap-2 text-base">
+                        <span className="mt-1.5 shrink-0 text-amber" aria-hidden="true">
+                          <ArrowIcon unit="2px" />
+                        </span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        <section className="flex flex-col gap-4">
+          <h2 className="pixel-heading text-xl">Past runs</h2>
+          {sessions.length === 0 && (
+            <p className="text-base">
+              Nothing saved to your account yet. Runs you do while signed in show up here.
+            </p>
+          )}
+          {sessions.map((s) => {
+            const score = sessionOverallScore(s);
+            const isExpanded = expandedId === s.id;
+            return (
+              <div key={s.id} className="border-[3px] border-paper">
+                <button
+                  type="button"
+                  onClick={() => setExpandedId(isExpanded ? null : s.id)}
+                  aria-expanded={isExpanded}
+                  className="flex w-full items-center justify-between gap-3 p-4 text-left hover:text-amber focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-amber"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-medium">{s.role_summary.role_title}</p>
+                    <p className="text-sm">
+                      {new Date(s.created_at).toLocaleDateString()} · {s.role_summary.seniority} ·{" "}
+                      {s.questions.length} question{s.questions.length === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <p className="font-display text-lg">
+                      {score !== null ? `${letterGrade(score)} ${Math.round(score)}` : s.report ? "-" : "In progress"}
+                    </p>
+                    <span className="text-green" aria-hidden="true">
+                      {isExpanded ? <MinusIcon /> : <PlusIcon />}
+                    </span>
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="flex flex-col gap-3 border-t-[3px] border-paper p-4">
+                    {s.questions.map((q, i) => {
+                      const qScore = attemptScore(s.attempts[q.id]);
+                      return (
+                        <div
+                          key={q.id}
+                          className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                        >
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-display text-xs uppercase tracking-widest">Level {i + 1}</span>
+                            <DifficultyBadge difficulty={q.difficulty} />
+                          </div>
+                          <p className="flex-1 text-base sm:truncate">{q.question_text}</p>
+                          <span className="font-display text-base">{qScore ?? "-"}</span>
+                        </div>
+                      );
+                    })}
+                    <div>
+                      <PixelLink href={s.report ? `/session/${s.id}/report` : `/session/${s.id}`} variant="ghost" size="sm">
+                        {s.report ? "View full report" : "Resume run"}
+                      </PixelLink>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </section>
       </div>
     </main>
   );

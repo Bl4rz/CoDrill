@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { StoredSession, loadSession } from "@/lib/store";
 import { fetchCloudSession } from "@/lib/supabase/sessions";
 import { ReportView } from "@/components/ReportView";
+import { PixelLink } from "@/components/pixel/PixelButton";
 import { Spinner } from "@/components/Spinner";
 
 export default function ReportPage() {
@@ -40,11 +40,10 @@ export default function ReportPage() {
 
   if (session === null || !session.report) {
     return (
-      <div className="mx-auto flex max-w-lg flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="text-foreground">No report found for this session yet.</p>
-        <Link href="/" className="text-sm text-accent-green hover:underline">
-          Start a new session
-        </Link>
+      <div className="mx-auto flex max-w-lg flex-1 flex-col items-center justify-center gap-5 px-6 text-center">
+        <p className="font-display text-xl uppercase tracking-widest">No report yet</p>
+        <p className="text-base">This run doesn&apos;t have a report saved.</p>
+        <PixelLink href="/start">Start a new quest</PixelLink>
       </div>
     );
   }

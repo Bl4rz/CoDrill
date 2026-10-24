@@ -2,17 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
-
-function MicIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-      <line x1="12" y1="19" x2="12" y2="23" />
-      <line x1="8" y1="23" x2="16" y2="23" />
-    </svg>
-  );
-}
+import { MicIcon } from "@/components/pixel/icons";
 
 export function VoiceTextArea({
   value,
@@ -20,12 +10,14 @@ export function VoiceTextArea({
   placeholder,
   disabled,
   rows = 5,
+  label,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   disabled?: boolean;
   rows?: number;
+  label?: string;
 }) {
   const stt = useSpeechRecognition();
   const baseTextRef = useRef("");
@@ -46,34 +38,41 @@ export function VoiceTextArea({
   }
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       <div className="relative">
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          aria-label={label ?? placeholder}
           rows={rows}
           disabled={disabled}
-          className="w-full resize-y rounded-lg border border-border bg-surface px-3 py-2 pr-11 text-sm text-foreground placeholder:text-muted focus:border-accent-green focus:outline-none focus:ring-1 focus:ring-accent-green"
+          className="w-full resize-y border-[3px] border-paper bg-ink px-3 py-2 pr-14 text-base text-paper placeholder:text-green focus:outline-3 focus:outline-offset-2 focus:outline-amber disabled:border-dashed"
         />
         {stt.isSupported && (
           <button
             type="button"
             onClick={toggleMic}
             disabled={disabled}
+            aria-pressed={stt.isListening}
+            aria-label={stt.isListening ? "Stop recording" : "Speak your answer"}
             title={stt.isListening ? "Stop recording" : "Speak your answer"}
-            className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center border-2 disabled:opacity-40 ${
+            className={`absolute right-2 top-2 flex h-10 w-10 items-center justify-center border-[3px] disabled:border-dashed ${
               stt.isListening
-                ? "border-accent-red bg-accent-red text-ink"
-                : "border-border text-muted hover:border-accent-green hover:text-accent-green"
+                ? "border-red bg-red text-ink"
+                : "border-paper bg-ink text-paper hover:border-amber hover:text-amber"
             }`}
           >
             <MicIcon />
           </button>
         )}
       </div>
-      {stt.isListening && <p className="text-xs text-accent-red">Listening…</p>}
-      {stt.error && <p className="text-xs text-accent-red">{stt.error}</p>}
+      {stt.isListening && (
+        <p className="font-display text-sm uppercase tracking-widest text-red">
+          <span className="blink-cursor">Recording</span>
+        </p>
+      )}
+      {stt.error && <p className="text-base text-red">{stt.error}</p>}
     </div>
   );
 }

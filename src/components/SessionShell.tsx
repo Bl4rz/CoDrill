@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { StoredSession, loadSession, saveSession } from "@/lib/store";
 import { Attempt } from "@/lib/types";
-import { DifficultyBadge } from "@/components/DifficultyBadge";
+import { bossIndex } from "@/lib/levels";
+import { AppHeader } from "@/components/AppHeader";
 import { InterviewRunner } from "@/components/InterviewRunner";
+import { LevelStrip } from "@/components/LevelStrip";
+import { PixelLink } from "@/components/pixel/PixelButton";
+import { StepProgress } from "@/components/pixel/StepProgress";
 import { Spinner } from "@/components/Spinner";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export function SessionShell({ sessionId }: { sessionId: string }) {
   const router = useRouter();
@@ -32,17 +33,18 @@ export function SessionShell({ sessionId }: { sessionId: string }) {
 
   if (session === null) {
     return (
-      <div className="mx-auto flex max-w-lg flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="text-foreground">We couldn&apos;t find that session on this device.</p>
-        <Link href="/" className="text-sm text-accent-green hover:underline">
-          Start a new session
-        </Link>
+      <div className="mx-auto flex max-w-lg flex-1 flex-col items-center justify-center gap-5 px-6 text-center">
+        <p className="font-display text-xl uppercase tracking-widest">Save file not found</p>
+        <p className="text-base">That session isn&apos;t saved on this device.</p>
+        <PixelLink href="/start">Start a new quest</PixelLink>
       </div>
     );
   }
 
   const { questions, current_question_index } = session;
   const currentQuestion = questions[current_question_index];
+  const boss = bossIndex(questions);
+  const completedIds = new Set(Object.keys(session.attempts));
   const isFinalQuestion = current_question_index === questions.length - 1;
 
   async function handleComplete(attempt: Attempt) {
@@ -84,65 +86,49 @@ export function SessionShell({ sessionId }: { sessionId: string }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
-      <header className="flex flex-col gap-2">
-        <Breadcrumbs
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Start", href: "/start" },
-            { label: "Session" },
-          ]}
-        />
-        <p className="font-mono text-xs uppercase tracking-widest text-muted">
-          {session.role_summary.role_title} · {session.role_summary.seniority}
-        </p>
-        <h1 className="font-display text-xl font-medium text-foreground">
-          {session.role_summary.role_title} — mock interview
-        </h1>
-      </header>
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-8 sm:py-10">
+      <AppHeader
+        crumbs={[{ label: "Home", href: "/" }, { label: "Start", href: "/start" }, { label: "Session" }]}
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        {questions.map((q, i) => {
-          const done = !!session.attempts[q.id];
-          const active = i === current_question_index;
-          return (
-            <div
-              key={q.id}
-              className={`pixel-panel flex items-center gap-1.5 px-3 py-1 text-xs ${
-                active
-                  ? "border-accent-amber text-accent-amber"
-                  : done
-                  ? "border-accent-green/40 text-accent-green"
-                  : "border-border text-muted"
-              }`}
-              style={{ "--pixel-shadow": "currentColor" } as CSSProperties}
-            >
-              <span className="font-pixel text-[10px]">{i + 1}</span>
-              <DifficultyBadge difficulty={q.difficulty} />
-              {done && <span className="h-2 w-2 bg-accent-green" aria-label="Completed" />}
-            </div>
-          );
-        })}
+      <div className="flex flex-col gap-2">
+        <p className="font-display text-xs uppercase tracking-widest text-green">
+          {session.role_summary.seniority}
+        </p>
+        <h1 className="pixel-heading text-2xl sm:text-3xl">{session.role_summary.role_title}</h1>
       </div>
 
+      <LevelStrip
+        questions={questions}
+        currentIndex={current_question_index}
+        completedIds={completedIds}
+      />
+
       {reportLoading ? (
-        <div className="flex flex-1 items-center justify-center py-24">
-          <Spinner label="Generating your session report" />
+        <div className="flex flex-1 items-center justify-center py-20">
+          <StepProgress
+            messages={["Adding up your scores...", "Looking for patterns...", "Writing your report..."]}
+          />
         </div>
       ) : (
         <InterviewRunner
           key={currentQuestion.id}
           question={currentQuestion}
+          levelNumber={current_question_index + 1}
+          levelCount={questions.length}
+          isBoss={current_question_index === boss}
           onComplete={handleComplete}
         />
       )}
 
-      {reportError && <p className="text-sm text-accent-red">{reportError}</p>}
-
-      {isFinalQuestion && (
-        <p className="text-xs text-muted">
-          This is the last question — finishing it will generate your session report.
+      {reportError && (
+        <p role="alert" className="border-[3px] border-red px-3 py-2 text-base text-red">
+          {reportError}
         </p>
+      )}
+
+      {isFinalQuestion && !reportLoading && (
+        <p className="text-base">This is the last level. Finishing it builds your report.</p>
       )}
     </div>
   );

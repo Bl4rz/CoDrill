@@ -156,7 +156,7 @@ export function TitleScreen() {
       </header>
 
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-5 px-6 pb-4 text-center sm:justify-start sm:pb-0 sm:pt-10">
-        <h1 className="pixel-title text-[clamp(3.25rem,19vw,7.5rem)]">CODRILL</h1>
+        <h1 className="pixel-title text-[clamp(1.75rem,10.5vw,4.75rem)]">CODRILL</h1>
         <p className="max-w-xl text-lg leading-relaxed text-paper">
           Paste a job posting. Get interview questions made for that job. Practice out loud or in
           code.

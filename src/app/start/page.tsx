@@ -2,15 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { JobPostingForm } from "@/components/JobPostingForm";
 import { RoleSummaryConfirm } from "@/components/RoleSummaryConfirm";
-import { Spinner } from "@/components/Spinner";
+import { StepProgress } from "@/components/pixel/StepProgress";
+import { shadowColor } from "@/components/pixel/style";
 import { InterviewQuestion, RoleSummary } from "@/lib/types";
 import { createSession } from "@/lib/store";
-import { Logo } from "@/components/Logo";
-import { AuthButton } from "@/components/AuthButton";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { AppHeader } from "@/components/AppHeader";
 
 const PENDING_KEY = "codrill:pending-checkout";
 
@@ -146,63 +144,53 @@ export default function StartPage() {
   }, []);
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-16">
-      <header className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <Link href="/" className="flex items-center gap-2 w-fit">
-            <Logo className="h-6 w-6" />
-            <span className="font-mono text-xs uppercase tracking-widest text-muted">
-              Codrill
-            </span>
-          </Link>
-          <AuthButton />
-        </div>
-        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Start" }]} />
-        <h1 className="font-display text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
-          Paste the job posting you&apos;re preparing for.
-        </h1>
-        <p className="max-w-xl text-sm leading-relaxed text-muted">
-          We&apos;ll extract the role, generate tailored questions, and start your mock interview.
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-8 sm:py-12">
+      <AppHeader crumbs={[{ label: "Home", href: "/" }, { label: "Start" }]} />
+
+      <div className="flex flex-col gap-3">
+        <h1 className="pixel-heading text-3xl sm:text-4xl">Select your quest</h1>
+        <p className="max-w-xl text-base leading-relaxed">
+          Paste the job posting you&apos;re preparing for. I&apos;ll pull out the role and write
+          questions for it.
         </p>
-      </header>
-
-      <div className="rounded-lg border border-border-subtle bg-surface-raised/40 p-px">
-        <div className="bg-background p-6">
-          {stage === "input" && (
-            <JobPostingForm
-              onExtracted={(text, extractedSummary) => {
-                setJobPostingText(text);
-                setSummary(extractedSummary);
-                setStage("confirm");
-              }}
-            />
-          )}
-
-          {stage === "confirm" && summary && (
-            <RoleSummaryConfirm
-              summary={summary}
-              onBack={() => setStage("input")}
-              onConfirm={(finalSummary) => generateAndContinue(jobPostingText, finalSummary)}
-            />
-          )}
-
-          {cancelledNotice && (
-            <p className="mt-4 text-sm text-muted">
-              Checkout was cancelled — no charge was made. Pick up where you left off whenever you&apos;re ready.
-            </p>
-          )}
-          {error && <p className="mt-4 text-sm text-accent-red">{error}</p>}
-          {generating && (
-            <div className="mt-4">
-              <Spinner label="Generating your interview questions" />
-            </div>
-          )}
-        </div>
       </div>
 
-      <p className="text-xs text-muted">
-        Your first mock interview session is free, start to finish — no signup required.
-      </p>
+      <div className="pixel-panel border-paper bg-ink p-5 sm:p-6" style={shadowColor("var(--green)")}>
+        {stage === "input" && (
+          <JobPostingForm
+            onExtracted={(text, extractedSummary) => {
+              setJobPostingText(text);
+              setSummary(extractedSummary);
+              setStage("confirm");
+            }}
+          />
+        )}
+
+        {stage === "confirm" && summary && !generating && (
+          <RoleSummaryConfirm
+            summary={summary}
+            onBack={() => setStage("input")}
+            onConfirm={(finalSummary) => generateAndContinue(jobPostingText, finalSummary)}
+          />
+        )}
+
+        {generating && (
+          <StepProgress
+            messages={["Reading the posting...", "Writing questions...", "Checking the difficulty mix..."]}
+          />
+        )}
+
+        {cancelledNotice && (
+          <p className="mt-4 text-base">
+            Checkout was cancelled and nothing was charged. Pick up where you left off whenever you&apos;re ready.
+          </p>
+        )}
+        {error && (
+          <p role="alert" className="mt-4 border-[3px] border-red px-3 py-2 text-base text-red">
+            {error}
+          </p>
+        )}
+      </div>
     </main>
   );
 }

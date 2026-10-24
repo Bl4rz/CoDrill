@@ -1,25 +1,25 @@
-import type { CSSProperties } from "react";
 import { Difficulty } from "@/lib/types";
 
-const STYLES: Record<Difficulty, string> = {
-  easy: "text-accent-green border-accent-green",
-  medium: "text-accent-amber border-accent-amber",
-  hard: "text-accent-red border-accent-red",
+const COLOR: Record<Difficulty, string> = {
+  easy: "var(--green)",
+  medium: "var(--amber)",
+  hard: "var(--red)",
 };
-
 const PIPS: Record<Difficulty, number> = { easy: 1, medium: 2, hard: 3 };
 
 export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
+  const color = COLOR[difficulty];
   return (
     <span
-      className={`pixel-panel inline-flex items-center gap-1.5 px-2 py-1 font-pixel text-[9px] uppercase ${STYLES[difficulty]}`}
-      style={{ "--pixel-shadow": "currentColor" } as CSSProperties}
+      className="inline-flex items-center gap-2 border-[3px] px-2 py-0.5 font-display text-xs uppercase tracking-widest"
+      style={{ borderColor: color, color }}
     >
-      <span className="flex items-center gap-0.5" aria-hidden="true">
+      <span className="flex items-center gap-[3px]" aria-hidden="true">
         {[1, 2, 3].map((i) => (
           <span
             key={i}
-            className={`h-1.5 w-1.5 ${i <= PIPS[difficulty] ? "bg-current" : "border border-current"}`}
+            className="h-2 w-2"
+            style={i <= PIPS[difficulty] ? { background: color } : { border: `2px solid ${color}` }}
           />
         ))}
       </span>

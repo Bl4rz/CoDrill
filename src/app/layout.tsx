@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Pixelify_Sans, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { Pixelify_Sans, Press_Start_2P, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
 import { PALETTE_CSS_VARS } from "@/lib/palette";
@@ -11,6 +11,14 @@ const pixelDisplay = Pixelify_Sans({
   variable: "--f-display",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+// The big titles only (CODRILL, RUN COMPLETE, GAME OVER?). Pixelify Sans draws a
+// nearly closed C that reads as an O at title size; this one does not.
+const titleFont = Press_Start_2P({
+  variable: "--f-title",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 // Body copy. Readable, and not Inter.
@@ -92,7 +100,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${pixelDisplay.variable} ${bodySans.variable} ${codeMono.variable} h-full antialiased dark`}
+      className={`${pixelDisplay.variable} ${titleFont.variable} ${bodySans.variable} ${codeMono.variable} h-full antialiased dark`}
       style={PALETTE_CSS_VARS}
     >
       <body className="min-h-full flex flex-col bg-ink text-paper">

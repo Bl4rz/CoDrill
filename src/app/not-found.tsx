@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { Mascot } from "@/components/pixel/Mascot";
+import { PixelLink } from "@/components/pixel/PixelButton";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -9,20 +9,20 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-      <Mascot className="mascot-idle" scale={2} expression="concerned" />
-      <h1 className="font-display text-2xl font-medium text-foreground">Page not found</h1>
-      <p className="text-sm text-muted">
-        Whatever you were looking for isn&apos;t here — it may have moved, or the link might be
-        off.
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">
+      <div className="mascot-idle">
+        <Mascot expression="concerned" scale={1.5} />
+      </div>
+      <h1 className="pixel-title text-[clamp(1.5rem,8vw,3.25rem)]">GAME OVER?</h1>
+      <p className="pixel-heading text-3xl">Not yet.</p>
+      <p className="max-w-sm text-base leading-relaxed">
+        That page doesn&apos;t exist. It may have moved, or the link is off.
       </p>
-      <div className="flex items-center gap-4 pt-2 text-sm">
-        <Link href="/" className="text-accent-green hover:underline">
-          ← Back to home
-        </Link>
-        <Link href="/start" className="text-accent-amber hover:underline">
-          Start a mock interview
-        </Link>
+      <div className="flex flex-wrap justify-center gap-4 pt-2">
+        <PixelLink href="/">Back to start</PixelLink>
+        <PixelLink href="/start" variant="ghost">
+          Select a quest
+        </PixelLink>
       </div>
     </main>
   );

@@ -1,21 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { PixelButton, PixelLink } from "@/components/pixel/PixelButton";
 import type { User } from "@supabase/supabase-js";
 
 /**
- * Sign-in is optional, not required — the free-session flow keeps working
- * unauthenticated via localStorage (see src/lib/store.ts). This only adds
- * an account on top for people who want it. Renders nothing (rather than
- * throwing) if Supabase isn't configured, since a misconfigured/missing
- * env var must never be able to break the rest of the page.
+ * Sign-in is optional. Sessions run fine signed out (they live in this
+ * browser); signing in with Google just keeps your history across devices.
+ * Renders nothing if Supabase isn't configured, so a missing env var can
+ * never break the page around it.
  */
 export function AuthButton() {
-  // Lazy initializer runs once at mount, not on every render — and since
-  // it's outside an effect body, there's no synchronous-setState-in-effect
-  // concern for the "unavailable" case below.
   const [supabase] = useState(() => createClient());
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
@@ -51,37 +47,31 @@ export function AuthButton() {
   }
 
   if (!ready) {
-    return <div className="h-7 w-24" />;
+    return <div className="h-9 w-20" />;
   }
 
   if (user) {
     return (
       <div className="flex items-center gap-3">
-        <span className="hidden font-mono text-xs text-muted sm:inline">{user.email}</span>
-        <Link
-          href="/profile"
-          className="whitespace-nowrap rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent-green hover:text-accent-green"
-        >
+        <PixelLink href="/profile" variant="ghost" size="sm">
           Profile
-        </Link>
-        <button
-          type="button"
-          onClick={signOut}
-          className="whitespace-nowrap rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent-green hover:text-accent-green"
-        >
+        </PixelLink>
+        <PixelButton variant="ghost" size="sm" onClick={signOut}>
           Sign out
-        </button>
+        </PixelButton>
       </div>
     );
   }
 
   return (
-    <button
-      type="button"
+    <PixelButton
+      variant="ghost"
+      size="sm"
       onClick={signInWithGoogle}
-      className="whitespace-nowrap text-xs font-medium text-muted transition hover:text-accent-green"
+      aria-label="Sign in with Google"
+      title="Optional: sign in with Google to keep your history across devices"
     >
-      Sign in with Google
-    </button>
+      Sign in
+    </PixelButton>
   );
 }
