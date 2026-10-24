@@ -66,10 +66,11 @@
   --color-accent-red: var(--red);
   --color-accent-yellow: var(--amber);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-display);
-  --font-pixel: var(--font-pixel);
+  --font-display: var(--f-display), ui-monospace, monospace;
+  --font-sans: var(--f-body), system-ui, sans-serif;
+  --font-mono: var(--f-code), ui-monospace, monospace;
+  /* TEMPORARY alias for the old class name. Deleted in Phase 5. */
+  --font-pixel: var(--f-display), ui-monospace, monospace;
 }
 
 /* TEMPORARY: old variable names still referenced by inline styles. */
@@ -88,6 +89,25 @@
 body {
   background: var(--ink);
   color: var(--paper);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+code,
+pre,
+textarea.code {
+  font-family: var(--font-mono);
+  text-align: left;
+}
+
+/* Big pixel title with a hard offset shadow, no blur. */
+.pixel-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-shadow: 4px 4px 0 var(--amber);
 }
 
 ::selection {

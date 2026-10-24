@@ -15,7 +15,7 @@ export default function LandingPage() {
       <nav className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
           <Logo />
-          <span className="text-sm uppercase tracking-widest">Codrill</span>
+          <span className="font-display text-base uppercase tracking-widest">Codrill</span>
         </div>
         <Link href="/start" className="text-sm uppercase tracking-widest text-green">
           Start
@@ -24,14 +24,14 @@ export default function LandingPage() {
 
       <section className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 px-6 py-16 text-center">
         <Mascot className="mascot-idle" scale={2} />
-        <h1 className="text-4xl font-medium sm:text-5xl">CODRILL</h1>
+        <h1 className="pixel-title text-6xl sm:text-7xl">CODRILL</h1>
         <p className="max-w-xl text-lg leading-relaxed">
           Paste a job posting. Get interview questions made for that job. Practice out loud or in
           code.
         </p>
         <Link
           href="/start"
-          className="pixel-press border-[3px] border-ink bg-green px-6 py-3 text-lg font-semibold text-ink"
+          className="pixel-press border-[3px] border-ink bg-green px-6 py-3 font-display text-xl font-bold text-ink"
         >
           START
         </Link>

@@ -1,37 +1,29 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Press_Start_2P } from "next/font/google";
+import { Pixelify_Sans, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
 import { PALETTE_CSS_VARS } from "@/lib/palette";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Display: titles, buttons, labels and HUD text only. Pixelify Sans stays legible
+// at small sizes on a phone, which Press Start 2P does not.
+const pixelDisplay = Pixelify_Sans({
+  variable: "--f-display",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Body copy. Readable, and not Inter.
+const bodySans = IBM_Plex_Sans({
+  variable: "--f-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-// A warm display serif for headings only — body copy stays on Geist Sans.
-// Stock Geist everywhere is the single most recognizable "default Next.js
-// app" signal there is; pairing it with a distinctive serif for headings is
-// a cheap, high-leverage way to stop reading as a generic template.
-const fraunces = Fraunces({
-  variable: "--font-display",
+// Code and the posting textarea. Always left-aligned.
+const codeMono = JetBrains_Mono({
+  variable: "--f-code",
   subsets: ["latin"],
-  style: ["normal", "italic"],
-});
-
-// Scoped to game-like elements only (scores, difficulty badges, session
-// progress) — not a site-wide reskin. Keeps the premium Fraunces/Geist
-// identity everywhere else; this is a targeted "fun accent," not a pivot.
-const pixelFont = Press_Start_2P({
-  variable: "--font-pixel",
-  subsets: ["latin"],
-  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -100,7 +92,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${pixelFont.variable} h-full antialiased dark`}
+      className={`${pixelDisplay.variable} ${bodySans.variable} ${codeMono.variable} h-full antialiased dark`}
       style={PALETTE_CSS_VARS}
     >
       <body className="min-h-full flex flex-col bg-ink text-paper">
