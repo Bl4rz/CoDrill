@@ -13,8 +13,9 @@ export function About() {
             Bryan
           </p>
           <p className="text-lg leading-relaxed">
-            I&apos;m Bryan, a high school student. I built Codrill because [TODO: Bryan fills in
-            why]. It&apos;s free.
+            I&apos;m Bryan, a high school student. I built Codrill to help people looking for jobs
+            in computer science, coding and software, because the job market is rough right now.
+            So why not use what&apos;s getting in the way to help us instead? It&apos;s free.
           </p>
           <p className="mt-3 text-base">
             <a
