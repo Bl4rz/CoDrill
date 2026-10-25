@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createTestDb, Json, type TestDb } from "../helpers/db";
 import { completeQuestion, issueRun } from "../helpers/fixtures";
+import { ACHIEVEMENTS } from "@/lib/progression/config";
 
 let db: TestDb;
 let alice: string;
@@ -65,7 +66,7 @@ describe("row-level security: reading", () => {
 
   it("anyone can read the achievement list, but signed-out visitors can read nothing else", async () => {
     const list = await db.asAnon((c) => c.query("select id from public.achievements"));
-    expect(list.rowCount).toBe(6);
+    expect(list.rowCount).toBe(ACHIEVEMENTS.length);
     for (const table of TABLES) {
       await expect(db.asAnon((c) => c.query(`select * from public.${table}`)), table).rejects.toMatchObject(denied);
     }

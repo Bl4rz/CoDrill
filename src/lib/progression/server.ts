@@ -11,6 +11,7 @@ import {
 import { earnedAchievements } from "@/lib/progression/achievements";
 import { levelForXp, levelProgress } from "@/lib/progression/level";
 import {
+  type AdventureQuestData,
   computeQuestProgress,
   eligibleQuests,
   isValidTimeZone,
@@ -72,7 +73,19 @@ export function toPlayerSummary(totalXp: number, coins: number): PlayerSummary {
   };
 }
 
+interface AdventureStatsRaw {
+  levels_completed: number;
+  boss_defeated: boolean;
+  world_complete: boolean;
+  boss_unlocked: boolean;
+  best_overall: number;
+  comeback: boolean;
+  unaided_pass: boolean;
+  recent_passes: { finished_at: string; is_boss: boolean }[];
+}
+
 interface Stats {
+  adventure: AdventureStatsRaw;
   timezone: string;
   questions_completed: number;
   max_communication: number;
@@ -80,6 +93,11 @@ interface Stats {
   languages: string[];
   recent: ResultRow[];
 }
+
+const adventureQuestData = (stats: Stats): AdventureQuestData => ({
+  bossUnlocked: stats.adventure.boss_unlocked,
+  recentPasses: stats.adventure.recent_passes,
+});
 
 async function loadStats(userId: string): Promise<Stats> {
   const since = new Date(Date.now() - STATS_WINDOW_DAYS * 86_400_000).toISOString();
@@ -97,6 +115,13 @@ async function evaluateAndUnlock(userId: string, level: number): Promise<Unlocke
     maxReasoning: Number(stats.max_reasoning),
     languages: stats.languages,
     level,
+    adventure: {
+      bossDefeated: stats.adventure.boss_defeated,
+      worldComplete: stats.adventure.world_complete,
+      comeback: stats.adventure.comeback,
+      bestOverall: Number(stats.adventure.best_overall),
+      unaidedPass: stats.adventure.unaided_pass,
+    },
   });
   if (earned.length === 0) return [];
   const fresh = await rpc<string[]>("unlock_achievements", { p_user: userId, p_ids: earned });
@@ -174,7 +199,7 @@ export async function loadHub(userId: string): Promise<HubResponse> {
   const stats = await loadStats(userId);
   const tz = isValidTimeZone(stats.timezone) ? stats.timezone : "UTC";
   const today = localDay(new Date(), tz);
-  const picks = pickDailyQuests(userId, today, eligibleQuests(stats.recent, tz, today));
+  const picks = pickDailyQuests(userId, today, eligibleQuests(stats.recent, tz, today, adventureQuestData(stats)));
 
   const hub = await rpc<{
     progression: { total_xp: number; coins: number; timezone: string };
@@ -190,7 +215,7 @@ export async function loadHub(userId: string): Promise<HubResponse> {
   const quests = hub.quests.flatMap((row) => {
     const def = QUESTS.find((q) => q.id === row.quest_id);
     if (!def) return [];
-    const progress = Math.max(row.progress, computeQuestProgress(def, stats.recent, tz, today));
+    const progress = Math.max(row.progress, computeQuestProgress(def, stats.recent, tz, today, adventureQuestData(stats)));
     return [
       {
         id: def.id,
@@ -226,7 +251,7 @@ export async function claimQuest(userId: string, questId: string): Promise<Claim
   const stats = await loadStats(userId);
   const tz = isValidTimeZone(stats.timezone) ? stats.timezone : "UTC";
   const today = localDay(new Date(), tz);
-  const progress = computeQuestProgress(def, stats.recent, tz, today);
+  const progress = computeQuestProgress(def, stats.recent, tz, today, adventureQuestData(stats));
 
   await rpc("update_quest_progress", { p_user: userId, p_day: today, p_progress: { [def.id]: progress } });
   const res = await rpc<{ status: ClaimResponse["status"]; reward?: RewardState }>("claim_quest", {

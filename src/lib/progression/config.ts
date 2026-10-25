@@ -57,7 +57,9 @@ export type QuestKind =
   | "finish_questions"
   | "axis_score"
   | "hard_question"
-  | "new_language";
+  | "new_language"
+  | "adventure_level"
+  | "defeat_boss";
 
 export interface QuestDefinition {
   id: string;
@@ -79,6 +81,9 @@ export const QUESTS: readonly QuestDefinition[] = [
   { id: "correctness_70", title: "Score 70+ in Correctness", kind: "axis_score", axis: "correctness", minScore: 70, target: 1, xp: 20, coins: 5 },
   { id: "hard_1", title: "Finish a hard question", kind: "hard_question", target: 1, xp: 25, coins: 8 },
   { id: "new_language", title: "Use a language you haven't used this week", kind: "new_language", target: 1, xp: 20, coins: 5 },
+  { id: "adventure_level", title: "Complete an adventure level", kind: "adventure_level", target: 1, xp: 25, coins: 8 },
+  // Only offered once the boss is unlocked, so it shows up now and then rather than daily.
+  { id: "defeat_boss", title: "Defeat a boss", kind: "defeat_boss", target: 1, xp: 30, coins: 10 },
 ];
 
 export interface AchievementDefinition {
@@ -87,7 +92,7 @@ export interface AchievementDefinition {
   description: string;
 }
 
-/** Six achievements. The same ids are seeded into public.achievements by the migration. */
+/** Eleven achievements. The same ids are seeded into public.achievements by the migrations. */
 export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   { id: "first_run", name: "First Run", description: "Finish your first question." },
   { id: "three_down", name: "Three Down", description: "Finish 3 questions." },
@@ -95,4 +100,9 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   { id: "speed_thinker", name: "Speed Thinker", description: "Score 80+ in Reasoning on a question." },
   { id: "polyglot", name: "Polyglot", description: "Finish questions in 2 different languages." },
   { id: "level_5", name: "Level 5", description: "Reach level 5." },
+  { id: "boss_slayer", name: "Boss Slayer", description: "Defeat the Debug Goblin." },
+  { id: "world_explorer", name: "World Explorer", description: "Complete Syntax Valley." },
+  { id: "comeback", name: "Comeback", description: "Pass an adventure level you failed before." },
+  { id: "sharp_mind", name: "Sharp Mind", description: "Score 90+ overall on an adventure level." },
+  { id: "no_training_wheels", name: "No Training Wheels", description: "Pass an adventure level without using a hint." },
 ];

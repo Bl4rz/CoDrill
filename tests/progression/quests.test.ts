@@ -170,3 +170,40 @@ describe("quest progress is computed from stored results", () => {
     expect(eligibleQuests([], tz, today).some((q) => q.id === "new_language")).toBe(true);
   });
 });
+
+describe("adventure quests", () => {
+  const tz = "America/Los_Angeles";
+  const today = "2026-10-24";
+  const adv = (passes: { finished_at: string; is_boss: boolean }[], bossUnlocked = false) => ({ bossUnlocked, recentPasses: passes });
+  const at = (iso: string, is_boss = false) => ({ finished_at: iso, is_boss });
+
+  it("'Complete an adventure level' counts passes today, replays included", () => {
+    const q = quest("adventure_level");
+    expect(computeQuestProgress(q, [], tz, today, adv([]))).toBe(0);
+    expect(computeQuestProgress(q, [], tz, today, adv([at("2026-10-24T18:00:00Z")]))).toBe(1);
+    expect(computeQuestProgress(q, [], tz, today, adv([at("2026-10-24T18:00:00Z"), at("2026-10-24T19:00:00Z")]))).toBe(1); // capped at target 1
+  });
+
+  it("does not count passes from other days in the player's zone", () => {
+    const q = quest("adventure_level");
+    expect(computeQuestProgress(q, [], tz, today, adv([at("2026-10-24T06:59:00Z")]))).toBe(0); // 23:59 on the 23rd
+    expect(computeQuestProgress(q, [], tz, today, adv([at("2026-10-25T07:00:00Z")]))).toBe(0); // 00:00 on the 25th
+  });
+
+  it("'Defeat a boss' counts only boss passes", () => {
+    const q = quest("defeat_boss");
+    expect(computeQuestProgress(q, [], tz, today, adv([at("2026-10-24T18:00:00Z", false)]))).toBe(0);
+    expect(computeQuestProgress(q, [], tz, today, adv([at("2026-10-24T18:00:00Z", true)]))).toBe(1);
+  });
+
+  it("adventure quests make no progress without adventure data", () => {
+    expect(computeQuestProgress(quest("adventure_level"), [], tz, today)).toBe(0);
+  });
+
+  it("the boss quest is only offered once the boss is unlocked", () => {
+    expect(eligibleQuests([], tz, today).some((q) => q.id === "defeat_boss")).toBe(false);
+    expect(eligibleQuests([], tz, today, adv([], false)).some((q) => q.id === "defeat_boss")).toBe(false);
+    expect(eligibleQuests([], tz, today, adv([], true)).some((q) => q.id === "defeat_boss")).toBe(true);
+    expect(eligibleQuests([], tz, today, adv([], false)).some((q) => q.id === "adventure_level")).toBe(true);
+  });
+});

@@ -16,6 +16,13 @@ export interface ResultRow {
   reasoning: number;
 }
 
+/** Adventure facts the quest engine needs. Absent for callers that don't have them. */
+export interface AdventureQuestData {
+  bossUnlocked: boolean;
+  /** Passed attempts (replays included), each with when it finished and whether it was the boss */
+  recentPasses: { finished_at: string; is_boss: boolean }[];
+}
+
 export function isValidTimeZone(tz: string): boolean {
   if (typeof tz !== "string" || tz.length === 0 || tz.length > 64) return false;
   try {
@@ -74,10 +81,20 @@ export function languagesUsedBefore(results: ResultRow[], tz: string, today: str
 }
 
 /** Quests that can actually be completed and checked today. */
-export function eligibleQuests(results: ResultRow[], tz: string, today: string): QuestDefinition[] {
+export function eligibleQuests(
+  results: ResultRow[],
+  tz: string,
+  today: string,
+  adventure?: AdventureQuestData,
+): QuestDefinition[] {
   const used = languagesUsedBefore(results, tz, today);
   const hasNewLanguage = LANGUAGES.some((l) => !used.has(l));
-  return QUESTS.filter((q) => q.kind !== "new_language" || hasNewLanguage);
+  return QUESTS.filter((q) => {
+    if (q.kind === "new_language") return hasNewLanguage;
+    // The boss quest only appears once the boss can actually be fought.
+    if (q.kind === "defeat_boss") return adventure?.bossUnlocked === true;
+    return true;
+  });
 }
 
 /** Today's quests for a player: the same player and day always give the same three. */
@@ -97,7 +114,9 @@ export function computeQuestProgress(
   results: ResultRow[],
   tz: string,
   today: string,
+  adventure?: AdventureQuestData,
 ): number {
+  const passesToday = (adventure?.recentPasses ?? []).filter((p) => localDay(p.finished_at, tz) === today);
   const todays = results.filter((r) => localDay(r.created_at, tz) === today);
   let count = 0;
   switch (quest.kind) {
@@ -109,6 +128,12 @@ export function computeQuestProgress(
       break;
     case "axis_score":
       count = todays.filter((r) => r[quest.axis!] >= (quest.minScore ?? 0)).length;
+      break;
+    case "adventure_level":
+      count = passesToday.length;
+      break;
+    case "defeat_boss":
+      count = passesToday.filter((p) => p.is_boss).length;
       break;
     case "new_language": {
       const used = languagesUsedBefore(results, tz, today);
