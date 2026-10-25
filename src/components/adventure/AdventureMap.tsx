@@ -17,16 +17,20 @@ function PathDots({ levels }: { levels: LevelView[] }) {
   for (let i = 0; i < levels.length - 1; i++) {
     const [x1, y1] = [X[i] ?? 50, centerY(i, levels[i].is_boss)];
     const [x2, y2] = [X[i + 1] ?? 50, centerY(i + 1, levels[i + 1].is_boss)];
-    const steps = 7;
+    const steps = 12;
     // leave room around each node so the dots don't run under it
-    for (let s = 2; s < steps - 1; s++) {
+    for (let s = 1; s < steps; s++) {
       const t = s / steps;
       dots.push({ x: x1 + (x2 - x1) * t, y: y1 + (y2 - y1) * t, done: levels[i].status === "completed" });
     }
   }
+  // Keep dots off the nodes and their labels (box plus a line or two of text underneath).
+  const visible = dots.filter(
+    (d) => !levels.some((l, j) => Math.abs(d.x - (X[j] ?? 50)) < 19 && d.y > centerY(j, l.is_boss) - 52 && d.y < centerY(j, l.is_boss) + 96),
+  );
   return (
     <>
-      {dots.map((d, i) => (
+      {visible.map((d, i) => (
         <span
           key={i}
           aria-hidden="true"
