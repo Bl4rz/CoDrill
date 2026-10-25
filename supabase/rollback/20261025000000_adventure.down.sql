@@ -85,6 +85,7 @@ delete from public.player_achievements
 delete from public.achievements
  where id in ('boss_slayer', 'world_explorer', 'comeback', 'sharp_mind', 'no_training_wheels');
 
+drop function if exists public.refund_usage(text, int);
 drop function if exists public.adventure_stats(uuid, timestamptz);
 drop function if exists public.set_adventure_unlocked(uuid, uuid, jsonb);
 drop function if exists public.finalize_adventure_attempt(uuid, uuid, int, boolean, int, int);

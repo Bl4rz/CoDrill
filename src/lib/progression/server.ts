@@ -86,6 +86,7 @@ interface AdventureStatsRaw {
 
 interface Stats {
   adventure: AdventureStatsRaw;
+  level: number;
   timezone: string;
   questions_completed: number;
   max_communication: number;
@@ -107,14 +108,14 @@ async function loadStats(userId: string): Promise<Stats> {
 const asDefinition = (id: string) => ACHIEVEMENTS.find((a) => a.id === id);
 
 /** Checks every achievement against stored data and unlocks any newly earned. Returns only the new ones. */
-async function evaluateAndUnlock(userId: string, level: number): Promise<UnlockedAchievement[]> {
+export async function evaluateAndUnlock(userId: string, level?: number): Promise<UnlockedAchievement[]> {
   const stats = await loadStats(userId);
   const earned = earnedAchievements({
     questionsCompleted: Number(stats.questions_completed),
     maxCommunication: Number(stats.max_communication),
     maxReasoning: Number(stats.max_reasoning),
     languages: stats.languages,
-    level,
+    level: level ?? Number(stats.level),
     adventure: {
       bossDefeated: stats.adventure.boss_defeated,
       worldComplete: stats.adventure.world_complete,

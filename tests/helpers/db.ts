@@ -51,15 +51,36 @@ export async function createTestDb(): Promise<TestDb> {
     }
   };
 
+  // Like PostgREST, send each argument according to the parameter type the function declares.
+  const argTypes = new Map<string, Map<string, string>>();
+  const typesOf = async (fn: string) => {
+    const cached = argTypes.get(fn);
+    if (cached) return cached;
+    const { rows } = await pool.query(
+      `select p.proargnames as names, p.proargtypes::text as types
+         from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = $1`,
+      [fn],
+    );
+    const map = new Map<string, string>();
+    for (const r of rows) {
+      const oids = String(r.types).split(" ").filter(Boolean).map(Number);
+      const { rows: t } = await pool.query("select oid::int as oid, typname from pg_type where oid = any($1::oid[])", [oids]);
+      const byOid = new Map<number, string>(t.map((x: { oid: number; typname: string }) => [x.oid, x.typname]));
+      (r.names as string[] | null)?.forEach((n, i) => map.set(n, byOid.get(oids[i]) ?? ""));
+    }
+    argTypes.set(fn, map);
+    return map;
+  };
+
   const rpc = async (fn: string, args: Record<string, unknown>) => {
     const keys = Object.keys(args);
+    const types = await typesOf(fn);
     const sql = `select public.${fn}(${keys.map((k, i) => `${k} := $${i + 1}`).join(", ")}) as r`;
     const params = keys.map((k) => {
       const v = args[k];
       if (v instanceof Json) return JSON.stringify(v.value);
       if (v === null || typeof v !== "object") return v;
-      // arrays of plain values are SQL arrays; everything else is sent as JSON
-      return Array.isArray(v) && v.every((x) => x === null || typeof x !== "object") ? v : JSON.stringify(v);
+      return types.get(k) === "jsonb" || types.get(k) === "json" ? JSON.stringify(v) : v;
     });
     const c = await pool.connect();
     try {

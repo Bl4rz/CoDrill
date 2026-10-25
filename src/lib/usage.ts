@@ -59,6 +59,26 @@ async function bump(scope: string, limit: number): Promise<boolean> {
   return bumpMemory(scope, limit);
 }
 
+/** Give back one counted start for `scope` (see refund_usage in the adventure migration). */
+async function refund(scope: string): Promise<void> {
+  if (dbConfigured()) {
+    try {
+      await rpc("refund_usage", { p_scope: scope, p_amount: 1 });
+      return;
+    } catch (err) {
+      console.error("usage refund unavailable, using in-memory counts:", err instanceof Error ? err.message : err);
+    }
+  }
+  const entry = memory.get(scope);
+  if (entry && entry.day === today() && entry.count > 0) entry.count -= 1;
+}
+
+/** Undo the daily-session count for a start that failed on our side before the player got anything. */
+export async function refundNewSession(userId: string): Promise<void> {
+  if (!enforced()) return;
+  await refund(`sessions:user:${userId}`);
+}
+
 function clientIp(req: NextRequest): string {
   return (
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown"

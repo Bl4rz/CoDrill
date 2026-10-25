@@ -665,6 +665,7 @@ set search_path = public
 as $$
   select jsonb_build_object(
     'timezone', coalesce((select timezone from public.player_progression where user_id = p_user), 'UTC'),
+    'level', coalesce((select level from public.player_progression where user_id = p_user), 1),
     'questions_completed', (select count(*) from public.question_results where user_id = p_user),
     'max_communication', (select coalesce(max(communication), 0) from public.question_results where user_id = p_user),
     'max_reasoning', (select coalesce(max(reasoning), 0) from public.question_results where user_id = p_user),
@@ -745,6 +746,19 @@ begin
 end;
 $$;
 
+-- Give back a daily start that was counted but never used (e.g. the AI couldn't write the
+-- question), so a server-side failure never costs the player one of their runs for the day.
+create or replace function public.refund_usage(p_scope text, p_amount int default 1)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.usage_counters
+     set count = greatest(0, count - greatest(p_amount, 0))
+   where scope = p_scope and day = (now() at time zone 'utc')::date;
+$$;
+
 -- Only the server's service_role key may call any of these.
 do $$
 declare
@@ -763,7 +777,8 @@ begin
     'set_adventure_unlocked(uuid,uuid,jsonb)',
     'adventure_stats(uuid,timestamptz)',
     'get_player_stats(uuid,timestamptz)',
-    'get_hub(uuid,date,jsonb)'
+    'get_hub(uuid,date,jsonb)',
+    'refund_usage(text,int)'
   ] loop
     execute format('revoke all on function public.%s from public, anon, authenticated', f);
     execute format('grant execute on function public.%s to service_role', f);

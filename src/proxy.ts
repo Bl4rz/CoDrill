@@ -29,6 +29,7 @@ const ROUTE_LIMITS: Record<string, number> = {
   "/api/adventure/hint": 30,
   "/api/adventure/followups": 20,
   "/api/adventure/phase": 30,
+  "/api/adventure/finish": 20,
 };
 const DEFAULT_API_LIMIT = 60;
 
