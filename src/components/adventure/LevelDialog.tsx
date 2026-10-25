@@ -9,8 +9,6 @@ import { GoblinSprite } from "@/components/pixel/GoblinSprite";
 import { CoinIcon } from "@/components/pixel/icons";
 import { PixelButton } from "@/components/pixel/PixelButton";
 
-const DIFFICULTY_COLOR = { beginner: "var(--green)", easy: "var(--green)", medium: "var(--amber)" } as const;
-
 /** Title, topic, difficulty, reward preview and START. For a locked level it only states what it is waiting for. */
 export function LevelDialog({ level, onClose }: { level: LevelView; onClose: () => void }) {
   const router = useRouter();
@@ -45,7 +43,6 @@ export function LevelDialog({ level, onClose }: { level: LevelView; onClose: () 
     }
   }
 
-  const color = DIFFICULTY_COLOR[level.difficulty];
   return (
     <div
       role="dialog"
@@ -59,7 +56,7 @@ export function LevelDialog({ level, onClose }: { level: LevelView; onClose: () 
             {boss ? "Boss" : `Level ${level.order_index}`}
           </span>
           <span className="border-[3px] px-2 py-0.5 font-display text-xs uppercase tracking-widest" style={{ borderColor: "var(--ink)", color: "var(--ink)" }}>
-            <span aria-hidden="true" className="mr-1 inline-block h-2 w-2 align-middle" style={{ background: color === "var(--green)" ? "var(--ink)" : "var(--ink)" }} />
+            <span aria-hidden="true" className="mr-1 inline-block h-2 w-2 align-middle" style={{ background: "var(--ink)" }} />
             {level.difficulty}
           </span>
         </div>

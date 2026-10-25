@@ -149,7 +149,7 @@ export async function guardNewSession(
     return {
       response: NextResponse.json(
         {
-          error: `You've used your ${dailySessionLimit()} runs for today. Come back tomorrow.`,
+          error: `You've used your ${dailySessionLimit()} ${dailySessionLimit() === 1 ? "run" : "runs"} for today. Come back tomorrow.`,
           reason: "daily_limit",
         },
         { status: 429 },

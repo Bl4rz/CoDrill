@@ -18,6 +18,15 @@
         "dev:local"
       ],
       "port": 3000
+    },
+    {
+      "name": "codrill-limits",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev:limits"
+      ],
+      "port": 3000
     }
   ]
 }

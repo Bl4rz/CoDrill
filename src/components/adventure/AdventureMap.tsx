@@ -26,7 +26,7 @@ function PathDots({ levels }: { levels: LevelView[] }) {
   }
   // Keep dots off the nodes and their labels (box plus a line or two of text underneath).
   const visible = dots.filter(
-    (d) => !levels.some((l, j) => Math.abs(d.x - (X[j] ?? 50)) < 19 && d.y > centerY(j, l.is_boss) - 52 && d.y < centerY(j, l.is_boss) + 96),
+    (d) => !levels.some((l, j) => Math.abs(d.x - (X[j] ?? 50)) < 22 && d.y > centerY(j, l.is_boss) - 52 && d.y < centerY(j, l.is_boss) + 98),
   );
   return (
     <>
