@@ -588,3 +588,38 @@ describe("the boss battle", () => {
     expect(await xp(user)).toBe(before + 150);
   });
 });
+
+describe("start retries an unusable question", () => {
+  it("a bad first generation is replaced by the next one and the player is charged once", async () => {
+    enforceLimits(2);
+    const user = await db.newUser();
+    const ai = makeFakeAi();
+    const deps = makeDeps(db, user, ai);
+    const good = ai.generateQuestion;
+    let tries = 0;
+    ai.generateQuestion = async (input) => {
+      if (tries++ === 0) throw new Error("The exercise gave the bugs away.");
+      return good(input);
+    };
+    const first = await start(deps, { level_id: "sv_1" });
+    expect(first.status).toBe(200);
+    expect(tries).toBe(2);
+    expect((await start(deps, { level_id: "sv_1" })).status).toBe(200); // one start was used, not two
+    expect((await start(deps, { level_id: "sv_1" })).status).toBe(429); // limit of 2 reached
+  });
+
+  it("three unusable generations in a row give a retryable error and no charge", async () => {
+    enforceLimits(1);
+    const user = await db.newUser();
+    const ai = makeFakeAi();
+    const deps = makeDeps(db, user, ai);
+    ai.generateQuestion = async () => {
+      throw new Error("The exercise gave the bugs away.");
+    };
+    const failed = await start(deps, { level_id: "sv_1" });
+    expect(failed.status).toBe(502);
+    expect(failed.body).toMatchObject({ reason: "ai_failed", retryable: true });
+    ai.generateQuestion = makeFakeAi().generateQuestion;
+    expect((await start(deps, { level_id: "sv_1" })).status).toBe(200);
+  });
+});

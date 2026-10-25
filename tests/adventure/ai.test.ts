@@ -81,6 +81,27 @@ describe("the AI's output is validated before anything uses it", () => {
     expect(call.system).toMatch(/different/i);
   });
 
+  it("a debugging exercise that labels its own bugs is rejected, a clean one is accepted", async () => {
+    const boss = { title: "The Debug Goblin", topic: "debugging", difficulty: "medium", is_boss: true };
+    const labelled = [
+      "Fix this.\n```js\nlet n = 0;\n// bug 1: loop bound is wrong\nfor (let i = 0; i <= 3; i++) n += i;\n```\nIt prints the wrong total for the list.",
+      "Fix this.\n```python\ntotal = 0  # fix: should start at 1\nfor x in xs: total += x\n```\nThe total is off by one for the example.",
+      "Bug 2 is hiding in the string handling of this snippet, find it and fix every problem you can see in it.",
+    ];
+    for (const text of labelled) {
+      mocked.mockResolvedValueOnce({ question_text: text });
+      await expect(realAdventureAi.generateQuestion({ level: boss, previous: [] })).rejects.toBeInstanceOf(AiOutputError);
+    }
+    const clean = "Here is a snippet. It should add up the list but prints the wrong total.\n```js\nlet n = 0;\nfor (let i = 0; i <= xs.length; i++) n += xs[i];\nconsole.log(n);\n```\nFind what is wrong and fix it.";
+    mocked.mockResolvedValueOnce({ question_text: clean });
+    await expect(realAdventureAi.generateQuestion({ level: boss, previous: [] })).resolves.toBe(clean);
+    // levels that aren't about debugging aren't checked this way
+    mocked.mockResolvedValueOnce({ question_text: "Write a function that adds up a list of numbers.\n```js\n// your code here\n```\nReturn the total." });
+    await expect(
+      realAdventureAi.generateQuestion({ level: { title: "Variable Meadow", topic: "variables and loops", difficulty: "beginner", is_boss: false }, previous: [] }),
+    ).resolves.toContain("your code here");
+  });
+
   it("the boss exercise is asked for with three bugs", async () => {
     mocked.mockResolvedValueOnce({ question_text: "Here is a snippet with problems. Describe what goes wrong and fix it." });
     await realAdventureAi.generateQuestion({

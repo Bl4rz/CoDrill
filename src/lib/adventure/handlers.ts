@@ -11,7 +11,7 @@ import {
   startBody,
 } from "@/lib/adventure/schemas";
 import { bossHp, isVictory, levelPassed, nextPhase, overallScore, phaseDamage } from "@/lib/adventure/rules";
-import type { AttemptView, LevelDifficulty, PhaseResult } from "@/lib/adventure/types";
+import type { AttemptView, LevelDifficulty, PhaseResult, FinishedResult } from "@/lib/adventure/types";
 import type { UnlockedAchievement } from "@/lib/progression/types";
 
 /**
@@ -172,17 +172,15 @@ export async function handleStart(req: NextRequest, deps: AdventureDeps): Promis
       .catch(() => ({ texts: [] as string[], hashes: [] as string[] }));
 
     let question: string | null = null;
-    try {
-      for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 3 && !question; i++) {
+      try {
         const q = await deps.ai.generateQuestion({ level, previous: history.texts });
         // Prefer a question this player hasn't had for this level; accept a repeat only as a last resort.
-        if (!history.hashes.includes(hashQuestion(q)) || i === 2) {
-          question = q;
-          break;
-        }
+        if (!history.hashes.includes(hashQuestion(q)) || i === 2) question = q;
+      } catch (err) {
+        // An unusable generation (bad shape, gave the answer away, model hiccup) is just tried again.
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
     }
     if (!question) {
       await deps.refundStart(userId);
@@ -296,17 +294,6 @@ export async function handleFollowups(req: NextRequest, deps: AdventureDeps): Pr
 }
 
 // ---------------------------------------------------------------- finishing an attempt
-export interface FinishedResult {
-  passed: boolean;
-  victory: boolean;
-  overall: number;
-  first_completion: boolean;
-  xp_gained: number;
-  coins_gained: number;
-  unlocked: UnlockedAchievement[];
-  level_up: { from: number; to: number } | null;
-}
-
 /**
  * Once all three phases are stored, work out the overall score and pass/fail from
  * them, then close the attempt and pay (once) in a single database transaction.

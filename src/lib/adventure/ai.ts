@@ -69,6 +69,9 @@ function parse<T>(schema: { safeParse: (v: unknown) => { success: true; data: T 
   return out.data;
 }
 
+/** Comments like "// bug 1: ..." or "# fix this", and "Bug 2" labels. */
+export const GIVES_AWAY_BUGS = /(\/\/|#|\/\*)\s*(bug|fix|fixme|wrong|error|broken|typo|should be)\b|\bbug\s*#?\d/i;
+
 const RUBRIC: Record<Phase, string> = {
   approach:
     "Score how clear and sound the player's PLAN is: do they understand the problem, name a sensible way to " +
@@ -100,15 +103,17 @@ export const realAdventureAi: AdventureAi = {
     const extra = level.is_boss
       ? "This is the BOSS: include a short buggy snippet (about 10-15 lines) with THREE separate bugs that touch " +
         "different areas (a variable or loop bug, a string or array bug, and a function or edge-case bug). Put the " +
-        "snippet in a fenced code block and describe the wrong behaviour the player sees. Do not point at the bugs."
+        "snippet in a fenced code block and describe the wrong behaviour the player sees. Do not point at the bugs: the " +
+        "code must contain NO comments about bugs, errors, fixes or what is wrong. Keep the text outside the code under 80 words."
       : /debug/i.test(level.topic)
         ? "Include a short buggy snippet (about 8-12 lines) with ONE clear bug in a fenced code block, and describe " +
-          "the wrong behaviour the player sees. Do not point at the bug."
+          "the wrong behaviour the player sees. Do not point at the bug: no comments in the code about bugs or fixes."
         : "Ask for a small function or short script. Do not include a solution.";
     const raw = await callStructured<unknown>({
       system:
         "You write ONE small coding exercise for a friendly beginner game. It must be self-contained, need no " +
-        "libraries, and be doable in about 5-10 minutes in JavaScript, Python or Java. Stay strictly on the given " +
+        "libraries, and be doable in about 5-10 minutes in JavaScript, Python or Java. Write plain text: no headings, " +
+        "no bold, and use a fenced code block only for code. Stay strictly on the given " +
         `topic and difficulty. ${extra}` +
         (previous.length
           ? " The player has already seen the exercises listed below: write a clearly different one, not a rewording."
@@ -125,7 +130,12 @@ export const realAdventureAi: AdventureAi = {
       tool: QUESTION_TOOL,
       maxTokens: 1024,
     });
-    return parse(questionOut, raw).question_text;
+    const text = parse(questionOut, raw).question_text;
+    // A debugging exercise that labels its own bugs in comments is not an exercise. Treat it as unusable so the caller asks again.
+    if ((level.is_boss || /debug/i.test(level.topic)) && GIVES_AWAY_BUGS.test(text)) {
+      throw new AiOutputError("The exercise gave the bugs away.");
+    }
+    return text;
   },
 
   async generateHint(input) {

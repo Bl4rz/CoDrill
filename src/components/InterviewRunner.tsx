@@ -11,29 +11,23 @@ import {
 import { DifficultyBadge } from "@/components/DifficultyBadge";
 import { CodeEditor } from "@/components/CodeEditor";
 import { VoiceTextArea } from "@/components/VoiceTextArea";
-import { Mascot, type Expression } from "@/components/pixel/Mascot";
+import { type Expression } from "@/components/pixel/Mascot";
+import { Avatar, InterviewerLine, YouLine, type TranscriptEntry } from "@/components/interview/Lines";
+import { VoiceControls } from "@/components/interview/VoiceControls";
 import { PixelButton } from "@/components/pixel/PixelButton";
 import { SegmentBar } from "@/components/pixel/SegmentBar";
 import { StepProgress } from "@/components/pixel/StepProgress";
-import { Typewriter } from "@/components/pixel/Typewriter";
 import { ArrowIcon, CheckIcon, CoinIcon } from "@/components/pixel/icons";
 import { shadowColor } from "@/components/pixel/style";
 import { postJson } from "@/lib/api-client";
 import { showToast } from "@/lib/toast";
 import { useIsSignedIn } from "@/lib/useIsSignedIn";
 import type { QuestionProgression } from "@/lib/progression/types";
-import { useSpeechSynthesis } from "@/lib/useSpeechSynthesis";
-import { useServerSpeech } from "@/lib/useServerSpeech";
+import { useInterviewerVoice } from "@/lib/useInterviewerVoice";
 
 type Stage = "approach" | "coding" | "followup" | "scored";
 
 const APPROACH_PROMPT = "Before you write any code, walk me through how you'd approach this.";
-
-interface TranscriptEntry {
-  speaker: "interviewer" | "you";
-  text: string;
-  expression?: Expression;
-}
 
 const STEPS: { stage: Stage; label: string }[] = [
   { stage: "approach", label: "Approach" },
@@ -82,47 +76,6 @@ function StageTracker({ stage }: { stage: Stage }) {
   );
 }
 
-function Avatar({ expression }: { expression: Expression }) {
-  return (
-    <div className="shrink-0 border-[3px] border-paper bg-ink p-1">
-      <Mascot crop="head" expression={expression} unit="3px" title="Interviewer" />
-    </div>
-  );
-}
-
-function InterviewerLine({
-  entry,
-  typing,
-  onDone,
-}: {
-  entry: TranscriptEntry;
-  typing: boolean;
-  onDone: () => void;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <Avatar expression={entry.expression ?? "neutral"} />
-      <div className="px-dialog min-w-0 flex-1 p-4">
-        <p className="mb-1 font-display text-xs uppercase tracking-widest">Interviewer</p>
-        {typing ? (
-          <Typewriter text={entry.text} onDone={onDone} className="text-base leading-relaxed" />
-        ) : (
-          <p className="text-base leading-relaxed">{entry.text}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function YouLine({ text }: { text: string }) {
-  return (
-    <div className="ml-auto max-w-[90%] border-[3px] border-green bg-ink p-3 text-left sm:max-w-[80%]">
-      <p className="mb-1 font-display text-xs uppercase tracking-widest text-green">You</p>
-      <p className="whitespace-pre-wrap text-base leading-relaxed">{text}</p>
-    </div>
-  );
-}
-
 export function InterviewRunner({
   sessionId,
   question,
@@ -162,40 +115,9 @@ export function InterviewRunner({
   const [reward, setReward] = useState<QuestionProgression | null>(null);
   const signedIn = useIsSignedIn();
 
-  const browserTts = useSpeechSynthesis();
-  const serverTts = useServerSpeech();
-  // Prefer the server-synthesized voice (Edge TTS, then Google Cloud TTS,
-  // then Azure — see /api/tts/speak); fall back to the browser's own voice
-  // only if that request fails outright (e.g. genuinely offline, or every
-  // provider in that chain is down at once).
-  const tts = serverTts.isSupported ? serverTts : browserTts;
-  const [voiceOn, setVoiceOn] = useState(true);
-  const [lastSpokenText, setLastSpokenText] = useState("");
+  const voice = useInterviewerVoice();
+  const { say } = voice;
   const hasSpokenIntroRef = useRef(false);
-  const lastSpokenTextRef = useRef("");
-
-  function say(text: string) {
-    setLastSpokenText(text);
-    lastSpokenTextRef.current = text;
-    if (voiceOn && tts.isSupported) tts.speak(text);
-  }
-
-  useEffect(() => {
-    // Switching tabs doesn't unmount this component, so nothing was stopping
-    // the interviewer's audio when you looked away — it just kept talking to
-    // an empty room. Stop it the moment the tab is hidden, and since you
-    // likely missed part of it, replay the same line when you come back
-    // instead of leaving you to guess what you missed.
-    function handleVisibilityChange() {
-      if (document.hidden) {
-        tts.cancel();
-      } else if (voiceOn && tts.isSupported && lastSpokenTextRef.current) {
-        tts.speak(lastSpokenTextRef.current);
-      }
-    }
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [tts, voiceOn]);
 
   useEffect(() => {
     // One combined utterance, not two separate say() calls — say() only
@@ -205,11 +127,6 @@ export function InterviewRunner({
     if (hasSpokenIntroRef.current) return;
     hasSpokenIntroRef.current = true;
     say(`${question.question_text} ${APPROACH_PROMPT}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    return () => tts.cancel();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -358,63 +275,7 @@ export function InterviewRunner({
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex w-full flex-col gap-4 lg:w-[420px] lg:shrink-0">
-          {tts.isSupported && (
-            <div className="flex flex-wrap items-center gap-2">
-              <PixelButton
-                variant="ghost"
-                size="sm"
-                onClick={() => tts.speak("Hi, I'm your interviewer for today's session.")}
-                title="Preview this voice"
-              >
-                Preview voice
-              </PixelButton>
-              {lastSpokenText && (
-                <PixelButton
-                  variant={tts.isSpeaking ? "danger" : "ghost"}
-                  size="sm"
-                  onClick={() => {
-                    if (tts.isSpeaking) {
-                      tts.cancel();
-                    } else {
-                      tts.speak(lastSpokenText);
-                    }
-                  }}
-                  title={tts.isSpeaking ? "Stop" : "Repeat the last thing the interviewer said"}
-                >
-                  {tts.isSpeaking ? "Stop" : "Repeat"}
-                </PixelButton>
-              )}
-              <PixelButton
-                variant={voiceOn ? "amber" : "ghost"}
-                size="sm"
-                aria-pressed={voiceOn}
-                onClick={() => {
-                  setVoiceOn((v) => {
-                    if (v) tts.cancel();
-                    return !v;
-                  });
-                }}
-                title={voiceOn ? "Mute interviewer voice" : "Unmute interviewer voice"}
-              >
-                Voice {voiceOn ? "on" : "off"}
-              </PixelButton>
-              {tts === browserTts && browserTts.voices.length > 1 && (
-                <select
-                  value={browserTts.voiceURI ?? ""}
-                  onChange={(e) => browserTts.selectVoice(e.target.value)}
-                  title="Interviewer voice"
-                  aria-label="Interviewer voice"
-                  className="max-w-[160px] border-[3px] border-paper bg-ink px-2 py-1.5 text-sm text-paper focus:outline-3 focus:outline-offset-2 focus:outline-amber"
-                >
-                  {browserTts.voices.map((v) => (
-                    <option key={v.voiceURI} value={v.voiceURI}>
-                      {v.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          )}
+          <VoiceControls voice={voice} />
 
           <div className="flex flex-col gap-4" aria-live="polite">
             {transcript.map((entry, i) => {

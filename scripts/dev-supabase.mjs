@@ -28,6 +28,27 @@ const PG_PORT = 54329;
 const API_PORT = 54321;
 const JWT_SECRET = "dev-only-jwt-secret";
 export const DEV_ANON_KEY = "dev-anon-key";
+const paramTypeCache = new Map();
+/** name -> type name for each declared parameter of a public function (cached). */
+async function paramTypes(fn) {
+  const cached = paramTypeCache.get(fn);
+  if (cached) return cached;
+  const { rows } = await pool.query(
+    `select p.proargnames as names, p.proargtypes::text as types
+       from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = $1`,
+    [fn],
+  );
+  const map = new Map();
+  for (const r of rows) {
+    const oids = String(r.types).split(" ").filter(Boolean).map(Number);
+    const { rows: t } = await pool.query("select oid::int as oid, typname from pg_type where oid = any($1::oid[])", [oids]);
+    const byOid = new Map(t.map((x) => [x.oid, x.typname]));
+    (r.names ?? []).forEach((n, i) => map.set(n, byOid.get(oids[i]) ?? ""));
+  }
+  paramTypeCache.set(fn, map);
+  return map;
+}
+
 export const DEV_SERVICE_KEY = "dev-service-role-key";
 
 if (process.argv.includes("--reset")) fs.rmSync(DATA_DIR, { recursive: true, force: true });
@@ -174,11 +195,13 @@ http
       const args = await readBody(req);
       const keys = Object.keys(args);
       const sql = `select public.${rpc[1]}(${keys.map((k, i) => `${k} := $${i + 1}`).join(", ")}) as r`;
+      // Like PostgREST, send a JSON value as JSON when the function declares the parameter as json(b);
+      // a plain array is only a SQL array when the parameter is one.
+      const types = await paramTypes(rpc[1]);
       const params = keys.map((k) => {
         const v = args[k];
         if (v === null || typeof v !== "object") return v;
-        // arrays of plain values are SQL arrays (text[]); everything else is jsonb
-        return Array.isArray(v) && v.every((x) => x === null || typeof x !== "object") ? v : JSON.stringify(v);
+        return types.get(k) === "jsonb" || types.get(k) === "json" ? JSON.stringify(v) : v;
       });
       const client = await pool.connect();
       try {

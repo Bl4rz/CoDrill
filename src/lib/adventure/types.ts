@@ -78,3 +78,16 @@ export interface AttemptView {
   /** On a finished attempt: the next level to try, if any */
   next_level_id: string | null;
 }
+
+/** What finishing an attempt returns. Every number is read back from what the database stored. */
+export interface FinishedResult {
+  passed: boolean;
+  victory: boolean;
+  overall: number;
+  first_completion: boolean;
+  xp_gained: number;
+  coins_gained: number;
+  unlocked: { id: string; name: string; description: string }[];
+  level_up: { from: number; to: number } | null;
+}
+
