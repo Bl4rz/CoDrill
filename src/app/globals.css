@@ -280,6 +280,60 @@ textarea.code {
   visibility: hidden;
 }
 
+/* Map node that is ready to play: a two-frame blink of the border, no easing. */
+@keyframes node-blink {
+  0% {
+    border-color: var(--amber);
+  }
+  50% {
+    border-color: var(--paper);
+  }
+}
+.node-blink {
+  animation: node-blink 1s steps(1) infinite;
+}
+
+/* Boss hit: a short stepped shake. */
+@keyframes boss-shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(calc(var(--u) * -1));
+  }
+  50% {
+    transform: translateX(var(--u));
+  }
+  75% {
+    transform: translateX(calc(var(--u) * -1));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.boss-shake {
+  animation: boss-shake 0.4s steps(1) 1;
+}
+
+/* Damage number: rises in three hard steps. */
+@keyframes damage-rise {
+  0% {
+    transform: translateY(0);
+  }
+  34% {
+    transform: translateY(calc(var(--u) * -3));
+  }
+  67% {
+    transform: translateY(calc(var(--u) * -6));
+  }
+  100% {
+    transform: translateY(calc(var(--u) * -9));
+  }
+}
+.damage-rise {
+  animation: damage-rise 1.2s steps(1) 1 forwards;
+}
+
 @keyframes cursor-blink {
   0% {
     visibility: visible;

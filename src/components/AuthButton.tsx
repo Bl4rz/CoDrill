@@ -56,6 +56,9 @@ export function AuthButton() {
         <PixelLink href="/hub" variant="ghost" size="sm">
           Hub
         </PixelLink>
+        <PixelLink href="/adventure" variant="ghost" size="sm">
+          Adventure
+        </PixelLink>
         <PixelLink href="/profile" variant="ghost" size="sm">
           Profile
         </PixelLink>

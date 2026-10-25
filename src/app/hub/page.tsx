@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AppHeader } from "@/components/AppHeader";
+import { AdventureCard } from "@/components/hub/AdventureCard";
 import { PlayerCard } from "@/components/hub/PlayerCard";
 import { QuestList } from "@/components/hub/QuestList";
 import { RecentRuns } from "@/components/hub/RecentRuns";
@@ -10,7 +11,7 @@ import { AchievementCard } from "@/components/hub/AchievementCard";
 import { HubSkeleton } from "@/components/hub/Skeleton";
 import { PixelButton, PixelLink } from "@/components/pixel/PixelButton";
 import { LevelUpDialog } from "@/components/pixel/LevelUpDialog";
-import { Mascot } from "@/components/pixel/Mascot";
+import { StatusMessage } from "@/components/hub/StatusMessage";
 import { signInWithGoogle } from "@/lib/auth";
 import { showToast } from "@/lib/toast";
 import { usePlayer } from "@/lib/usePlayer";
@@ -18,19 +19,6 @@ import type { ClaimResponse } from "@/lib/progression/types";
 import { ArrowIcon } from "@/components/pixel/icons";
 
 const CRUMBS = [{ label: "Home", href: "/" }, { label: "Hub" }];
-
-function Message({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
-  return (
-    <div className="flex flex-col items-start gap-4 border-[3px] border-paper p-6">
-      <div className="flex items-center gap-4">
-        <Mascot crop="head" expression="thinking" unit="3px" title="" />
-        <h1 className="pixel-heading text-2xl">{title}</h1>
-      </div>
-      <p className="text-base leading-relaxed">{children}</p>
-      {action}
-    </div>
-  );
-}
 
 export default function HubPage() {
   const { state, setState, reload } = usePlayer();
@@ -80,7 +68,7 @@ export default function HubPage() {
       {state.status === "loading" && <HubSkeleton />}
 
       {state.status === "signed_out" && (
-        <Message
+        <StatusMessage
           title="Sign in to play"
           action={<PixelButton onClick={() => signInWithGoogle()}>Sign in with Google</PixelButton>}
         >
@@ -89,17 +77,17 @@ export default function HubPage() {
             practice without signing in
           </Link>
           , but it won&apos;t earn XP.
-        </Message>
+        </StatusMessage>
       )}
 
       {state.status === "unavailable" && (
-        <Message title="Hub is offline" action={<PixelLink href="/start">Start a run anyway</PixelLink>}>
+        <StatusMessage title="Hub is offline" action={<PixelLink href="/start">Start a run anyway</PixelLink>}>
           Progress tracking isn&apos;t set up on this server yet. Runs still work, they just won&apos;t earn XP.
-        </Message>
+        </StatusMessage>
       )}
 
       {state.status === "error" && (
-        <Message
+        <StatusMessage
           title="Couldn't load"
           action={
             <PixelButton
@@ -113,7 +101,7 @@ export default function HubPage() {
           }
         >
           {state.message}
-        </Message>
+        </StatusMessage>
       )}
 
       {state.status === "ready" && (
@@ -124,6 +112,8 @@ export default function HubPage() {
             <ArrowIcon unit="4px" />
             Start a new run
           </PixelLink>
+
+          <AdventureCard adventure={state.data.adventure} />
 
           <div className="grid gap-8 lg:grid-cols-2">
             <QuestList quests={state.data.quests} claiming={claiming} error={claimError} onClaim={claim} />

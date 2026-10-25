@@ -1,3 +1,5 @@
+import type { HubAdventure } from "@/lib/adventure/types";
+
 /** Shapes shared by the progression API routes and the pages that read them. */
 
 export interface RewardState {
@@ -61,6 +63,7 @@ export interface AchievementView {
 }
 
 export interface HubResponse {
+  adventure: HubAdventure;
   player: PlayerSummary;
   timezone: string;
   today: string;

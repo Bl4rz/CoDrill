@@ -47,13 +47,17 @@ await server.start();
 
 const pool = new pg.Pool({ host: "localhost", port: PG_PORT, user: "postgres", password: "pw", database: "postgres", max: 8 });
 
-const { rows: have } = await pool.query("select to_regclass('public.player_progression') as t");
+const { rows: have } = await pool.query("select to_regclass('auth.users') as t");
 if (!have[0].t) {
-  const bootstrap = fs.readFileSync(path.join(root, "tests/helpers/bootstrap.sql"), "utf8");
-  const migration = fs.readFileSync(path.join(root, "supabase/migrations/20261024000000_player_progression.sql"), "utf8");
-  await pool.query(bootstrap);
-  await pool.query(migration);
-  console.log("applied bootstrap + migration");
+  await pool.query(fs.readFileSync(path.join(root, "tests/helpers/bootstrap.sql"), "utf8"));
+  await pool.query(fs.readFileSync(path.join(root, "supabase/schema.sql"), "utf8"));
+  console.log("applied bootstrap + base schema");
+}
+// Every migration is idempotent, so apply them all in order on each start.
+const migrationsDir = path.join(root, "supabase/migrations");
+for (const file of fs.readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort()) {
+  await pool.query(fs.readFileSync(path.join(migrationsDir, file), "utf8"));
+  console.log(`applied ${file}`);
 }
 
 const b64url = (b) => Buffer.from(b).toString("base64url");

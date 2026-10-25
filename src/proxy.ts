@@ -23,6 +23,12 @@ const ROUTE_LIMITS: Record<string, number> = {
   "/api/player/quests/claim": 30,
   "/api/player/timezone": 10,
   "/api/player/run": 60,
+  "/api/adventure": 60,
+  "/api/adventure/start": 10,
+  "/api/adventure/attempt": 120,
+  "/api/adventure/hint": 30,
+  "/api/adventure/followups": 20,
+  "/api/adventure/phase": 30,
 };
 const DEFAULT_API_LIMIT = 60;
 

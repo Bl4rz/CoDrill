@@ -206,6 +206,13 @@ export async function loadHub(userId: string): Promise<HubResponse> {
     quests: { quest_id: string; progress: number; target: number; completed: boolean; claimed: boolean }[];
     recent_runs: RunView[];
     achievements: { id: string; unlocked_at: string }[];
+    adventure: {
+      world_title: string;
+      completed_count: number;
+      total_count: number;
+      world_complete: boolean;
+      next_level: { id: string; title: string; is_boss: boolean; order_index: number } | null;
+    };
   }>("get_hub", {
     p_user: userId,
     p_day: today,
@@ -240,6 +247,20 @@ export async function loadHub(userId: string): Promise<HubResponse> {
     quests,
     recent_runs: hub.recent_runs,
     achievements,
+    adventure: {
+      world_title: hub.adventure.world_title,
+      completed_count: Number(hub.adventure.completed_count),
+      total_count: Number(hub.adventure.total_count),
+      world_complete: Boolean(hub.adventure.world_complete),
+      next_level: hub.adventure.next_level
+        ? {
+            id: hub.adventure.next_level.id,
+            title: hub.adventure.next_level.title,
+            is_boss: hub.adventure.next_level.is_boss,
+            order_index: hub.adventure.next_level.order_index,
+          }
+        : null,
+    },
   };
 }
 
