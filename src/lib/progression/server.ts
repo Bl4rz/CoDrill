@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { dbConfigured, rpc } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 import {
   ACHIEVEMENTS,
@@ -45,24 +45,9 @@ export async function getSignedInUserId(): Promise<string | null> {
   }
 }
 
-/**
- * Calls one of the progression SQL functions with the service-role key. Those
- * functions are the only way XP, coins, results or quests are written, and the
- * database refuses to run them for any other role.
- */
-export async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
-  const admin = createAdminClient();
-  if (!admin) throw new Error("Progression needs SUPABASE_SERVICE_ROLE_KEY on the server.");
-  const { data, error } = await admin.rpc(fn, args);
-  if (error) {
-    const err = new Error(error.message) as Error & { code?: string };
-    err.code = error.code;
-    throw err;
-  }
-  return data as T;
-}
+export { rpc } from "@/lib/db";
 
-export const progressionConfigured = () => createAdminClient() !== null;
+export const progressionConfigured = dbConfigured;
 
 /** Same role, stack and focus areas => same posting, however the title is capitalised or ordered. */
 export function hashPosting(role: RoleSummary): string {

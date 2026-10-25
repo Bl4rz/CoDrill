@@ -1,5 +1,5 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { dbConfigured, rpc } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -22,8 +22,8 @@ function intFromEnv(name: string, fallback: number): number {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-const DAILY_SESSION_LIMIT = intFromEnv("DAILY_SESSION_LIMIT", 3);
-const GLOBAL_DAILY_AI_CAP = intFromEnv("GLOBAL_DAILY_AI_CAP", 3000);
+const dailySessionLimit = () => intFromEnv("DAILY_SESSION_LIMIT", 3);
+const globalDailyAiCap = () => intFromEnv("GLOBAL_DAILY_AI_CAP", 3000);
 
 const enforced = () => process.env.NODE_ENV === "production" || process.env.ENFORCE_LIMITS === "true";
 
@@ -48,11 +48,13 @@ function bumpMemory(scope: string, limit: number): boolean {
 
 /** Atomically add one to today's counter for `scope`; false means the limit is already reached. */
 async function bump(scope: string, limit: number): Promise<boolean> {
-  const admin = createAdminClient();
-  if (admin) {
-    const { data, error } = await admin.rpc("bump_usage", { p_scope: scope, p_limit: limit });
-    if (!error && typeof data === "boolean") return data;
-    console.error("usage counter unavailable, using in-memory counts:", error?.message);
+  if (dbConfigured()) {
+    try {
+      const data = await rpc<boolean>("bump_usage", { p_scope: scope, p_limit: limit });
+      if (typeof data === "boolean") return data;
+    } catch (err) {
+      console.error("usage counter unavailable, using in-memory counts:", err instanceof Error ? err.message : err);
+    }
   }
   return bumpMemory(scope, limit);
 }
@@ -83,14 +85,20 @@ export async function guardAi(): Promise<NextResponse | null> {
 
   if (!warmed) {
     warmed = true;
-    if (await bump("global:ai", GLOBAL_DAILY_AI_CAP)) return null;
+    if (await bump("global:ai", globalDailyAiCap())) return null;
     capacityDay = today();
     return capacityResponse();
   }
 
-  after(async () => {
-    if (!(await bump("global:ai", GLOBAL_DAILY_AI_CAP))) capacityDay = today();
-  });
+  const countLater = async () => {
+    if (!(await bump("global:ai", globalDailyAiCap()))) capacityDay = today();
+  };
+  try {
+    after(countLater);
+  } catch {
+    // Not inside a request (e.g. under test): just count it now.
+    await countLater();
+  }
   return null;
 }
 
@@ -101,9 +109,10 @@ export async function guardAi(): Promise<NextResponse | null> {
  */
 export async function guardNewSession(
   req: NextRequest,
+  knownUserId?: string | null,
 ): Promise<{ response: NextResponse | null; userId: string | null }> {
-  let userId: string | null = null;
-  try {
+  let userId: string | null = knownUserId ?? null;
+  if (knownUserId === undefined) try {
     const supabase = await createClient();
     const {
       data: { user },
@@ -116,11 +125,11 @@ export async function guardNewSession(
   if (!enforced()) return { response: null, userId };
 
   const who = userId ? `user:${userId}` : `ip:${clientIp(req)}`;
-  if (!(await bump(`sessions:${who}`, DAILY_SESSION_LIMIT))) {
+  if (!(await bump(`sessions:${who}`, dailySessionLimit()))) {
     return {
       response: NextResponse.json(
         {
-          error: `You've used your ${DAILY_SESSION_LIMIT} runs for today. Come back tomorrow.`,
+          error: `You've used your ${dailySessionLimit()} runs for today. Come back tomorrow.`,
           reason: "daily_limit",
         },
         { status: 429 },

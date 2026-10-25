@@ -33,9 +33,12 @@ export default async function setup() {
   const t = new pg.Client({ host: "localhost", port: PORT, user: "postgres", password: "pw", database: "template_app" });
   await t.connect();
   await t.query(fs.readFileSync(path.resolve(__dirname, "bootstrap.sql"), "utf8"));
-  await t.query(
-    fs.readFileSync(path.resolve(__dirname, "../../supabase/migrations/20261024000000_player_progression.sql"), "utf8"),
-  );
+  // The base schema (daily usage counters live there), then every migration in order.
+  await t.query(fs.readFileSync(path.resolve(__dirname, "../../supabase/schema.sql"), "utf8"));
+  const migrationsDir = path.resolve(__dirname, "../../supabase/migrations");
+  for (const file of fs.readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort()) {
+    await t.query(fs.readFileSync(path.join(migrationsDir, file), "utf8"));
+  }
   await t.end();
 
   process.env.TEST_PG_PORT = String(PORT);
