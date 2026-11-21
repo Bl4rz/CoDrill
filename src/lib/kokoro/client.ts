@@ -6,6 +6,7 @@
 // better voice on (or had it on in an earlier visit).
 import { useSyncExternalStore } from "react";
 import { KOKORO_VOICES, type FromWorker, type KokoroVoiceId, type ToWorker } from "./protocol";
+import { splitSentences } from "./split";
 
 const KEY_ON = "codrill:kokoro-on";
 const KEY_VOICE = "codrill:kokoro-voice";
@@ -102,20 +103,15 @@ function fail(message: string) {
   set({ status: "failed", message, pct: 0, speaking: false });
 }
 
-let starting = false;
 function startWorker() {
-  if (worker || starting) return;
-  starting = true;
-  import("./create-worker")
-    .then(({ createKokoroWorker }) => {
-      // Turned off, or failed, while the loader was on its way: don't start anything.
-      if (state.status !== "loading") return;
-      attach(createKokoroWorker());
-    })
-    .catch(() => fail("The better voice couldn't start, so the standard voice is back."))
-    .finally(() => {
-      starting = false;
-    });
+  if (worker) return;
+  // A plain module worker served from /public: no bundler involved, so none of the speech
+  // runtime lands in the site's own JavaScript.
+  try {
+    attach(new Worker("/kokoro-worker.js", { type: "module" }));
+  } catch {
+    fail("The better voice couldn't start, so the standard voice is back.");
+  }
 }
 
 function attach(w: Worker) {
@@ -224,8 +220,10 @@ export const kokoro = {
   speak(text: string) {
     if (state.status !== "ready" || !worker) return;
     audioContext();
+    const sentences = splitSentences(text);
+    if (sentences.length === 0) return;
     pendingJobs += 1;
-    send({ type: "speak", id: nextId++, epoch, text, voice: state.voice });
+    send({ type: "speak", id: nextId++, epoch, sentences, voice: state.voice });
     refreshSpeaking();
   },
   cancel() {

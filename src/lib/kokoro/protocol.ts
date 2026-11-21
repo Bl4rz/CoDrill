@@ -10,7 +10,7 @@ export type KokoroVoiceId = (typeof KOKORO_VOICES)[number]["id"];
 
 export type ToWorker =
   | { type: "load" }
-  | { type: "speak"; id: number; epoch: number; text: string; voice: KokoroVoiceId }
+  | { type: "speak"; id: number; epoch: number; sentences: string[]; voice: KokoroVoiceId }
   | { type: "cancel"; epoch: number };
 
 export type FromWorker =
