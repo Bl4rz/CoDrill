@@ -156,6 +156,20 @@
       "w": 576,
       "h": 144,
       "bytes": 1840
+    },
+    "body": {
+      "frames": 12,
+      "fh": 58,
+      "rows": {
+        "neutral": 0,
+        "thinking": 1,
+        "impressed": 2,
+        "concerned": 3
+      },
+      "src": "/art/mascot-body.98f5e782.webp",
+      "w": 576,
+      "h": 232,
+      "bytes": 2276
     }
   },
   "goblin": {
@@ -185,6 +199,38 @@
     },
     "arenaW": 96,
     "arenaH": 72
+  },
+  "map": {
+    "w": 112,
+    "h": 262,
+    "nodes": [
+      {
+        "x": 27,
+        "y": 14
+      },
+      {
+        "x": 81,
+        "y": 56
+      },
+      {
+        "x": 31,
+        "y": 98
+      },
+      {
+        "x": 81,
+        "y": 140
+      },
+      {
+        "x": 29,
+        "y": 182
+      },
+      {
+        "x": 56,
+        "y": 227
+      }
+    ],
+    "src": "/art/map.cc2741b5.webp",
+    "bytes": 5050
   },
   "wordmark": {
     "src": "/art/wordmark.0b88c948.webp",

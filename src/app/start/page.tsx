@@ -76,7 +76,7 @@ export default function StartPage() {
         )}
 
         {error && (
-          <p role="alert" className="mt-4 border-[3px] border-red px-3 py-2 text-base text-red">
+          <p role="alert" className="mt-4 px-box px-box--red px-3 py-2 text-base text-red">
             {error}
           </p>
         )}

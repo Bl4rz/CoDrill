@@ -2,17 +2,8 @@
 
 import { CheckIcon, CoinIcon } from "@/components/pixel/icons";
 import { PixelButton } from "@/components/pixel/PixelButton";
+import { Chunks } from "@/components/pixel/Chunks";
 import type { QuestView } from "@/lib/progression/types";
-
-function Chunks({ progress, target }: { progress: number; target: number }) {
-  return (
-    <div className="flex gap-[3px]" role="meter" aria-valuemin={0} aria-valuemax={target} aria-valuenow={progress} aria-label="Quest progress">
-      {Array.from({ length: target }).map((_, i) => (
-        <div key={i} className="h-3 min-w-6 flex-1 border-2 border-paper" style={{ background: i < progress ? "var(--green)" : "var(--ink)" }} />
-      ))}
-    </div>
-  );
-}
 
 /** Three quests for today. CLAIM asks the server, which re-checks the stored results before paying. */
 export function QuestList({
@@ -32,23 +23,23 @@ export function QuestList({
         <h2 id="quests-title" className="pixel-heading text-xl">
           Daily quests
         </h2>
-        <p className="mt-1 text-base">New ones every day at your midnight. Skipping a day costs nothing.</p>
+        <p className="mt-1 text-base text-mute">New ones every day at your midnight. Skipping a day costs nothing.</p>
       </div>
       {error && (
-        <p role="alert" className="border-[3px] border-red px-3 py-2 text-base text-red">
+        <p role="alert" className="px-box px-box--red px-3 py-2 text-base text-red">
           {error}
         </p>
       )}
       <ul className="flex flex-col gap-3">
         {quests.map((q) => (
-          <li key={q.id} className="flex flex-col gap-3 border-[3px] border-paper p-4">
+          <li key={q.id} className="px-box flex flex-col gap-3 p-4">
             <div className="flex items-start justify-between gap-3">
               <p className="text-base font-medium">{q.title}</p>
               <p className="shrink-0 font-display text-sm uppercase tracking-widest text-amber">
                 {q.progress}/{q.target}
               </p>
             </div>
-            <Chunks progress={q.progress} target={q.target} />
+            <Chunks value={q.progress} total={q.target} tone="green" label={`Quest progress, ${q.progress} of ${q.target}`} />
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="flex items-center gap-2 font-display text-sm uppercase tracking-widest">
                 +{q.xp} XP

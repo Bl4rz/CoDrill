@@ -1,5 +1,6 @@
 import { GoblinSprite } from "@/components/pixel/GoblinSprite";
 import { PixelLink } from "@/components/pixel/PixelButton";
+import { Chunks } from "@/components/pixel/Chunks";
 import type { HubAdventure } from "@/lib/adventure/types";
 
 /** World progress and the next recommended level, from the player's stored progress. */
@@ -24,11 +25,7 @@ export function AdventureCard({ adventure }: { adventure: HubAdventure }) {
         </div>
       </div>
 
-      <div className="flex gap-[3px]" role="meter" aria-label="World progress" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done}>
-        {Array.from({ length: total }).map((_, i) => (
-          <div key={i} className="h-3 flex-1 border-2 border-paper" style={{ background: i < done ? "var(--green)" : "var(--ink)" }} />
-        ))}
-      </div>
+      <Chunks value={done} total={total} tone="green" label={`World progress, ${done} of ${total} cleared`} />
 
       {next ? (
         <>

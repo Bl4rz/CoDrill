@@ -9,7 +9,7 @@ export function RecentRuns({ runs }: { runs: RunView[] }) {
         Recent runs
       </h2>
       {runs.length === 0 ? (
-        <div className="flex items-center gap-4 border-[3px] border-dashed border-paper p-4">
+        <div className="px-box px-box--dashed flex items-center gap-4 p-4">
           <div className="shrink-0">
             <Mascot crop="head" expression="thinking" k={1} title="" />
           </div>
@@ -18,14 +18,14 @@ export function RecentRuns({ runs }: { runs: RunView[] }) {
       ) : (
         <ul className="flex flex-col gap-3">
           {runs.map((run) => (
-            <li key={run.session_id} className="flex flex-col gap-1 border-[3px] border-paper p-4">
+            <li key={run.session_id} className="px-box flex flex-col gap-1 p-4">
               <div className="flex items-start justify-between gap-3">
                 <p className="min-w-0 truncate text-base font-medium">{run.role_title}</p>
                 <p className="shrink-0 font-display text-sm uppercase tracking-widest text-green">
                   +{run.xp_earned} XP
                 </p>
               </div>
-              <p className="text-sm">
+              <p className="text-sm text-mute">
                 {new Date(run.created_at).toLocaleDateString()} · {run.questions_done}/{run.questions_total} questions
                 {run.avg_score !== null ? ` · average ${run.avg_score}` : ""}
               </p>

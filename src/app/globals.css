@@ -30,6 +30,7 @@
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-line: var(--line);
+  --color-shade: var(--shade);
   --color-paper: var(--paper);
   --color-mute: var(--mute);
   --color-green: var(--green);
@@ -272,19 +273,6 @@ pre {
 .dither.d12 {
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM1 1h1v1h-1zM3 1h1v1h-1zM0 2h1v1h-1zM1 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1z'/%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM1 1h1v1h-1zM3 1h1v1h-1zM0 2h1v1h-1zM1 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1z'/%3E%3C/svg%3E");
-}
-
-/* Map node that is ready to play: a two-frame blink of the border, no easing. */
-@keyframes node-blink {
-  0% {
-    border-color: var(--amber);
-  }
-  50% {
-    border-color: var(--paper);
-  }
-}
-.node-blink {
-  animation: node-blink 1s steps(1) infinite;
 }
 
 /* Boss hit: a short stepped shake. */
@@ -830,5 +818,78 @@ pre {
     --face: var(--red);
     --face-d: var(--red-d);
     --face-l: var(--red-l);
+  }
+}
+
+@media (max-width: 480px) {
+  .px-btn--sm {
+    padding: 0.5rem 0.7rem 0.6rem;
+    font-size: 0.8125rem;
+    gap: 0.5rem;
+  }
+}
+
+@layer components {
+  /* A notched list row: 3px line border, dark fill. Variants recolor or dash the border. */
+  .px-box {
+    --n: 4px;
+    border: 3px solid var(--line);
+    background: var(--ink);
+    clip-path: polygon(
+      0 var(--n),
+      var(--n) var(--n),
+      var(--n) 0,
+      calc(100% - var(--n)) 0,
+      calc(100% - var(--n)) var(--n),
+      100% var(--n),
+      100% calc(100% - var(--n)),
+      calc(100% - var(--n)) calc(100% - var(--n)),
+      calc(100% - var(--n)) 100%,
+      var(--n) 100%,
+      var(--n) calc(100% - var(--n)),
+      0 calc(100% - var(--n))
+    );
+  }
+  .px-box--amber {
+    border-color: var(--amber);
+  }
+  .px-box--green {
+    border-color: var(--green-d);
+  }
+  .px-box--red {
+    border-color: var(--red);
+  }
+  /* dashed = empty or locked; no notch, dashes need straight edges */
+  .px-box--dashed {
+    border-style: dashed;
+    clip-path: none;
+    background: transparent;
+  }
+}
+
+@layer components {
+  /* Map nodes: a locked stop is a dim bevel; the ready stop has a pointer that bobs in two steps. */
+  .map-locked {
+    --face: var(--ink-3);
+    --face-d: var(--ink);
+    --face-l: var(--line);
+    color: var(--mute);
+  }
+  .map-pointer {
+    position: absolute;
+    left: 50%;
+    top: -14px;
+    width: 0;
+    height: 0;
+    margin-left: -7px;
+    border-top: 9px solid var(--paper);
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    animation: pointer-bob 1s steps(1) infinite;
+  }
+  @keyframes pointer-bob {
+    50% {
+      transform: translateY(-5px);
+    }
   }
 }

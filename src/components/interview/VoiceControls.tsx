@@ -48,7 +48,7 @@ export function VoiceControls({ voice }: { voice: InterviewerVoice }) {
           onChange={(e) => browserTts.selectVoice(e.target.value)}
           title="Interviewer voice"
           aria-label="Interviewer voice"
-          className="max-w-[160px] border-[3px] border-paper bg-ink px-2 py-1.5 text-sm text-paper focus:outline-3 focus:outline-offset-2 focus:outline-amber"
+          className="max-w-[160px] border-[3px] border-line bg-ink px-2 py-1.5 text-sm text-paper focus:outline-3 focus:outline-offset-2 focus:outline-amber"
         >
           {browserTts.voices.map((v) => (
             <option key={v.voiceURI} value={v.voiceURI}>

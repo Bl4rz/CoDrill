@@ -19,6 +19,7 @@ import { mascot, idleFrames, EXPRESSIONS, MASCOT_W, MASCOT_H, HEAD_H } from "./a
 import { goblinFrames, GOBLIN_W, GOBLIN_H, GOBLIN_STATES } from "./art/goblin.mjs";
 import { arena, ARENA_W, ARENA_H, GOBLIN_AT } from "./art/boss.mjs";
 import { drawText, textWidth } from "./art/font.mjs";
+import { buildMap, MAP_W, MAP_H, MAP_NODES } from "./art/map.mjs";
 import { blit, C } from "./art/toolkit.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -92,6 +93,16 @@ manifest.mascot.head = {
   ...(await encode(sheet(rows, 12), "mascot-head", { budget: BUDGET })),
 };
 
+// Full-body expressions for result screens, dialogs and the 404: 12 frames per row.
+const bodyRows = [];
+for (const e of EXPRESSIONS) bodyRows.push(...idleFrames(e, 12));
+manifest.mascot.body = {
+  frames: 12,
+  fh: MASCOT_H,
+  rows: Object.fromEntries(EXPRESSIONS.map((e, i) => [e, i])),
+  ...(await encode(sheet(bodyRows, 12), "mascot-body", { budget: BUDGET })),
+};
+
 // ---- goblin ----
 manifest.goblin = {
   fw: GOBLIN_W,
@@ -102,6 +113,14 @@ manifest.goblin = {
   arena: await encode(arena(), "arena", { budget: BUDGET }),
   arenaW: ARENA_W,
   arenaH: ARENA_H,
+};
+
+// ---- adventure map: the same world as the hero, as a tall strip ----
+manifest.map = {
+  w: MAP_W,
+  h: MAP_H,
+  nodes: MAP_NODES,
+  ...(await encode(buildMap(), "map", { budget: BUDGET })),
 };
 
 // ---- wordmark: Pixelify Sans draws C like O, so the brand name is baked from the 5x7 bitmap font ----

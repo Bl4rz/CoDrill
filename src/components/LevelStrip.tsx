@@ -5,9 +5,9 @@ import type { InterviewQuestion } from "@/lib/types";
 type State = "done" | "current" | "locked";
 
 const STATE_STYLE: Record<State, string> = {
-  done: "border-green bg-green text-ink",
-  current: "border-amber bg-amber text-ink",
-  locked: "border-dashed border-paper bg-ink text-paper",
+  done: "phase done",
+  current: "phase on",
+  locked: "phase",
 };
 
 /** LEVEL 1..N badges with locked / current / done states and a BOSS tag on the hardest. */
@@ -28,14 +28,14 @@ export function LevelStrip({
         return (
           <li key={q.id} className="flex flex-col items-start gap-1">
             <span
-              className={`flex items-center gap-2 border-[3px] px-2.5 py-1.5 font-display text-sm uppercase tracking-widest ${STATE_STYLE[state]}`}
+              className={`${STATE_STYLE[state]} flex items-center gap-2 uppercase tracking-widest`}
               aria-label={`Level ${i + 1}, ${state}${i === boss ? ", boss" : ""}`}
             >
               {state === "done" ? <CheckIcon /> : state === "current" ? <ArrowIcon unit="2px" /> : <LockIcon />}
               Level {i + 1}
             </span>
             {i === boss && (
-              <span className="bg-red px-2 py-0.5 font-display text-xs uppercase tracking-widest text-ink">
+              <span className="bg-red px-2 py-0.5 font-display text-xs font-medium uppercase tracking-widest text-ink">
                 Boss
               </span>
             )}

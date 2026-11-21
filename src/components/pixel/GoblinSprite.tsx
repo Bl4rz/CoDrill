@@ -59,6 +59,7 @@ export function GoblinSprite({
         alt=""
         width={g.w}
         height={g.h}
+        loading="lazy"
         decoding="async"
         style={{
           width: `calc(var(--k, 3) * ${g.w}px)`,
@@ -98,6 +99,7 @@ export function GoblinScene({
         alt=""
         width={g.arenaW}
         height={g.arenaH}
+        loading="lazy"
         decoding="async"
       />
       <span

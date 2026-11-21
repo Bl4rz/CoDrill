@@ -1,20 +1,24 @@
-import { CheckIcon, LockIcon, ArrowIcon } from "@/components/pixel/icons";
+import type { CSSProperties } from "react";
+import { CheckIcon, LockIcon } from "@/components/pixel/icons";
 import { GoblinSprite } from "@/components/pixel/GoblinSprite";
 import type { LevelView } from "@/lib/adventure/types";
 
-const BOX = "flex shrink-0 items-center justify-center border-[3px]";
-
-/** One stop on the map. Its look comes from the server-computed status, and it is always a real button. */
+/**
+ * One stop on the map. Its look comes from the server-computed status, and it is always a real
+ * button. Sizes are whole multiples of the map's art pixel (--k): 18 for a level, 24 for the boss.
+ */
 export function MapNode({ level, onSelect }: { level: LevelView; onSelect: (level: LevelView) => void }) {
   const { status, is_boss: boss } = level;
-  const size = boss ? "h-24 w-24" : "h-[72px] w-[72px]";
+  const side = boss ? 24 : 18;
 
-  const style =
+  const tone =
     status === "completed"
-      ? "border-green bg-green text-ink"
+      ? "tone-green"
       : status === "unlocked"
-        ? `node-blink border-amber bg-ink ${boss ? "text-red" : "text-amber"}`
-        : "border-dashed border-paper bg-ink text-paper";
+        ? boss
+          ? "tone-red"
+          : ""
+        : "map-locked";
 
   const label = boss ? "Boss" : `Level ${level.order_index}`;
   const stateText =
@@ -29,42 +33,45 @@ export function MapNode({ level, onSelect }: { level: LevelView; onSelect: (leve
       type="button"
       onClick={() => onSelect(level)}
       aria-label={`${label}: ${level.title}, ${stateText}`}
-      className="group flex w-32 flex-col items-center gap-2 text-center focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-amber"
+      className="group flex w-36 flex-col items-center gap-2 text-center"
     >
-      <span className={`${BOX} ${size} ${style} ${boss && status !== "completed" ? "border-red" : ""}`}>
-        {boss ? (
-          status === "locked" ? (
-            <span className="text-paper">
+      <span className="relative inline-flex [filter:drop-shadow(4px_4px_0_var(--shade))] group-active:[filter:drop-shadow(1px_1px_0_var(--shade))]">
+        {status === "unlocked" && <span className="map-pointer" aria-hidden="true" />}
+        <span
+          className={`grade-box notch ${tone} flex items-center justify-center group-active:translate-x-[3px] group-active:translate-y-[3px] [--n:4px] ${boss ? "[--n:6px]" : ""}`}
+          style={{ width: `calc(var(--k) * ${side}px)`, height: `calc(var(--k) * ${side}px)` } as CSSProperties}
+        >
+          {boss ? (
+            status === "locked" ? (
               <LockIcon unit="4px" />
-            </span>
+            ) : (
+              <GoblinSprite state={status === "completed" ? "defeated" : "idle"} crop="head" k={1} title="" />
+            )
+          ) : status === "completed" ? (
+            <CheckIcon unit="5px" />
+          ) : status === "unlocked" ? (
+            <span className="font-display text-3xl font-bold leading-none">{level.order_index}</span>
           ) : (
-            <GoblinSprite state={status === "completed" ? "defeated" : "idle"} crop="head" k={1} title="" />
-          )
-        ) : status === "completed" ? (
-          <CheckIcon unit="5px" />
-        ) : status === "unlocked" ? (
-          <span className="flex flex-col items-center gap-1">
-            <span className="font-display text-2xl leading-none">{level.order_index}</span>
-            <ArrowIcon unit="2px" />
-          </span>
-        ) : (
-          <span className="flex flex-col items-center gap-1">
-            <span className="font-display text-lg leading-none">{level.order_index}</span>
-            <LockIcon unit="2px" />
-          </span>
-        )}
+            <span className="flex flex-col items-center gap-1">
+              <span className="font-display text-lg font-bold leading-none">{level.order_index}</span>
+              <LockIcon unit="2px" />
+            </span>
+          )}
+        </span>
       </span>
-      <span className="font-display text-xs uppercase leading-tight tracking-widest group-hover:text-amber">
-        {level.title}
-      </span>
-      <span className="text-xs leading-snug">
-        {status === "completed" && (
-          <span className="text-green">
-            {level.best_overall !== null ? `Best ${level.best_overall}` : "Done"} · Replay
-          </span>
-        )}
-        {status === "unlocked" && <span className="text-amber">{boss ? "Ready to fight" : "Ready"}</span>}
-        {status === "locked" && level.unlock_text}
+      <span className="notch flex w-full flex-col gap-0.5 bg-ink/90 px-2 py-1.5 [--n:3px]">
+        <span className="font-display text-xs font-medium uppercase leading-tight tracking-widest group-hover:text-amber">
+          {level.title}
+        </span>
+        <span className="text-xs leading-snug text-mute">
+          {status === "completed" && (
+            <span className="text-green">
+              {level.best_overall !== null ? `Best ${level.best_overall}` : "Done"} · Replay
+            </span>
+          )}
+          {status === "unlocked" && <span className="text-amber">{boss ? "Ready to fight" : "Ready"}</span>}
+          {status === "locked" && level.unlock_text}
+        </span>
       </span>
     </button>
   );

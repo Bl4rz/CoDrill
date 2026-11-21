@@ -63,7 +63,7 @@ export function LevelDialog({ level, onClose }: { level: LevelView; onClose: () 
 
         <div className="flex items-center gap-4">
           {boss && (
-            <div className="shrink-0 bg-ink p-2">
+            <div className="portrait">
               <GoblinSprite state={replay ? "defeated" : "angry"} crop="head" k={1} title="" />
             </div>
           )}
@@ -82,7 +82,7 @@ export function LevelDialog({ level, onClose }: { level: LevelView; onClose: () 
           <p className="border-[3px] border-dashed border-ink px-3 py-2 text-base">{level.unlock_text}</p>
         ) : (
           <>
-            <div className="bg-ink px-3 py-3 text-paper">
+            <div className="notch bg-ink px-3 py-3 text-paper [--n:4px]">
               <p className="font-display text-xs uppercase tracking-widest text-amber">
                 {replay ? "Replay" : "First clear"}
               </p>
@@ -107,7 +107,7 @@ export function LevelDialog({ level, onClose }: { level: LevelView; onClose: () 
         )}
 
         {error && (
-          <p role="alert" className="border-[3px] border-red px-3 py-2 text-base text-red">
+          <p role="alert" className="px-box px-box--red px-3 py-2 text-base text-red">
             {error}
           </p>
         )}

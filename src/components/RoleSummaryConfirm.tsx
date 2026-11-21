@@ -5,7 +5,7 @@ import { RoleSummary } from "@/lib/types";
 import { PixelButton } from "@/components/pixel/PixelButton";
 
 const FIELD =
-  "w-full border-[3px] border-paper bg-ink px-3 py-2 text-base text-paper focus:outline-3 focus:outline-offset-2 focus:outline-amber";
+  "w-full border-[3px] border-line bg-ink px-3 py-2 text-base text-paper focus:outline-3 focus:outline-offset-2 focus:outline-amber";
 const LABEL = "mb-1.5 block font-display text-sm uppercase tracking-widest";
 
 function TagEditor({

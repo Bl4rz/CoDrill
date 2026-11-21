@@ -27,41 +27,41 @@ const defineTheme: BeforeMount = (monaco) => {
     base: "vs-dark",
     inherit: false,
     rules: [
-      { token: "", foreground: hex(PALETTE.paper), background: hex(PALETTE.ink) },
-      { token: "keyword", foreground: hex(PALETTE.amber) },
-      { token: "keyword.control", foreground: hex(PALETTE.amber) },
-      { token: "string", foreground: hex(PALETTE.green) },
-      { token: "number", foreground: hex(PALETTE.red) },
-      { token: "comment", foreground: hex(PALETTE.green), fontStyle: "italic" },
+      { token: "", foreground: hex(PALETTE.paper), background: hex(PALETTE.shade) },
+      { token: "keyword", foreground: hex(PALETTE.green) },
+      { token: "keyword.control", foreground: hex(PALETTE.green) },
+      { token: "string", foreground: hex(PALETTE.amberL) },
+      { token: "number", foreground: hex(PALETTE.amber) },
+      { token: "comment", foreground: hex(PALETTE.mute), fontStyle: "italic" },
       { token: "type", foreground: hex(PALETTE.paper) },
       { token: "delimiter", foreground: hex(PALETTE.paper) },
     ],
     colors: {
-      "editor.background": PALETTE.ink,
+      "editor.background": PALETTE.shade,
       "editor.foreground": PALETTE.paper,
-      "editorLineNumber.foreground": PALETTE.paper,
+      "editorLineNumber.foreground": PALETTE.mute,
       "editorLineNumber.activeForeground": PALETTE.amber,
       "editorCursor.foreground": PALETTE.amber,
-      "editor.selectionBackground": PALETTE.paper,
-      "editor.selectionForeground": PALETTE.ink,
-      "editor.inactiveSelectionBackground": PALETTE.green,
-      "editor.lineHighlightBackground": PALETTE.ink,
-      "editor.lineHighlightBorder": PALETTE.ink,
-      "editorBracketMatch.background": PALETTE.ink,
+      "editor.selectionBackground": PALETTE.line,
+      "editor.selectionForeground": PALETTE.paper,
+      "editor.inactiveSelectionBackground": PALETTE.ink3,
+      "editor.lineHighlightBackground": PALETTE.shade,
+      "editor.lineHighlightBorder": PALETTE.shade,
+      "editorBracketMatch.background": PALETTE.shade,
       "editorBracketMatch.border": PALETTE.amber,
-      "editorIndentGuide.background1": PALETTE.ink,
-      "editorIndentGuide.activeBackground1": PALETTE.ink,
-      "editorWhitespace.foreground": PALETTE.ink,
-      "scrollbarSlider.background": PALETTE.paper,
+      "editorIndentGuide.background1": PALETTE.shade,
+      "editorIndentGuide.activeBackground1": PALETTE.shade,
+      "editorWhitespace.foreground": PALETTE.shade,
+      "scrollbarSlider.background": PALETTE.line,
       "scrollbarSlider.hoverBackground": PALETTE.amber,
       "scrollbarSlider.activeBackground": PALETTE.amber,
-      "editorWidget.background": PALETTE.ink,
-      "editorWidget.border": PALETTE.paper,
-      "editorSuggestWidget.background": PALETTE.ink,
-      "editorSuggestWidget.border": PALETTE.paper,
+      "editorWidget.background": PALETTE.ink2,
+      "editorWidget.border": PALETTE.line,
+      "editorSuggestWidget.background": PALETTE.ink2,
+      "editorSuggestWidget.border": PALETTE.line,
       "editorSuggestWidget.selectedBackground": PALETTE.amber,
       "editorSuggestWidget.foreground": PALETTE.paper,
-      "list.hoverBackground": PALETTE.ink,
+      "list.hoverBackground": PALETTE.ink3,
       "list.activeSelectionBackground": PALETTE.amber,
       "list.activeSelectionForeground": PALETTE.ink,
     },
@@ -89,8 +89,8 @@ export function CodeEditor({
   });
 
   return (
-    <div className="flex flex-col border-[3px] border-paper">
-      <div className="flex flex-wrap gap-2 border-b-[3px] border-paper bg-ink p-2">
+    <div className="flex flex-col border-[3px] border-line">
+      <div className="flex flex-wrap gap-2 border-b-[3px] border-line bg-ink-2 p-2">
         {(Object.keys(LANGUAGE_LABELS) as CodeLanguage[]).map((lang) => (
           <button
             key={lang}
@@ -102,11 +102,7 @@ export function CodeEditor({
               }
               onLanguageChange(lang);
             }}
-            className={`border-2 px-3 py-1.5 font-display text-xs uppercase tracking-widest ${
-              lang === language
-                ? "border-amber bg-amber text-ink"
-                : "border-paper bg-ink text-paper hover:border-amber hover:text-amber"
-            }`}
+            className={`phase min-h-11 uppercase tracking-widest hover:text-amber ${lang === language ? "on hover:text-ink" : ""}`}
           >
             {LANGUAGE_LABELS[lang]}
           </button>

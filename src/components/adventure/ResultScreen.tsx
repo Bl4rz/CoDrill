@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ADVENTURE, PHASES, PHASE_INFO } from "@/lib/adventure/config";
 import type { AttemptView, FinishedResult } from "@/lib/adventure/types";
 import { ApiError, postJson } from "@/lib/api-client";
-import { GoblinSprite } from "@/components/pixel/GoblinSprite";
+import { GoblinScene } from "@/components/pixel/GoblinSprite";
 import { CoinIcon } from "@/components/pixel/icons";
 import { Mascot } from "@/components/pixel/Mascot";
 import { PixelButton, PixelLink } from "@/components/pixel/PixelButton";
@@ -26,7 +26,7 @@ export function ResultScreen({ view, result }: { view: AttemptView; result: Fini
   const scores = Object.fromEntries(view.phases.map((p) => [p.phase, p.score]));
   const hpLeft = view.hp;
 
-  const title = victory ? "BOSS DEFEATED!" : result.passed ? "LEVEL CLEAR!" : boss ? "NOT YET" : "NOT QUITE";
+  const title = victory ? "Boss defeated!" : result.passed ? "Level clear!" : boss ? "Not yet" : "Not quite";
   const accent = result.passed ? "var(--green)" : "var(--amber)";
 
   async function retry() {
@@ -52,7 +52,9 @@ export function ResultScreen({ view, result }: { view: AttemptView; result: Fini
     >
       <div className="flex flex-col items-center gap-4 text-center">
         {boss ? (
-          <GoblinSprite state={victory ? "defeated" : "angry"} k={3} title={victory ? "The Debug Goblin, defeated" : "The Debug Goblin, still standing"} />
+          <div className="border-[3px] border-line [--k:3] sm:[--k:4]" role="img" aria-label={victory ? "The Debug Goblin, defeated" : "The Debug Goblin, still standing"}>
+            <GoblinScene state={victory ? "defeated" : "angry"} />
+          </div>
         ) : (
           <Mascot expression={result.passed ? "impressed" : "concerned"} k={3} />
         )}
@@ -76,7 +78,7 @@ export function ResultScreen({ view, result }: { view: AttemptView; result: Fini
       </div>
 
       {result.passed && (
-        <div className="border-[3px] border-paper px-4 py-3" aria-label="Rewards">
+        <div className="px-box px-4 py-3" aria-label="Rewards">
           {result.xp_gained > 0 || result.coins_gained > 0 ? (
             <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 font-display text-xl uppercase tracking-widest">
               <span className="text-green">+{result.xp_gained} XP</span>
@@ -97,9 +99,9 @@ export function ResultScreen({ view, result }: { view: AttemptView; result: Fini
           <p className="font-display text-sm uppercase tracking-widest text-amber">Achievements unlocked</p>
           <ul className="flex flex-col gap-2">
             {result.unlocked.map((a) => (
-              <li key={a.id} className="border-[3px] border-amber px-3 py-2">
+              <li key={a.id} className="px-box px-box--amber px-3 py-2">
                 <span className="font-display text-base uppercase tracking-widest">{a.name}</span>
-                <span className="block text-sm">{a.description}</span>
+                <span className="block text-sm text-mute">{a.description}</span>
               </li>
             ))}
           </ul>
@@ -112,11 +114,11 @@ export function ResultScreen({ view, result }: { view: AttemptView; result: Fini
         ))}
       </div>
 
-      <details className="group border-[3px] border-paper">
+      <details className="group px-box">
         <summary className="cursor-pointer px-4 py-3 font-display text-sm uppercase tracking-widest focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-amber">
           Detailed feedback
         </summary>
-        <div className="flex flex-col gap-4 border-t-[3px] border-paper p-4">
+        <div className="flex flex-col gap-4 border-t-[3px] border-line p-4">
           {view.phases.map((p) => (
             <div key={p.phase} className="flex flex-col gap-1">
               <p className="flex flex-wrap items-baseline justify-between gap-2 font-display text-sm uppercase tracking-widest">
@@ -130,7 +132,7 @@ export function ResultScreen({ view, result }: { view: AttemptView; result: Fini
       </details>
 
       {error && (
-        <p role="alert" className="border-[3px] border-red px-3 py-2 text-base text-red">
+        <p role="alert" className="px-box px-box--red px-3 py-2 text-base text-red">
           {error}
         </p>
       )}

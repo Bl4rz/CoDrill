@@ -66,7 +66,7 @@ export default function AdventurePage() {
 
           <AdventureMap data={state.data} />
 
-          <p className="border-[3px] border-dashed border-paper p-4 text-center font-display text-sm uppercase tracking-widest">
+          <p className="px-box px-box--dashed p-4 text-center font-display text-sm uppercase tracking-widest">
             More worlds coming
           </p>
         </>

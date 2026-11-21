@@ -129,7 +129,7 @@ export default function HubPage() {
                     .sort((a, b) => (b.unlocked_at! > a.unlocked_at! ? 1 : -1))
                     .slice(0, 3);
                   return unlocked.length === 0 ? (
-                    <p className="border-[3px] border-dashed border-paper p-4 text-base">
+                    <p className="px-box px-box--dashed p-4 text-base">
                       None yet. Finish a question to earn your first.
                     </p>
                   ) : (

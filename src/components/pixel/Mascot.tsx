@@ -28,11 +28,11 @@ export function Mascot({
 }) {
   const m = art.mascot;
   const head = crop === "head";
-  const sheet = head ? m.head : m.full;
+  const sheet = head ? m.head : m.body;
   const frames = sheet.frames;
-  const fh = head ? m.head.fh : m.fh;
-  const row = head ? (m.head.rows as Record<string, number>)[expression] ?? 0 : 0;
-  const rows = head ? Object.keys(m.head.rows).length : 1;
+  const fh = sheet.fh;
+  const row = (sheet.rows as Record<string, number>)[expression] ?? 0;
+  const rows = Object.keys(sheet.rows).length;
   const style = {
     ...(k ? { "--k": k } : null),
     "--n": frames,
@@ -55,6 +55,7 @@ export function Mascot({
         width={sheet.w}
         height={sheet.h}
         decoding="async"
+        loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
         style={{
           width: `calc(var(--k, 2) * ${sheet.w}px)`,

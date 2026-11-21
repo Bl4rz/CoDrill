@@ -15,7 +15,7 @@ export interface TranscriptEntry {
 
 export function Avatar({ expression }: { expression: Expression }) {
   return (
-    <div className="shrink-0 border-[3px] border-paper bg-ink p-1">
+    <div className="portrait">
       <Mascot crop="head" expression={expression} k={2} title="Interviewer" />
     </div>
   );
@@ -52,7 +52,7 @@ export function InterviewerLine({
 
 export function YouLine({ text }: { text: string }) {
   return (
-    <div className="ml-auto max-w-[90%] border-[3px] border-green bg-ink p-3 text-left sm:max-w-[80%]">
+    <div className="px-box px-box--green ml-auto max-w-[90%] p-3 text-left sm:max-w-[80%]">
       <p className="mb-1 font-display text-xs uppercase tracking-widest text-green">You</p>
       <p className="whitespace-pre-wrap text-base leading-relaxed">{text}</p>
     </div>

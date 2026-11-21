@@ -47,7 +47,7 @@ export function VoiceTextArea({
           aria-label={label ?? placeholder}
           rows={rows}
           disabled={disabled}
-          className="w-full resize-y border-[3px] border-paper bg-ink px-3 py-2 pr-14 text-base text-paper placeholder:text-green focus:outline-3 focus:outline-offset-2 focus:outline-amber disabled:border-dashed"
+          className="w-full resize-y border-[3px] border-line bg-ink px-3 py-2 pr-14 text-base text-paper placeholder:text-green focus:outline-3 focus:outline-offset-2 focus:outline-amber disabled:border-dashed"
         />
         {stt.isSupported && (
           <button
@@ -57,10 +57,10 @@ export function VoiceTextArea({
             aria-pressed={stt.isListening}
             aria-label={stt.isListening ? "Stop recording" : "Speak your answer"}
             title={stt.isListening ? "Stop recording" : "Speak your answer"}
-            className={`absolute right-2 top-2 flex h-10 w-10 items-center justify-center border-[3px] disabled:border-dashed ${
+            className={`absolute right-2 top-2 flex h-11 w-11 items-center justify-center border-[3px] disabled:border-dashed ${
               stt.isListening
                 ? "border-red bg-red text-ink"
-                : "border-paper bg-ink text-paper hover:border-amber hover:text-amber"
+                : "border-line bg-ink text-paper hover:border-amber hover:text-amber"
             }`}
           >
             <MicIcon />

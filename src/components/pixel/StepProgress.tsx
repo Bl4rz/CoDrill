@@ -49,13 +49,9 @@ export function StepProgress({
       <p role="status" aria-live="polite" className="font-display text-base uppercase tracking-widest">
         {messages[messageIndex]}
       </p>
-      <div className="flex gap-[3px] border-[3px] border-paper p-[3px]">
+      <div className="flex gap-1">
         {Array.from({ length: chunks }).map((_, i) => (
-          <div
-            key={i}
-            className="h-4 flex-1"
-            style={{ background: i <= step ? "var(--green)" : "var(--ink)" }}
-          />
+          <i key={i} className={`chunk${i <= step ? " on chunk-green" : ""}`} />
         ))}
       </div>
     </div>

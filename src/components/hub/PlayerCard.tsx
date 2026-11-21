@@ -11,7 +11,7 @@ export function PlayerCard({ player }: { player: PlayerSummary }) {
       className="pixel-panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-6"
     >
       <div className="flex items-center gap-4 sm:flex-col sm:items-center">
-        <div className="shrink-0 border-[3px] border-paper p-2">
+        <div className="portrait">
           <Mascot crop="head" k={2} title="Your mascot" />
         </div>
         <div className="sm:text-center">

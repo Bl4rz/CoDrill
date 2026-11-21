@@ -44,11 +44,11 @@ export function JobPostingForm({
         placeholder="https://... or paste the full job description here"
         rows={10}
         maxLength={MAX_POSTING_CHARS}
-        className="code w-full resize-y border-[3px] border-paper bg-ink px-4 py-3 text-sm text-paper placeholder:text-green focus:outline-3 focus:outline-offset-2 focus:outline-amber"
+        className="code w-full resize-y border-[3px] border-line bg-ink px-4 py-3 text-sm text-paper placeholder:text-green focus:outline-3 focus:outline-offset-2 focus:outline-amber"
         disabled={loading}
       />
       {error && (
-        <p role="alert" className="border-[3px] border-red px-3 py-2 text-base text-red">
+        <p role="alert" className="px-box px-box--red px-3 py-2 text-base text-red">
           {error}
         </p>
       )}

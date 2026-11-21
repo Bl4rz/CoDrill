@@ -26,13 +26,7 @@ export function PhaseTracker({
               </span>
             )}
             <span
-              className={`flex items-center gap-2 border-[3px] px-2 py-1 font-display text-xs uppercase tracking-widest ${
-                done
-                  ? "border-green bg-green text-ink"
-                  : active
-                    ? "border-amber bg-amber text-ink"
-                    : "border-dashed border-paper text-paper"
-              }`}
+              className={`phase flex items-center gap-2 ${done ? "done" : active ? "on" : ""}`}
               aria-current={active ? "step" : undefined}
             >
               {done && <CheckIcon />}

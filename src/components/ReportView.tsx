@@ -176,7 +176,7 @@ export function ReportView({ session }: { session: StoredSession }) {
         <p className="font-display text-xs uppercase tracking-widest text-green">
           {session.role_summary.role_title} · {session.role_summary.seniority}
         </p>
-        <h1 className="pixel-title text-[clamp(1.25rem,6vw,3rem)]">RUN COMPLETE</h1>
+        <h1 className="pixel-title text-[clamp(1.25rem,6vw,3rem)]">Run complete</h1>
       </header>
 
       <section
@@ -242,7 +242,7 @@ export function ReportView({ session }: { session: StoredSession }) {
         <section className="flex flex-col gap-3">
           <h2 className="pixel-heading text-xl">More patterns</h2>
           {otherPatterns.map((p, i) => (
-            <div key={i} className="border-[3px] border-amber p-4">
+            <div key={i} className="px-box px-box--amber p-4">
               <p className="font-display text-sm uppercase tracking-widest text-amber">{p.title}</p>
               <p className="mt-1 text-base leading-relaxed">{p.detail}</p>
             </div>
@@ -253,7 +253,7 @@ export function ReportView({ session }: { session: StoredSession }) {
       <section className="flex flex-col gap-4">
         <h2 className="pixel-heading text-xl">Level by level</h2>
         {scored.map(({ question, attempt, level }) => (
-          <div key={question.id} className="flex flex-col gap-4 border-[3px] border-paper p-4">
+          <div key={question.id} className="px-box flex flex-col gap-4 p-4">
             <div className="flex flex-wrap items-center gap-3">
               <span className="font-display text-base uppercase tracking-widest">Level {level}</span>
               {level - 1 === boss && (
@@ -281,7 +281,7 @@ export function ReportView({ session }: { session: StoredSession }) {
         <h2 className="pixel-heading text-xl">Practice before the real interview</h2>
         <ul className="flex flex-col gap-3">
           {report.practice_recommendations.map((r, i) => (
-            <li key={i} className="flex items-start gap-3 border-[3px] border-paper p-3 text-base">
+            <li key={i} className="px-box flex items-start gap-3 p-3 text-base">
               <span className="mt-1.5 shrink-0 text-green" aria-hidden="true">
                 <ArrowIcon unit="2px" />
               </span>

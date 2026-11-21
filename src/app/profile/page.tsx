@@ -283,7 +283,7 @@ export default function ProfilePage() {
             </div>
 
             {recError && (
-              <p role="alert" className="mt-3 border-[3px] border-red px-3 py-2 text-base text-red">
+              <p role="alert" className="mt-3 px-box px-box--red px-3 py-2 text-base text-red">
                 {recError}
               </p>
             )}
@@ -335,7 +335,7 @@ export default function ProfilePage() {
             const score = sessionOverallScore(s);
             const isExpanded = expandedId === s.id;
             return (
-              <div key={s.id} className="border-[3px] border-paper">
+              <div key={s.id} className="px-box">
                 <button
                   type="button"
                   onClick={() => setExpandedId(isExpanded ? null : s.id)}
@@ -360,7 +360,7 @@ export default function ProfilePage() {
                 </button>
 
                 {isExpanded && (
-                  <div className="flex flex-col gap-3 border-t-[3px] border-paper p-4">
+                  <div className="flex flex-col gap-3 border-t-[3px] border-line p-4">
                     {s.questions.map((q, i) => {
                       const qScore = attemptScore(s.attempts[q.id]);
                       return (

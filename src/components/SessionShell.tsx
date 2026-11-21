@@ -119,7 +119,7 @@ export function SessionShell({ sessionId }: { sessionId: string }) {
       )}
 
       {reportError && (
-        <p role="alert" className="border-[3px] border-red px-3 py-2 text-base text-red">
+        <p role="alert" className="px-box px-box--red px-3 py-2 text-base text-red">
           {reportError}
         </p>
       )}
