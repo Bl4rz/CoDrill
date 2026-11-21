@@ -18,7 +18,6 @@ import { PixelButton } from "@/components/pixel/PixelButton";
 import { SegmentBar } from "@/components/pixel/SegmentBar";
 import { StepProgress } from "@/components/pixel/StepProgress";
 import { ArrowIcon, CheckIcon, CoinIcon } from "@/components/pixel/icons";
-import { shadowColor } from "@/components/pixel/style";
 import { postJson } from "@/lib/api-client";
 import { showToast } from "@/lib/toast";
 import { useIsSignedIn } from "@/lib/useIsSignedIn";
@@ -304,7 +303,7 @@ export function InterviewRunner({
           </div>
 
           {stage === "scored" && attempt?.scores && (
-            <div className="pixel-panel flex flex-col gap-4 border-paper bg-ink p-4" style={shadowColor("var(--green)")}>
+            <div className="pixel-panel flex flex-col gap-4 p-4">
               <p className="font-display text-base uppercase tracking-widest text-green">Level complete</p>
               <SegmentBar label="Correctness" value={attempt.scores.correctness_score} animate />
               <SegmentBar label="Communication" value={attempt.scores.communication_score} animate delay={900} />

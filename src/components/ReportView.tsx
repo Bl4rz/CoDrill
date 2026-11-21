@@ -15,7 +15,6 @@ import { SegmentBar } from "@/components/pixel/SegmentBar";
 import { ArrowIcon, CoinIcon } from "@/components/pixel/icons";
 import { LevelUpDialog } from "@/components/pixel/LevelUpDialog";
 import type { RunSummaryResponse } from "@/lib/progression/types";
-import { shadowColor } from "@/components/pixel/style";
 
 type ScoreAxis = "correctness" | "communication" | "reasoning";
 
@@ -182,8 +181,7 @@ export function ReportView({ session }: { session: StoredSession }) {
 
       <section
         aria-label="Score"
-        className="pixel-panel flex flex-col items-center gap-6 border-paper bg-ink p-5 sm:flex-row sm:p-6"
-        style={shadowColor("var(--green)")}
+        className="pixel-panel flex flex-col items-center gap-6 p-5 sm:flex-row sm:p-6"
       >
         <GradeBox letter={letter} label="Run grade" />
         <div className="flex w-full flex-1 flex-col gap-4">
@@ -229,7 +227,7 @@ export function ReportView({ session }: { session: StoredSession }) {
       )}
 
       {nextAxis && (
-        <section className="pixel-panel border-amber bg-ink p-5" style={shadowColor("var(--amber)")}>
+        <section className="pixel-panel p-5">
           <p className="mb-2 font-display text-sm uppercase tracking-widest text-amber">Your next rep</p>
           <p className="text-base leading-relaxed">{NEXT_ACTION_COPY[nextAxis]}</p>
         </section>

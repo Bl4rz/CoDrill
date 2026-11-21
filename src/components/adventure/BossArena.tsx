@@ -3,7 +3,7 @@
 import type { LevelDifficulty } from "@/lib/adventure/types";
 import { DifficultyTag } from "@/components/adventure/DifficultyTag";
 import { GoblinSprite, type GoblinState } from "@/components/pixel/GoblinSprite";
-import { shadowColor } from "@/components/pixel/style";
+import { edgeColor } from "@/components/pixel/style";
 
 export interface DamagePop {
   amount: number;
@@ -65,8 +65,8 @@ export function BossArena({
   return (
     <section
       aria-label={`Boss: ${name}`}
-      className="pixel-panel flex flex-wrap items-center gap-x-6 gap-y-4 border-red bg-ink p-4"
-      style={shadowColor("var(--red)")}
+      className="pixel-panel flex flex-wrap items-center gap-x-6 gap-y-4 p-4"
+      style={edgeColor("var(--red)")}
     >
       <div className="relative mx-auto shrink-0 sm:mx-0">
         <div className={state === "hit" ? "boss-shake" : undefined}>

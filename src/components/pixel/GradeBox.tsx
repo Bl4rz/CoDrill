@@ -13,7 +13,7 @@ export function GradeBox({ letter, label = "Grade" }: { letter: Letter; label?: 
   return (
     <div className="flex flex-col items-center gap-2">
       <div
-        className="pixel-panel flex h-28 w-28 items-center justify-center border-paper bg-ink font-display text-7xl font-medium sm:h-32 sm:w-32 sm:text-8xl"
+        className="pixel-panel flex h-28 w-28 items-center justify-center font-display text-7xl font-medium sm:h-32 sm:w-32 sm:text-8xl"
         style={{ color: COLOR[letter], "--pixel-shadow": COLOR[letter] } as React.CSSProperties}
         aria-label={`${label} ${letter}`}
       >

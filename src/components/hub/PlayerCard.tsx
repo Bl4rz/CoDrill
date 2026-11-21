@@ -1,7 +1,6 @@
 import { Mascot } from "@/components/pixel/Mascot";
 import { XpBar } from "@/components/pixel/XpBar";
 import { CoinIcon } from "@/components/pixel/icons";
-import { shadowColor } from "@/components/pixel/style";
 import type { PlayerSummary } from "@/lib/progression/types";
 
 /** Avatar, level, XP bar and coins. Every number comes from the server. */
@@ -9,8 +8,7 @@ export function PlayerCard({ player }: { player: PlayerSummary }) {
   return (
     <section
       aria-label="Player"
-      className="pixel-panel flex flex-col gap-4 border-paper bg-ink p-5 sm:flex-row sm:items-center sm:gap-6"
-      style={shadowColor("var(--green)")}
+      className="pixel-panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-6"
     >
       <div className="flex items-center gap-4 sm:flex-col sm:items-center">
         <div className="shrink-0 border-[3px] border-paper p-2">

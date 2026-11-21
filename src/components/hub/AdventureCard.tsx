@@ -1,6 +1,5 @@
 import { GoblinSprite } from "@/components/pixel/GoblinSprite";
 import { PixelLink } from "@/components/pixel/PixelButton";
-import { shadowColor } from "@/components/pixel/style";
 import type { HubAdventure } from "@/lib/adventure/types";
 
 /** World progress and the next recommended level, from the player's stored progress. */
@@ -9,8 +8,7 @@ export function AdventureCard({ adventure }: { adventure: HubAdventure }) {
   return (
     <section
       aria-labelledby="adventure-title"
-      className="pixel-panel flex flex-col gap-4 border-paper bg-ink p-5"
-      style={shadowColor("var(--amber)")}
+      className="pixel-panel flex flex-col gap-4 p-5"
     >
       <div className="flex items-start justify-between gap-4">
         <div>

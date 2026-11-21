@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
 /*
- * Five colors, defined once in src/lib/palette.ts and injected on <html> by
- * layout.tsx (--ink, --paper, --green, --amber, --red). Nothing in this file
- * is allowed to introduce a sixth.
+ * Brand colors and their surface/bevel tones are defined once in
+ * src/lib/palette.ts and injected on <html> by layout.tsx (--ink, --ink-2,
+ * --ink-3, --line, --paper, --mute, --green, --amber, --red and their -d / -l
+ * bevel tones, --shade). Nothing in this file introduces a hex color.
  */
 :root {
   /* One "art pixel". Sprites and scenery are sized in whole multiples of it
      so they always land on whole screen pixels. */
   --u: 4px;
+  color-scheme: dark;
 }
 @media (min-width: 640px) {
   :root {
@@ -22,13 +24,23 @@
 }
 
 @theme inline {
-  /* Wipe Tailwind's default palette so only the five colors can be used. */
+  /* Wipe Tailwind's default palette so only the brand colors can be used. */
   --color-*: initial;
   --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
   --color-paper: var(--paper);
+  --color-mute: var(--mute);
   --color-green: var(--green);
+  --color-green-d: var(--green-d);
+  --color-green-l: var(--green-l);
   --color-amber: var(--amber);
+  --color-amber-d: var(--amber-d);
+  --color-amber-l: var(--amber-l);
   --color-red: var(--red);
+  --color-red-d: var(--red-d);
+  --color-red-l: var(--red-l);
 
   /* Square everything. */
   --radius-*: initial;
@@ -47,7 +59,6 @@
   --drop-shadow-*: initial;
 
   --font-display: var(--f-display), ui-monospace, monospace;
-  --font-title: var(--f-title), var(--f-display), ui-monospace, monospace;
   --font-sans: var(--f-body), system-ui, sans-serif;
   --font-mono: var(--f-code), ui-monospace, monospace;
 }
@@ -56,8 +67,16 @@ body {
   background: var(--ink);
   color: var(--paper);
   font-family: var(--font-sans);
-  font-size: 1rem;
+  font-size: 1.0625rem; /* 17px */
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Pixel art is only ever scaled by whole numbers; never smoothed. */
+canvas,
+img.px {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 code,
@@ -67,25 +86,27 @@ textarea.code {
   font-variant-ligatures: none;
   text-align: left;
 }
-
-/* Section heading: same offset-shadow treatment as the title, smaller. */
-.pixel-heading {
-  font-family: var(--font-display);
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-shadow: 3px 3px 0 var(--amber);
+pre {
+  overflow-x: auto;
 }
 
-/* Display weight stays at 500: heavier weights close up Pixelify Sans's already
-   tight C. The three big titles use the title font instead. */
+/* Section heading. A hard dark offset keeps it legible over scenes; no glow. */
+.pixel-heading {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+/* Big titles: same face, bigger, with the hard offset shadow. */
 .pixel-title {
-  font-family: var(--font-title);
-  font-weight: 400;
-  line-height: 1.25;
-  letter-spacing: 0.04em;
-  text-shadow: 4px 4px 0 var(--amber);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+  text-shadow: 0 5px 0 var(--shade);
 }
 
 ::selection {
@@ -93,8 +114,13 @@ textarea.code {
   color: var(--ink);
 }
 
+:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 3px;
+}
+
 * {
-  scrollbar-color: var(--paper) var(--ink);
+  scrollbar-color: var(--line) var(--ink);
   scrollbar-width: thin;
 }
 
@@ -103,43 +129,93 @@ textarea.code {
   height: 12px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--paper);
+  background: var(--line);
   border: 3px solid var(--ink);
 }
 ::-webkit-scrollbar-track {
   background: var(--ink);
 }
 
-/* Hard-edged panel: 3px square border, hard offset shadow, zero blur. */
-.pixel-panel {
-  border-radius: 0;
-  border-width: 3px;
-  border-style: solid;
-  box-shadow: 4px 4px 0 0 var(--pixel-shadow, var(--green));
+/*
+ * Notched pixel corners. --n is the notch size. .notch clips an element
+ * itself; panels and dialogs use ::before (the 3px edge) and ::after (the
+ * fill) so the element is not clipped and can carry a hard offset shadow
+ * (filter: drop-shadow with zero blur) that follows the notched outline.
+ */
+.notch {
+  --n: 6px;
+  clip-path: polygon(
+    0 var(--n),
+    var(--n) var(--n),
+    var(--n) 0,
+    calc(100% - var(--n)) 0,
+    calc(100% - var(--n)) var(--n),
+    100% var(--n),
+    100% calc(100% - var(--n)),
+    calc(100% - var(--n)) calc(100% - var(--n)),
+    calc(100% - var(--n)) 100%,
+    var(--n) 100%,
+    var(--n) calc(100% - var(--n)),
+    0 calc(100% - var(--n))
+  );
 }
 
-/* Cream dialog: the WorkOS-style box. Ink border inside a cream ring, hard offset drop. */
+/* Panel: dark notched box with a 3px line edge. --edge and --fill override it. */
+.pixel-panel,
 .px-dialog {
-  background: var(--paper);
-  color: var(--ink);
-  border: 3px solid var(--ink);
-  border-radius: 0;
-  box-shadow:
-    0 0 0 3px var(--paper),
-    7px 7px 0 3px var(--drop, var(--green));
+  position: relative;
+  isolation: isolate;
+  filter: drop-shadow(4px 4px 0 var(--shade));
+}
+.pixel-panel::before,
+.pixel-panel::after,
+.px-dialog::before,
+.px-dialog::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  clip-path: polygon(
+    0 var(--n),
+    var(--n) var(--n),
+    var(--n) 0,
+    calc(100% - var(--n)) 0,
+    calc(100% - var(--n)) var(--n),
+    100% var(--n),
+    100% calc(100% - var(--n)),
+    calc(100% - var(--n)) calc(100% - var(--n)),
+    calc(100% - var(--n)) 100%,
+    var(--n) 100%,
+    var(--n) calc(100% - var(--n)),
+    0 calc(100% - var(--n))
+  );
+}
+.pixel-panel::before,
+.px-dialog::before {
+  --n: 6px;
+  inset: 0;
+  background: var(--edge, var(--line));
+}
+.pixel-panel::after,
+.px-dialog::after {
+  --n: 4px;
+  inset: 3px;
+  background: var(--fill, var(--ink-2));
 }
 
-/* Press-down button: the shadow collapses and the face moves into it. */
+/* Cream dialog: ink text on paper, same notch. --drop recolors the edge. */
+.px-dialog {
+  color: var(--ink);
+  --fill: var(--paper);
+  --edge: var(--drop, var(--paper));
+}
+
+/* Press-down: the face moves into its shadow. */
 .pixel-press {
-  border-radius: 0;
-  box-shadow: 4px 4px 0 0 var(--pixel-shadow, var(--paper));
-  transition:
-    transform 0.08s steps(2),
-    box-shadow 0.08s steps(2);
+  transition: transform 0.08s steps(2);
 }
 .pixel-press:active {
-  transform: translate(4px, 4px);
-  box-shadow: 0 0 0 0 var(--pixel-shadow, var(--paper));
+  transform: translate(3px, 3px);
 }
 
 /* Loading dots: three blocks stepping through a hop. */
@@ -347,90 +423,137 @@ textarea.code {
 }
 
 /*
- * Buttons. Square, 3px border, hard offset shadow that collapses on press.
- * Variants only change the face color; the ink text stays readable on all.
+ * Buttons. A notched, beveled face (amber by default) inside a wrapper that
+ * carries the hard offset shadow, so clip-path does not eat it. The face moves
+ * 3px into the shadow on press. --face / --face-d / --face-l pick the colors.
  */
+.px-btn-wrap {
+  display: inline-flex;
+  filter: drop-shadow(4px 4px 0 var(--shade));
+}
+.px-btn-wrap > .px-btn {
+  flex: 1;
+}
+.px-btn-wrap:active {
+  filter: drop-shadow(1px 1px 0 var(--shade));
+}
 .px-btn {
+  --n: 4px;
+  --face: var(--amber);
+  --face-d: var(--amber-d);
+  --face-l: var(--amber-l);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
+  gap: 0.75rem;
   min-height: 2.75rem;
-  padding: 0.55rem 1.1rem;
-  border: 3px solid var(--paper);
-  background: var(--face, var(--green));
+  padding: 0.7rem 1.25rem 0.85rem;
+  border: 0;
+  background: var(--face);
   color: var(--ink);
-  box-shadow: 4px 4px 0 0 var(--paper);
+  box-shadow:
+    inset 0 -4px 0 var(--face-d),
+    inset 0 3px 0 var(--face-l);
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 700;
   font-size: 1rem;
   line-height: 1;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  border-radius: 0;
-  transition:
-    transform 0.08s steps(2),
-    box-shadow 0.08s steps(2);
+  -webkit-tap-highlight-color: transparent;
 }
 .px-btn:hover {
-  --face: var(--amber);
+  background: var(--face-l);
 }
 .px-btn:active {
-  transform: translate(4px, 4px);
-  box-shadow: 0 0 0 0 var(--paper);
+  transform: translate(3px, 3px);
 }
 .px-btn:focus-visible {
-  outline: 3px solid var(--amber);
+  outline: 3px solid var(--paper);
   outline-offset: 3px;
+  clip-path: none;
 }
 .px-btn--amber {
+  /* same as the default; kept so call sites can say what they mean */
   --face: var(--amber);
 }
-.px-btn--amber:hover {
-  --face: var(--green);
-}
 .px-btn--ghost {
-  --face: var(--ink);
+  --face: var(--ink-3);
+  --face-d: var(--ink-3);
+  --face-l: var(--ink-3);
   color: var(--paper);
+  box-shadow: inset 0 0 0 3px var(--line);
 }
 .px-btn--ghost:hover {
-  --face: var(--ink);
+  background: var(--ink-3);
   color: var(--amber);
-  border-color: var(--amber);
+  box-shadow: inset 0 0 0 3px var(--amber);
 }
 .px-btn--danger {
   --face: var(--red);
-}
-.px-btn--danger:hover {
-  --face: var(--amber);
+  --face-d: var(--red-d);
+  --face-l: var(--red-l);
 }
 .px-btn--sm {
-  min-height: 2.25rem;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.875rem;
-  box-shadow: 3px 3px 0 0 var(--paper);
+  --n: 3px;
+  min-height: 2.75rem; /* tap target stays 44px */
+  padding: 0.55rem 1rem 0.7rem;
+  font-size: 0.9375rem;
 }
 .px-btn--lg {
-  min-height: 4rem;
-  padding: 0.9rem 2rem;
-  font-size: 1.5rem;
-  box-shadow: 6px 6px 0 0 var(--amber);
-}
-.px-btn--lg:active {
-  transform: translate(6px, 6px);
+  min-height: 3.75rem;
+  padding: 0.95rem 1.6rem 1.15rem;
+  font-size: 1.25rem;
 }
 .px-btn:disabled,
 .px-btn[aria-disabled="true"] {
-  --face: var(--ink);
-  color: var(--paper);
-  border-style: dashed;
-  box-shadow: none;
+  --face: var(--ink-3);
+  --face-d: var(--ink-3);
+  --face-l: var(--ink-3);
+  background: var(--ink-3);
+  color: var(--mute);
+  box-shadow: inset 0 0 0 3px var(--line);
   cursor: not-allowed;
   transform: none;
+}
+.px-btn-wrap:has(.px-btn:disabled, .px-btn[aria-disabled="true"]) {
+  filter: none;
+}
+
+/* Segmented chunk: a flat block with a bevel, as in HP, score and XP bars. */
+.chunk {
+  --c: var(--line);
+  --cd: var(--ink-3);
+  --cl: var(--line);
+  height: 1rem;
+  flex: 1;
+  background: var(--ink-3);
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.25);
+}
+.chunk.on {
+  background: var(--c);
+  box-shadow:
+    inset 0 -4px 0 var(--cd),
+    inset 0 3px 0 var(--cl);
+}
+.chunk-green {
+  --c: var(--green);
+  --cd: var(--green-d);
+  --cl: var(--green-l);
+}
+.chunk-amber {
+  --c: var(--amber);
+  --cd: var(--amber-d);
+  --cl: var(--amber-l);
+}
+.chunk-red {
+  --c: var(--red);
+  --cd: var(--red-d);
+  --cl: var(--red-l);
 }
 
 /* Everything that moves stops for people who ask for that. */

@@ -107,8 +107,7 @@ export function HowItWorks() {
         {STAGES.flatMap((stage, i) => [
           <li
             key={stage.n}
-            className="pixel-panel flex flex-col gap-3 border-paper bg-ink p-5"
-            style={{ "--pixel-shadow": "var(--green)" } as React.CSSProperties}
+            className="pixel-panel flex flex-col gap-3 p-5"
           >
             <Sprite rows={stage.rows} colors={stage.colors} scale={1.5} />
             <p className="font-display text-sm uppercase tracking-widest text-amber">

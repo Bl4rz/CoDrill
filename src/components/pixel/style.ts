@@ -1,4 +1,4 @@
 import type { CSSProperties } from "react";
 
-/** Sets the hard-shadow color used by .pixel-panel / .pixel-press. */
-export const shadowColor = (color: string) => ({ "--pixel-shadow": color }) as CSSProperties;
+/** Recolors the 3px edge of a .pixel-panel (boss red, result accent). Panels default to the line color. */
+export const edgeColor = (color: string) => ({ "--edge": color }) as CSSProperties;

@@ -14,7 +14,6 @@ import { PixelButton, PixelLink } from "@/components/pixel/PixelButton";
 import { SegmentBar } from "@/components/pixel/SegmentBar";
 import { StepProgress } from "@/components/pixel/StepProgress";
 import { MinusIcon, PlusIcon, ArrowIcon } from "@/components/pixel/icons";
-import { shadowColor } from "@/components/pixel/style";
 import { letterGrade } from "@/lib/grade";
 import { postJson } from "@/lib/api-client";
 import type { Difficulty } from "@/lib/types";
@@ -168,7 +167,7 @@ export default function ProfilePage() {
     return (
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-8 sm:py-12">
         <AppHeader crumbs={[{ label: "Home", href: "/" }, { label: "Profile" }]} />
-        <div className="pixel-panel flex flex-col items-start gap-4 border-paper bg-ink p-6" style={shadowColor("var(--amber)")}>
+        <div className="pixel-panel flex flex-col items-start gap-4 p-6">
           <h1 className="pixel-heading text-2xl">Your dashboard</h1>
           <p className="text-base leading-relaxed">
             Sign in with Google (button at the top) to see runs you did while signed in. Signing in is optional. You
@@ -213,12 +212,12 @@ export default function ProfilePage() {
 
       {sessions.length > 0 && (
         <section className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-          <div className="pixel-panel border-paper bg-ink p-5 sm:col-span-2" style={shadowColor("var(--green)")}>
+          <div className="pixel-panel p-5 sm:col-span-2">
             <p className="mb-3 font-display text-sm uppercase tracking-widest">Activity, last 7 days</p>
             <MiniBarChart data={activityData} />
           </div>
 
-          <div className="pixel-panel border-paper bg-ink p-5" style={shadowColor("var(--amber)")}>
+          <div className="pixel-panel p-5">
             <p className="mb-3 font-display text-sm uppercase tracking-widest">Top roles</p>
             {roleStats.length === 0 ? (
               <p className="text-base">Finish a run to see this.</p>
@@ -239,7 +238,7 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <div className="pixel-panel flex flex-col items-center justify-center gap-1 border-paper bg-ink p-5 text-center" style={shadowColor("var(--paper)")}>
+          <div className="pixel-panel flex flex-col items-center justify-center gap-1 p-5 text-center">
             <p className="font-display text-6xl text-green">{avgScoreAllTime ?? "-"}</p>
             <p className="font-display text-sm uppercase tracking-widest">Average score</p>
             <p className="text-sm">
@@ -247,14 +246,14 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          <div className="pixel-panel flex flex-col justify-center gap-3 border-paper bg-ink p-5" style={shadowColor("var(--paper)")}>
+          <div className="pixel-panel flex flex-col justify-center gap-3 p-5">
             <SegmentBar label="Runs finished" value={completionRate} />
             <p className="text-sm">
               {completedCount} of {sessions.length} started
             </p>
           </div>
 
-          <div className="pixel-panel border-paper bg-ink p-5" style={shadowColor("var(--paper)")}>
+          <div className="pixel-panel p-5">
             <p className="mb-3 font-display text-sm uppercase tracking-widest">By difficulty</p>
             <div className="flex flex-col gap-3">
               {difficultyStats.map((d) => (
@@ -271,7 +270,7 @@ export default function ProfilePage() {
 
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
         {completedCount >= 2 && (
-          <section className="pixel-panel border-paper bg-ink p-5" style={shadowColor("var(--amber)")}>
+          <section className="pixel-panel p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-display text-base uppercase tracking-widest text-amber">
                 Which roles are you ready for?

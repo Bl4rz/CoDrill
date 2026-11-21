@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { JobPostingForm } from "@/components/JobPostingForm";
 import { RoleSummaryConfirm } from "@/components/RoleSummaryConfirm";
 import { StepProgress } from "@/components/pixel/StepProgress";
-import { shadowColor } from "@/components/pixel/style";
 import { InterviewQuestion, RoleSummary } from "@/lib/types";
 import { createSession } from "@/lib/store";
 import { postJson } from "@/lib/api-client";
@@ -47,7 +46,7 @@ export default function StartPage() {
         </p>
       </div>
 
-      <div className="pixel-panel border-paper bg-ink p-5 sm:p-6" style={shadowColor("var(--green)")}>
+      <div className="pixel-panel p-5 sm:p-6">
         {stage === "input" && (
           <JobPostingForm
             onExtracted={(text, extractedSummary) => {

@@ -10,7 +10,7 @@ import { CoinIcon } from "@/components/pixel/icons";
 import { Mascot } from "@/components/pixel/Mascot";
 import { PixelButton, PixelLink } from "@/components/pixel/PixelButton";
 import { SegmentBar } from "@/components/pixel/SegmentBar";
-import { shadowColor } from "@/components/pixel/style";
+import { edgeColor } from "@/components/pixel/style";
 import { scoreColor } from "@/lib/grade";
 
 /**
@@ -47,8 +47,8 @@ export function ResultScreen({ view, result }: { view: AttemptView; result: Fini
   return (
     <section
       aria-labelledby="result-title"
-      className="pixel-panel mx-auto flex w-full max-w-2xl flex-col gap-6 border-paper bg-ink p-5 sm:p-8"
-      style={shadowColor(accent)}
+      className="pixel-panel mx-auto flex w-full max-w-2xl flex-col gap-6 p-5 sm:p-8"
+      style={edgeColor(accent)}
     >
       <div className="flex flex-col items-center gap-4 text-center">
         {boss ? (
