@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "dev:supabase": "node scripts/dev-supabase.mjs",
     "dev:limits": "ENFORCE_LIMITS=true DAILY_SESSION_LIMIT=1 npm run dev:local",
-    "dev:local": "NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321 NEXT_PUBLIC_SUPABASE_ANON_KEY=dev-anon-key SUPABASE_SERVICE_ROLE_KEY=dev-service-role-key next dev"
+    "dev:local": "NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321 NEXT_PUBLIC_SUPABASE_ANON_KEY=dev-anon-key SUPABASE_SERVICE_ROLE_KEY=dev-service-role-key next dev",
+    "art": "node scripts/build-art.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
@@ -37,6 +38,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
     "pg": "^8.23.1",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.5"
