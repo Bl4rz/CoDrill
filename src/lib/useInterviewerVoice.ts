@@ -1,22 +1,44 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpeechSynthesis } from "@/lib/useSpeechSynthesis";
 import { useServerSpeech } from "@/lib/useServerSpeech";
+import { kokoro, useKokoro } from "@/lib/kokoro/client";
 
 /**
- * The interviewer's voice, shared by the normal runner and Adventure. Prefers the
- * server-synthesized voice (Edge TTS, then Google Cloud TTS, then Azure — see
+ * The interviewer's voice, shared by the normal runner and Adventure. If the player
+ * opted in to the better voice (Kokoro, running on their device) and it is ready, that
+ * is used. Otherwise it prefers the server-synthesized voice (Edge TTS, then Google Cloud TTS, then Azure — see
  * /api/tts/speak) and falls back to the browser's own voice only if that is
  * unavailable. Speech stops when the tab is hidden and when the page unmounts.
  */
 export function useInterviewerVoice() {
   const browserTts = useSpeechSynthesis();
   const serverTts = useServerSpeech();
-  const tts = serverTts.isSupported ? serverTts : browserTts;
+  const kokoroState = useKokoro();
+  const betterVoice = kokoroState.status === "ready";
+  const standard = serverTts.isSupported ? serverTts : browserTts;
+  // Standard voices also stop if the better one takes over mid-line.
+  const kokoroSpeaking = kokoroState.speaking;
+  const kokoroTts = useMemo(
+    () => ({ isSupported: true, isSpeaking: kokoroSpeaking, speak: kokoro.speak, cancel: kokoro.cancel }),
+    [kokoroSpeaking],
+  );
+  const tts = betterVoice ? kokoroTts : standard;
   const [voiceOn, setVoiceOn] = useState(true);
   const [lastSpokenText, setLastSpokenText] = useState("");
   const lastSpokenTextRef = useRef("");
+
+  useEffect(() => {
+    // Hand over cleanly: nothing from the old voice keeps talking over the new one.
+    if (betterVoice) {
+      serverTts.cancel();
+      browserTts.cancel();
+    } else {
+      kokoro.cancel();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only on switching engines
+  }, [betterVoice]);
 
   const say = (text: string) => {
     setLastSpokenText(text);
@@ -56,7 +78,8 @@ export function useInterviewerVoice() {
   return {
     tts,
     browserTts,
-    usingBrowserVoice: tts === browserTts,
+    kokoro: kokoroState,
+    usingBrowserVoice: !betterVoice && tts === browserTts,
     voiceOn,
     toggleVoice,
     lastSpokenText,
