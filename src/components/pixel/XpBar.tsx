@@ -15,14 +15,10 @@ export function XpBar({ player }: { player: Pick<PlayerSummary, "xp_in_level" | 
         aria-valuemin={0}
         aria-valuemax={player.is_max ? 1 : player.xp_needed}
         aria-valuenow={player.is_max ? 1 : player.xp_in_level}
-        className="flex gap-[3px]"
+        className="flex gap-1"
       >
         {Array.from({ length: SEGMENTS }).map((_, i) => (
-          <div
-            key={i}
-            className="h-4 flex-1 border-2 border-paper"
-            style={{ background: i < filled ? "var(--green)" : "var(--ink)" }}
-          />
+          <i key={i} className={`chunk${i < filled ? " on chunk-green" : ""}`} />
         ))}
       </div>
       <p className="font-display text-sm uppercase tracking-widest">

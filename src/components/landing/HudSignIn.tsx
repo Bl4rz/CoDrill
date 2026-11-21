@@ -5,7 +5,7 @@ import { signInWithGoogle } from "@/lib/auth";
 import { useIsSignedIn } from "@/lib/useIsSignedIn";
 
 const CLASS =
-  "font-display text-sm uppercase tracking-widest text-paper underline decoration-[3px] underline-offset-4 hover:text-amber";
+  "inline-flex min-h-11 items-center px-1.5 font-display text-base font-medium text-paper [text-shadow:0_2px_0_var(--shade)] hover:underline decoration-2 underline-offset-[5px]";
 
 /** HUD link: "Sign in" for visitors, "Hub" for signed-in players. Renders nothing until we know. */
 export function HudSignIn({ className = "" }: { className?: string }) {

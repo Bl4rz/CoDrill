@@ -11,7 +11,7 @@ export function RecentRuns({ runs }: { runs: RunView[] }) {
       {runs.length === 0 ? (
         <div className="flex items-center gap-4 border-[3px] border-dashed border-paper p-4">
           <div className="shrink-0">
-            <Mascot crop="head" expression="thinking" unit="3px" title="" />
+            <Mascot crop="head" expression="thinking" k={1} title="" />
           </div>
           <p className="text-base leading-relaxed">No runs yet. Start one and it will show up here.</p>
         </div>

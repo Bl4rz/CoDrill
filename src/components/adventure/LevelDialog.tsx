@@ -64,7 +64,7 @@ export function LevelDialog({ level, onClose }: { level: LevelView; onClose: () 
         <div className="flex items-center gap-4">
           {boss && (
             <div className="shrink-0 bg-ink p-2">
-              <GoblinSprite state={replay ? "defeated" : "angry"} crop="head" unit="4px" title="" />
+              <GoblinSprite state={replay ? "defeated" : "angry"} crop="head" k={1} title="" />
             </div>
           )}
           <h2 id="level-dialog-title" className="pixel-heading text-2xl">

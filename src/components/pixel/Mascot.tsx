@@ -1,69 +1,69 @@
-import { Sprite, type SpriteColors } from "@/components/pixel/Sprite";
+import type { CSSProperties } from "react";
+import { art } from "@/lib/art";
 
-export type Expression = "neutral" | "blink" | "thinking" | "impressed" | "concerned";
+export type Expression = "neutral" | "thinking" | "impressed" | "concerned";
 
-// B body, D screen, A amber (eyes, mouth, antenna tip, drill), S paper (antenna
-// stem, boots, drill tip). The screen is the 6x4 block at columns 5-10, rows 4-7;
-// each expression only swaps those four rows.
-const FACES: Record<Expression, readonly string[]> = {
-  neutral: ["DDDDDD", "DADDAD", "DDDDDD", "DDAADD"],
-  blink: ["DDDDDD", "DDDDDD", "DDDDDD", "DDAADD"],
-  thinking: ["DDDDDD", "DDADDA", "DDDDDD", "DDDDAD"],
-  impressed: ["AADAAD", "AADAAD", "DADDAD", "DDAADD"],
-  concerned: ["DDAADD", "DADDAD", "DDAADD", "DADDAD"],
-};
-
-const BODY_TOP = [".......AA.......", ".......SS.......", "...BBBBBBBBBB...", "...BBBBBBBBBB..."];
-const BODY_MID = ["...BBBBBBBBBB...", "....BBBBBBBB....", "......BBBB......"];
-const BODY_LOW = [
-  ".BBBBBBBBBBBBBB.",
-  "BBBBBBBBBBBBBBBB",
-  "BBBBBBBAABBBBBBB",
-  "BBBBBBBAABBBBBBB",
-  "BBBBBBBBBBBBBBBB",
-  "BBBBBBBBBBBBBBAA",
-  ".B.BBBBBBBBBBAS.",
-  "....BBB..BBB....",
-  "....BBB..BBB....",
-  "....SSS..SSS....",
-];
-
-export const MASCOT_COLORS: SpriteColors = {
-  B: "var(--green)",
-  D: "var(--ink)",
-  A: "var(--amber)",
-  S: "var(--paper)",
-};
-
-export function mascotRows(expression: Expression, crop: "full" | "head" = "full"): string[] {
-  const screen = FACES[expression].map((face) => `...BB${face}BB...`);
-  const head = [...BODY_TOP, ...screen, ...BODY_MID];
-  return crop === "head" ? head.slice(0, 10) : [...head, ...BODY_LOW];
-}
-
+/**
+ * The Codrill robot, drawn from the baked sprite sheet. `k` is the size of one
+ * art pixel in CSS pixels: always a whole number, so the art never blurs. The
+ * sheet is an <img> inside a clipped box; CSS slides it frame by frame with
+ * steps(), which is a transform and costs no JS. Reduced-motion users get the
+ * first frame (globals.css turns every animation off).
+ */
 export function Mascot({
   expression = "neutral",
   crop = "full",
-  scale = 1,
-  unit,
+  k,
+  priority = false,
   className,
-  title = "Codrill's mascot, a small pixel robot with a drill hand",
+  title = "Codrill's mascot, a small pixel robot with a drill antenna",
 }: {
   expression?: Expression;
   crop?: "full" | "head";
-  scale?: number;
-  unit?: string;
+  /** Size of one art pixel in CSS px (whole number). Omit to inherit --k from CSS. */
+  k?: number;
+  priority?: boolean;
   className?: string;
   title?: string;
 }) {
+  const m = art.mascot;
+  const head = crop === "head";
+  const sheet = head ? m.head : m.full;
+  const frames = sheet.frames;
+  const fh = head ? m.head.fh : m.fh;
+  const row = head ? (m.head.rows as Record<string, number>)[expression] ?? 0 : 0;
+  const rows = head ? Object.keys(m.head.rows).length : 1;
+  const style = {
+    ...(k ? { "--k": k } : null),
+    "--n": frames,
+    width: `calc(var(--k, 2) * ${m.fw}px)`,
+    height: `calc(var(--k, 2) * ${fh}px)`,
+  } as CSSProperties;
   return (
-    <Sprite
-      rows={mascotRows(expression, crop)}
-      colors={MASCOT_COLORS}
-      scale={scale}
-      unit={unit}
-      className={className}
-      title={title}
-    />
+    <span
+      className={`sprite-box ${className ?? ""}`}
+      style={style}
+      role={title ? "img" : undefined}
+      aria-label={title || undefined}
+      aria-hidden={title ? undefined : true}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- pixel art must not be resampled by the image optimizer */}
+      <img
+        className="sprite-strip mascot-strip"
+        src={sheet.src}
+        alt=""
+        width={sheet.w}
+        height={sheet.h}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
+        style={{
+          width: `calc(var(--k, 2) * ${sheet.w}px)`,
+          height: `calc(var(--k, 2) * ${fh * rows}px)`,
+          marginTop: row ? `calc(var(--k, 2) * ${-fh * row}px)` : undefined,
+        }}
+      />
+    </span>
   );
 }
+
+export { art };

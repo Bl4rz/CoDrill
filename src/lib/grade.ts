@@ -14,3 +14,12 @@ export function scoreColor(score: number): string {
   if (score >= 50) return "var(--amber)";
   return "var(--red)";
 }
+
+export type Tone = "green" | "amber" | "red";
+
+/** Same bands as scoreColor, as a tone name for chunk bars and grade boxes. */
+export function scoreTone(score: number): Tone {
+  if (score >= 70) return "green";
+  if (score >= 50) return "amber";
+  return "red";
+}

@@ -42,7 +42,7 @@ export function LevelUpDialog({
     >
       <div className="px-dialog flex w-full max-w-md flex-col items-center gap-5 p-8 text-center">
         <div className="mascot-idle">
-          <Mascot expression="impressed" scale={1.5} />
+          <Mascot expression="impressed" k={3} />
         </div>
         <h2 id="levelup-title" className="pixel-title text-[clamp(1.5rem,7vw,2.25rem)]">
           LEVEL UP!

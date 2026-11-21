@@ -48,7 +48,7 @@ export function HudMenu({ links, className = "" }: { links: MenuLink[]; classNam
           playBlip("press");
           setOpen((o) => !o);
         }}
-        className="flex h-11 w-11 items-center justify-center border-[3px] border-paper bg-ink text-paper hover:border-amber hover:text-amber focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-amber"
+        className="notch flex h-11 w-11 items-center justify-center bg-ink/90 text-paper shadow-[inset_0_0_0_3px_var(--line)] [--n:3px] hover:text-amber hover:shadow-[inset_0_0_0_3px_var(--amber)]"
       >
         {open ? <CloseIcon unit="2px" /> : <MenuIcon unit="2px" />}
       </button>

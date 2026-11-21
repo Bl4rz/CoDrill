@@ -214,7 +214,7 @@ export function ReportView({ session }: { session: StoredSession }) {
       {mainPattern && (
         <section className="flex items-end gap-4" aria-label="Pattern">
           <div className="hidden shrink-0 sm:block">
-            <Mascot expression={expressionForScore(overall)} scale={1} />
+            <Mascot expression={expressionForScore(overall)} k={2} />
           </div>
           <div className="px-dialog flex-1 p-5" style={{ "--drop": "var(--amber)" } as React.CSSProperties}>
             <p className="mb-2 w-fit bg-ink px-2 py-1 font-display text-xs uppercase tracking-widest text-amber">

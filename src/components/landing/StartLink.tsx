@@ -5,10 +5,10 @@ import { PixelLink } from "@/components/pixel/PixelButton";
 import { useIsSignedIn } from "@/lib/useIsSignedIn";
 
 /** PRESS START. Signed-in players go to their Hub; everyone else goes straight to the posting screen. */
-export function StartLink({ children, size }: { children: ReactNode; size?: "sm" | "md" | "lg" }) {
+export function StartLink({ children, size, className }: { children: ReactNode; size?: "sm" | "md" | "lg"; className?: string }) {
   const signedIn = useIsSignedIn();
   return (
-    <PixelLink href={signedIn ? "/hub" : "/start"} size={size}>
+    <PixelLink href={signedIn ? "/hub" : "/start"} size={size} className={className}>
       {children}
     </PixelLink>
   );

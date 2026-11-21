@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { scoreColor } from "@/lib/grade";
+import { scoreColor, scoreTone } from "@/lib/grade";
 import { playBlip } from "@/lib/sound";
 
 const SEGMENTS = 10;
@@ -52,6 +52,7 @@ export function SegmentBar({
   }, [animate, delay, target]);
 
   const color = scoreColor(value);
+  const tone = scoreTone(value);
   return (
     <div className="flex w-full flex-col gap-1.5">
       <div className="flex items-baseline justify-between font-display uppercase tracking-widest">
@@ -66,14 +67,10 @@ export function SegmentBar({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(value)}
-        className="flex gap-[3px]"
+        className="flex gap-1"
       >
         {Array.from({ length: SEGMENTS }).map((_, i) => (
-          <div
-            key={i}
-            className="h-4 flex-1 border-2 border-paper"
-            style={{ background: i < shown ? color : "var(--ink)" }}
-          />
+          <i key={i} className={`chunk${i < shown ? ` on chunk-${tone}` : ""}`} />
         ))}
       </div>
     </div>

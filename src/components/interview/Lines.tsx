@@ -16,7 +16,7 @@ export interface TranscriptEntry {
 export function Avatar({ expression }: { expression: Expression }) {
   return (
     <div className="shrink-0 border-[3px] border-paper bg-ink p-1">
-      <Mascot crop="head" expression={expression} unit="3px" title="Interviewer" />
+      <Mascot crop="head" expression={expression} k={2} title="Interviewer" />
     </div>
   );
 }

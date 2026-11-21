@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { Wordmark } from "@/components/Wordmark";
 import { AuthButton } from "@/components/AuthButton";
 import { Breadcrumbs, type Crumb } from "@/components/Breadcrumbs";
 import { SoundToggle } from "@/components/pixel/SoundToggle";
@@ -11,7 +12,7 @@ export function AppHeader({ crumbs }: { crumbs: Crumb[] }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2" aria-label="Codrill home">
           <Logo />
-          <span className="font-display text-lg uppercase tracking-widest">Codrill</span>
+          <Wordmark k={3} />
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <SoundToggle />

@@ -12,7 +12,7 @@ export function PlayerCard({ player }: { player: PlayerSummary }) {
     >
       <div className="flex items-center gap-4 sm:flex-col sm:items-center">
         <div className="shrink-0 border-[3px] border-paper p-2">
-          <Mascot crop="head" scale={1.5} unit="4px" title="Your mascot" />
+          <Mascot crop="head" k={2} title="Your mascot" />
         </div>
         <div className="sm:text-center">
           <p className="font-display text-sm uppercase tracking-widest text-green">Level</p>

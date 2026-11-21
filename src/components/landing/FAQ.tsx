@@ -31,32 +31,34 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="mx-auto w-full max-w-3xl scroll-mt-6 px-6 py-20">
-      <h2 className="pixel-heading text-center text-3xl sm:text-4xl">FAQ</h2>
-      <div className="mt-10 flex flex-col gap-3">
+    <section id="faq" className="grid scroll-mt-6 gap-8 pt-[clamp(56px,8vw,112px)] lg:grid-cols-[1fr_2fr] lg:gap-14">
+      <h2 className="pixel-heading text-[clamp(1.875rem,3.6vw,3rem)]">FAQ</h2>
+      <div className="flex flex-col gap-4">
         {FAQS.map((item, i) => {
           const isOpen = openIndex === i;
           return (
-            <div key={item.q} className="border-[3px] border-paper">
-              <button
-                type="button"
-                onClick={() => {
-                  playBlip("press");
-                  setOpenIndex(isOpen ? null : i);
-                }}
-                className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left hover:text-amber focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-amber"
-                aria-expanded={isOpen}
-              >
-                <span className="text-base font-medium">{item.q}</span>
-                <span className="shrink-0 text-green" aria-hidden="true">
-                  {isOpen ? <MinusIcon /> : <PlusIcon />}
-                </span>
-              </button>
-              {isOpen && (
-                <p className="border-t-[3px] border-paper px-4 py-3 text-base leading-relaxed">
-                  {item.a}
-                </p>
-              )}
+            <div key={item.q} className="notch bg-line p-[3px]">
+              <div className="notch bg-ink-2 [--n:4px]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playBlip("press");
+                    setOpenIndex(isOpen ? null : i);
+                  }}
+                  className="flex min-h-12 w-full items-center justify-between gap-4 px-4 py-3 text-left hover:text-amber"
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-[1.0625rem] font-medium">{item.q}</span>
+                  <span className="shrink-0 text-green" aria-hidden="true">
+                    {isOpen ? <MinusIcon /> : <PlusIcon />}
+                  </span>
+                </button>
+                {isOpen && (
+                  <p className="border-t-[3px] border-line px-4 py-3 text-[1.0625rem] leading-relaxed text-mute">
+                    {item.a}
+                  </p>
+                )}
+              </div>
             </div>
           );
         })}

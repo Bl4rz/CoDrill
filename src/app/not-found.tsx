@@ -11,7 +11,7 @@ export default function NotFound() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">
       <div className="mascot-idle">
-        <Mascot expression="concerned" scale={1.5} />
+        <Mascot expression="concerned" k={4} />
       </div>
       <h1 className="pixel-title text-[clamp(1.5rem,8vw,3.25rem)]">GAME OVER?</h1>
       <p className="pixel-heading text-3xl">Not yet.</p>

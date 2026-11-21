@@ -63,6 +63,8 @@
   --font-mono: var(--f-code), ui-monospace, monospace;
 }
 
+/* Component CSS lives in a layer so Tailwind utilities (hidden, p-5, w-full) can override it. */
+@layer components {
 body {
   background: var(--ink);
   color: var(--paper);
@@ -210,14 +212,6 @@ pre {
   --edge: var(--drop, var(--paper));
 }
 
-/* Press-down: the face moves into its shadow. */
-.pixel-press {
-  transition: transform 0.08s steps(2);
-}
-.pixel-press:active {
-  transform: translate(3px, 3px);
-}
-
 /* Loading dots: three blocks stepping through a hop. */
 @keyframes pixel-bounce {
   0%,
@@ -278,82 +272,6 @@ pre {
 .dither.d12 {
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM1 1h1v1h-1zM3 1h1v1h-1zM0 2h1v1h-1zM1 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1z'/%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM1 1h1v1h-1zM3 1h1v1h-1zM0 2h1v1h-1zM1 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1z'/%3E%3C/svg%3E");
-}
-
-/* Title-screen sizing: --m is the mascot's art-pixel size. */
-.title-screen {
-  --m: calc(var(--u) * 2);
-}
-@media (max-width: 380px) {
-  .title-screen {
-    --m: calc(var(--u) * 1.5);
-  }
-}
-@media (min-width: 1024px) and (max-height: 820px) {
-  .title-screen {
-    --m: calc(var(--u) * 1.5);
-  }
-}
-
-/* Title-screen motion. Everything steps; nothing eases. */
-@keyframes star-blink {
-  0% {
-    visibility: visible;
-  }
-  50% {
-    visibility: hidden;
-  }
-}
-.star-a {
-  animation: star-blink 2.4s steps(1) infinite;
-}
-.star-b {
-  animation: star-blink 2.4s steps(1) infinite;
-  animation-delay: -1.2s;
-}
-
-@keyframes cloud-drift {
-  from {
-    left: -30%;
-  }
-  to {
-    left: 105%;
-  }
-}
-.cloud {
-  position: absolute;
-  animation: cloud-drift var(--dur, 160s) steps(200) infinite;
-  animation-delay: var(--delay, 0s);
-}
-
-@keyframes blink-open {
-  0% {
-    visibility: visible;
-  }
-  95% {
-    visibility: hidden;
-  }
-  98% {
-    visibility: visible;
-  }
-}
-@keyframes blink-shut {
-  0% {
-    visibility: hidden;
-  }
-  95% {
-    visibility: visible;
-  }
-  98% {
-    visibility: hidden;
-  }
-}
-.mascot-eyes-open {
-  animation: blink-open 5s steps(1) infinite;
-}
-.mascot-eyes-shut {
-  animation: blink-shut 5s steps(1) infinite;
-  visibility: hidden;
 }
 
 /* Map node that is ready to play: a two-frame blink of the border, no easing. */
@@ -564,5 +482,353 @@ pre {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Sprite sheets. A box clips one frame; the strip <img> inside slides by whole
+ * frames with steps(), so motion is stepped and uses transform only.
+ * --n is the frame count, --k the size of one art pixel in CSS pixels.
+ */
+.sprite-box {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  flex: none;
+}
+.sprite-strip {
+  display: block;
+  max-width: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+@keyframes strip-slide {
+  to {
+    transform: translateX(-100%);
+  }
+}
+.mascot-strip {
+  animation: strip-slide calc(var(--n) * 0.125s) steps(var(--n)) infinite;
+}
+@keyframes goblin-slide {
+  from {
+    transform: translateX(calc(var(--k, 3) * var(--fw) * var(--a) * -1px));
+  }
+  to {
+    transform: translateX(calc(var(--k, 3) * var(--fw) * var(--b) * -1px));
+  }
+}
+.goblin-loop {
+  animation: goblin-slide 1.2s steps(2) infinite;
+}
+
+/*
+ * Hero scene. The art is baked at a fixed grid (--wa x --ha art pixels) and
+ * shown at a whole-number scale --k, so every art pixel is a k x k block of
+ * screen pixels (crisp at 1x and 3x). The scene is centered and anchored to
+ * the bottom; the hero crops the sides (and a little sky) on odd sizes.
+ * Sets: S up to 480px, M 481-900px, L 901px and up.
+ */
+.hero {
+  --wa: 160;
+  --ha: 272;
+  --k: 3;
+  --art-h: calc(var(--ha) * var(--k) * 1px);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--ink);
+  height: clamp(calc(var(--art-h) - 80px), 100vh, var(--art-h));
+  height: clamp(calc(var(--art-h) - 80px), 100svh, var(--art-h));
+}
+@media (min-width: 481px) {
+  .hero {
+    --wa: 240;
+    --ha: 236;
+    --k: 4;
+  }
+}
+@media (min-width: 901px) {
+  .hero {
+    --wa: 360;
+    --ha: 210;
+    --k: 4;
+  }
+}
+@media (min-width: 1441px) {
+  .hero {
+    --k: 5;
+  }
+}
+@media (min-width: 1801px) {
+  .hero {
+    --k: 6;
+  }
+}
+@media (min-width: 2161px) {
+  .hero {
+    --k: 7;
+  }
+}
+@media (min-width: 2521px) {
+  .hero {
+    --k: 8;
+  }
+}
+.hero-scene {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(var(--wa) * var(--k) * 1px);
+  height: var(--art-h);
+  transform: translateX(-50%);
+}
+.hs-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+}
+.hs-layer img,
+.hs-layer picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hero-scene img {
+  max-width: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+/* two-frame sheets: slide one image to blink */
+.hs-blink > picture {
+  width: 200%;
+}
+@keyframes hs-flip {
+  50% {
+    transform: translateX(-50%);
+  }
+}
+.hs-stars > picture {
+  animation: hs-flip 2.4s steps(1) infinite;
+}
+.hs-flies > picture {
+  animation: hs-flip 1.6s steps(1) infinite;
+}
+/* clouds: two copies side by side, shifted one art pixel per step */
+.hs-drift {
+  display: flex;
+  width: 200%;
+  height: 100%;
+}
+.hs-drift > picture {
+  flex: none;
+  width: 50%;
+}
+@keyframes hs-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.hs-clouds-a .hs-drift {
+  animation: hs-drift 420s steps(var(--wa)) infinite;
+}
+.hs-clouds-b .hs-drift {
+  animation: hs-drift 260s steps(var(--wa)) infinite;
+}
+.hs-mascot {
+  position: absolute;
+  left: calc(var(--mx) * var(--k) * 1px);
+  top: calc(var(--my) * var(--k) * 1px);
+  width: calc(48 * var(--k) * 1px);
+  height: calc(58 * var(--k) * 1px);
+  overflow: hidden;
+}
+.hs-mascot-strip {
+  width: calc(1152 * var(--k) * 1px);
+  height: calc(58 * var(--k) * 1px);
+  animation-duration: 3s;
+}
+
+/* Hero copy sits over the scene, top left. */
+.hero-copy {
+  position: absolute;
+  z-index: 2;
+  left: var(--gutter);
+  top: clamp(104px, 15vh, 150px);
+  max-width: min(600px, 46vw);
+}
+@media (max-width: 980px) {
+  .hero-copy {
+    max-width: min(620px, 92vw);
+  }
+}
+@media (max-width: 560px) {
+  .hero-copy {
+    top: 84px;
+  }
+}
+:root {
+  --gutter: clamp(16px, 4.5vw, 64px);
+}
+.hero-h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(40px, 5.6vw, 84px);
+  line-height: 0.98;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+  color: var(--paper);
+  text-shadow: 0 5px 0 var(--shade);
+  margin: 0;
+}
+.hero-h1 em {
+  font-style: normal;
+  color: var(--amber);
+}
+.hero-lede {
+  max-width: 34em;
+  margin: 1.5rem 0 0;
+  font-size: clamp(17px, 1.5vw, 20px);
+  color: var(--paper);
+  text-shadow:
+    1px 0 var(--shade),
+    -1px 0 var(--shade),
+    0 1px var(--shade),
+    0 -1px var(--shade),
+    2px 2px 0 var(--shade);
+}
+.tri {
+  width: 0;
+  height: 0;
+  border-left: 10px solid currentColor;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  animation: cursor-blink 1s steps(1) infinite;
+}
+.free-chip {
+  --n: 3px;
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.0625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green);
+  background: var(--ink);
+  padding: 0.5rem 0.875rem 0.5625rem;
+}
+}
+
+@layer components {
+  /* Small labelled pieces used by the example panels and game screens. */
+  .kicker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.1875rem 0.5rem;
+    background: var(--ink-3);
+    color: var(--mute);
+    border: 2px solid var(--line);
+  }
+  .phase {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 0.875rem;
+    letter-spacing: 0.06em;
+    padding: 0.375rem 0.75rem 0.4375rem;
+    background: var(--ink-3);
+    color: var(--mute);
+    border: 2px solid var(--line);
+  }
+  .phase.on {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--ink);
+    box-shadow: inset 0 -3px 0 var(--amber-d);
+  }
+  .phase.done {
+    color: var(--green);
+    border-color: var(--green-d);
+  }
+  /* A mascot portrait frame: line border, ink-3 fill, sprite sits on the bottom edge. */
+  .portrait {
+    flex: none;
+    background: var(--ink-3);
+    border: 3px solid var(--line);
+    padding: 6px 6px 0;
+  }
+  .code-block {
+    margin: 0;
+    padding: 1.125rem 1.25rem;
+    background: var(--shade);
+    border: 3px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.75;
+    overflow-x: auto;
+    text-align: left;
+    color: var(--paper);
+  }
+  .code-block .k {
+    color: var(--green);
+  }
+  .code-block .n {
+    color: var(--amber);
+  }
+  .code-block .c {
+    color: var(--mute);
+  }
+  .typed {
+    border: 3px dashed var(--line);
+    padding: 0.875rem 1.125rem;
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .cursor {
+    display: inline-block;
+    width: 9px;
+    height: 18px;
+    background: var(--amber);
+    margin-left: 3px;
+    vertical-align: -3px;
+    animation: cursor-blink 1s steps(1) infinite;
+  }
+  /* Grade box: a beveled letter on an amber (or mint, or red) face. */
+  .grade-box {
+    --n: 4px;
+    --face: var(--amber);
+    --face-d: var(--amber-d);
+    --face-l: var(--amber-l);
+    background: var(--face);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1;
+    box-shadow:
+      inset 0 -6px 0 var(--face-d),
+      inset 0 4px 0 var(--face-l);
+  }
+  .tone-green {
+    --face: var(--green);
+    --face-d: var(--green-d);
+    --face-l: var(--green-l);
+  }
+  .tone-red {
+    --face: var(--red);
+    --face-d: var(--red-d);
+    --face-l: var(--red-l);
   }
 }

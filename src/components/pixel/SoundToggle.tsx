@@ -11,7 +11,7 @@ export function SoundToggle() {
       aria-pressed={on}
       aria-label={`Sound ${on ? "on" : "off"}`}
       onClick={() => setSoundEnabled(!on)}
-      className="flex items-center gap-2 border-[3px] border-paper bg-ink px-2.5 py-2 font-display text-sm uppercase tracking-widest text-paper hover:border-amber hover:text-amber focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-amber"
+      className="notch flex min-h-11 items-center gap-2 bg-ink/90 px-3 font-display text-sm font-medium uppercase tracking-widest text-paper shadow-[inset_0_0_0_3px_var(--line)] [--n:3px] hover:text-amber hover:shadow-[inset_0_0_0_3px_var(--amber)]"
     >
       <SpeakerIcon on={on} />
       <span>

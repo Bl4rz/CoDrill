@@ -1,6 +1,6 @@
-// A 5x7 bitmap alphabet, used to draw text in places that can't load a font
-// file (the OG image). One string per row; X is a lit pixel.
-const G: Record<string, string[]> = {
+// A 5x7 bitmap alphabet for text drawn into baked images (the OG card).
+// One string per row; X is a lit pixel.
+export const GLYPHS = {
   A: [".XXX.", "X...X", "X...X", "XXXXX", "X...X", "X...X", "X...X"],
   B: ["XXXX.", "X...X", "X...X", "XXXX.", "X...X", "X...X", "XXXX."],
   C: [".XXX.", "X...X", "X....", "X....", "X....", "X...X", ".XXX."],
@@ -31,12 +31,25 @@ const G: Record<string, string[]> = {
   " ": [".....", ".....", ".....", ".....", ".....", ".....", "....."],
 };
 
-/** Rows of a single-color bitmap line of text, glyphs separated by one blank column. */
-export function pixelTextRows(text: string): string[] {
-  const rows = Array<string>(7).fill("");
+/** Rows of one line of text, glyphs separated by one blank column. */
+export function textRows(text) {
+  const rows = Array(7).fill("");
   [...text.toUpperCase()].forEach((ch, i) => {
-    const glyph = G[ch] ?? G[" "];
-    for (let y = 0; y < 7; y++) rows[y] += (i > 0 ? "." : "") + glyph[y].replace(/X/g, "X");
+    const glyph = GLYPHS[ch] ?? GLYPHS[" "];
+    for (let y = 0; y < 7; y++) rows[y] += (i > 0 ? "." : "") + glyph[y];
   });
   return rows;
+}
+
+/** Draw text into a layer: `unit` art pixels per glyph pixel. */
+export function drawText(L, text, x, y, unit, color) {
+  textRows(text).forEach((row, j) => {
+    [...row].forEach((c, i) => {
+      if (c === "X") L.rect(x + i * unit, y + j * unit, unit, unit, color);
+    });
+  });
+}
+
+export function textWidth(text, unit) {
+  return (text.length * 6 - 1) * unit;
 }

@@ -52,9 +52,9 @@ export function ResultScreen({ view, result }: { view: AttemptView; result: Fini
     >
       <div className="flex flex-col items-center gap-4 text-center">
         {boss ? (
-          <GoblinSprite state={victory ? "defeated" : "angry"} unit="var(--u)" title={victory ? "The Debug Goblin, defeated" : "The Debug Goblin, still standing"} />
+          <GoblinSprite state={victory ? "defeated" : "angry"} k={3} title={victory ? "The Debug Goblin, defeated" : "The Debug Goblin, still standing"} />
         ) : (
-          <Mascot expression={result.passed ? "impressed" : "concerned"} scale={1.25} />
+          <Mascot expression={result.passed ? "impressed" : "concerned"} k={3} />
         )}
         <h1 id="result-title" className="pixel-title text-[clamp(1.5rem,7vw,2.5rem)]" style={{ color: accent }}>
           {title}

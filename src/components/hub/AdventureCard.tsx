@@ -20,7 +20,7 @@ export function AdventureCard({ adventure }: { adventure: HubAdventure }) {
           </p>
         </div>
         <div className="shrink-0">
-          <GoblinSprite state={adventure.world_complete ? "defeated" : "idle"} crop="head" unit="3px" title="" />
+          <GoblinSprite state={adventure.world_complete ? "defeated" : "idle"} crop="head" k={1} title="" />
         </div>
       </div>
 

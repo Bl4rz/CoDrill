@@ -70,7 +70,7 @@ export function BossArena({
     >
       <div className="relative mx-auto shrink-0 sm:mx-0">
         <div className={state === "hit" ? "boss-shake" : undefined}>
-          <GoblinSprite state={state} unit="var(--u)" scale={1.5} />
+          <GoblinSprite state={state} k={3} />
         </div>
         {damage && (
           <span

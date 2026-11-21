@@ -31,7 +31,7 @@ export function BlockedScreen() {
     >
       <div className="px-dialog flex w-full max-w-md flex-col items-center gap-5 p-8 text-center">
         <div className="mascot-idle">
-          <Mascot expression={capacity ? "concerned" : "thinking"} scale={1.5} />
+          <Mascot expression={capacity ? "concerned" : "thinking"} k={3} />
         </div>
         <h2 id="blocked-title" className="pixel-heading text-2xl">
           {capacity ? "Server needs a break." : "That's all for today."}

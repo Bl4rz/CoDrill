@@ -185,5 +185,20 @@
     },
     "arenaW": 96,
     "arenaH": 72
+  },
+  "wordmark": {
+    "src": "/art/wordmark.0b88c948.webp",
+    "w": 42,
+    "h": 8,
+    "bytes": 130
+  },
+  "grades": {
+    "letters": "ABCDF",
+    "fw": 5,
+    "fh": 7,
+    "src": "/art/grades.07307950.webp",
+    "w": 25,
+    "h": 7,
+    "bytes": 70
   }
 }

@@ -18,6 +18,8 @@ import { buildScene } from "./art/scene.mjs";
 import { mascot, idleFrames, EXPRESSIONS, MASCOT_W, MASCOT_H, HEAD_H } from "./art/mascot.mjs";
 import { goblinFrames, GOBLIN_W, GOBLIN_H, GOBLIN_STATES } from "./art/goblin.mjs";
 import { arena, ARENA_W, ARENA_H, GOBLIN_AT } from "./art/boss.mjs";
+import { drawText, textWidth } from "./art/font.mjs";
+import { blit, C } from "./art/toolkit.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = path.join(root, "public", "art");
@@ -102,11 +104,31 @@ manifest.goblin = {
   arenaH: ARENA_H,
 };
 
+// ---- wordmark: Pixelify Sans draws C like O, so the brand name is baked from the 5x7 bitmap font ----
+{
+  const t = "CODRILL";
+  const w = textWidth(t, 1) + 1;
+  const wm = new Layer(w, 8);
+  drawText(wm, t, 1, 1, 1, C("#030a10"));
+  drawText(wm, t, 0, 0, 1, C("#fff1d0"));
+  manifest.wordmark = await encode(wm, "wordmark");
+}
+
+// ---- grade letters: the display font draws C like O, so letter grades use the bitmap font too ----
+{
+  const letters = ["A", "B", "C", "D", "F"];
+  const frames = letters.map((ch) => {
+    const L = new Layer(5, 7);
+    drawText(L, ch, 0, 0, 1, C("#06141c"));
+    return L;
+  });
+  manifest.grades = { letters: letters.join(""), fw: 5, fh: 7, ...(await encode(sheet(frames), "grades")) };
+}
+
 // ---- icons: favicon (mascot head) ----
 const face = mascot({ expr: "neutral" });
 const iconArt = new Layer(36, 36);
 for (let y = 0; y < 36; y++) for (let x = 0; x < 36; x++) iconArt.d[y * 36 + x] = face.get(6 + x, 2 + y);
-fs.writeFileSync(path.join(root, "src/lib/art-icon.json"), JSON.stringify({ w: 36, h: 36 }));
 const iconPng = await sharp(Buffer.from(iconArt.d.buffer), { raw: { width: 36, height: 36, channels: 4 } })
   .resize(72, 72, { kernel: "nearest" })
   .png({ palette: true })
@@ -120,7 +142,31 @@ const apple = await sharp(Buffer.from(iconArt.d.buffer), { raw: { width: 36, hei
   .toBuffer();
 fs.writeFileSync(path.join(root, "src/app/apple-icon.png"), apple);
 
-fs.rmSync(path.join(root, "src/lib/art-icon.json"), { force: true });
+// ---- social card: the hero scene at 1200x630 (400x210 art pixels at 3x) ----
+{
+  const W = 400;
+  const H = 210;
+  const s = buildScene(W, H, false);
+  const card = new Layer(W, H);
+  for (const layer of [s.sky, s.starsA, s.cloudsA, s.cloudsB, s.land, s.fliesA]) blit(card, layer, 0, 0);
+  blit(card, mascot({ expr: "neutral", fr: 0 }), s.mascot.x, s.mascot.y);
+  const cream = C("#fff1d0");
+  const dark = C("#030a10");
+  const line = (t, x, y, u, c) => {
+    drawText(card, t, x, y + Math.max(1, u > 3 ? 2 : 1), u, dark);
+    drawText(card, t, x, y, u, c);
+  };
+  line("CODRILL", 16, 16, 5, cream);
+  line("FREE MOCK INTERVIEWS", 16, 64, 2, cream);
+  line("FOR THE JOB YOU WANT.", 16, 82, 2, C("#ffb347"));
+  const png = await sharp(Buffer.from(card.d.buffer), { raw: { width: W, height: H, channels: 4 } })
+    .resize(1200, 630, { kernel: "nearest" })
+    .png({ palette: true, colors: 128, dither: 0, effort: 10 })
+    .toBuffer();
+  for (const name of ["opengraph-image", "twitter-image"]) fs.writeFileSync(path.join(root, "src/app", `${name}.png`), png);
+  report.push({ name: "social card (x2)", w: 1200, h: 630, png: png.length, webp: 0, kept: "png", bytes: png.length });
+}
+
 fs.writeFileSync(path.join(root, "src/lib/art-manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 
 const pad = (s, n) => String(s).padEnd(n);

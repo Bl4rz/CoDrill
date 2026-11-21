@@ -38,7 +38,7 @@ export function MapNode({ level, onSelect }: { level: LevelView; onSelect: (leve
               <LockIcon unit="4px" />
             </span>
           ) : (
-            <GoblinSprite state={status === "completed" ? "defeated" : "idle"} crop="head" unit="5px" title="" />
+            <GoblinSprite state={status === "completed" ? "defeated" : "idle"} crop="head" k={1} title="" />
           )
         ) : status === "completed" ? (
           <CheckIcon unit="5px" />
