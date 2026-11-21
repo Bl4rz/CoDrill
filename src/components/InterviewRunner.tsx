@@ -9,7 +9,13 @@ import {
   InterviewQuestion,
 } from "@/lib/types";
 import { DifficultyBadge } from "@/components/DifficultyBadge";
-import { CodeEditor } from "@/components/CodeEditor";
+import dynamic from "next/dynamic";
+
+// Monaco is the heaviest thing on the site and only the code step needs it, so it loads on demand.
+const CodeEditor = dynamic(() => import("@/components/CodeEditor").then((m) => m.CodeEditor), {
+  ssr: false,
+  loading: () => <div className="min-h-[476px] border-[3px] border-line bg-shade" aria-busy="true" />,
+});
 import { VoiceTextArea } from "@/components/VoiceTextArea";
 import { type Expression } from "@/components/pixel/Mascot";
 import { Avatar, InterviewerLine, YouLine, type TranscriptEntry } from "@/components/interview/Lines";
@@ -56,13 +62,7 @@ function StageTracker({ stage }: { stage: Stage }) {
               </span>
             )}
             <span
-              className={`flex items-center gap-2 border-[3px] px-2 py-1 font-display text-xs uppercase tracking-widest ${
-                done
-                  ? "border-green bg-green text-ink"
-                  : active
-                    ? "border-amber bg-amber text-ink"
-                    : "border-dashed border-paper text-paper"
-              }`}
+              className={`phase flex items-center gap-2 ${done ? "done" : active ? "on" : ""}`}
               aria-current={active ? "step" : undefined}
             >
               {done && <CheckIcon />}
@@ -256,7 +256,7 @@ export function InterviewRunner({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-[3px] border-paper bg-ink px-4 py-3">
+      <div className="px-box flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-display text-lg uppercase tracking-widest">
             Level {levelNumber}/{levelCount}
@@ -293,7 +293,7 @@ export function InterviewRunner({
             {loading && stage !== "scored" && (
               <div className="flex items-start gap-3">
                 <Avatar expression="thinking" />
-                <div className="border-[3px] border-dashed border-paper px-4 py-3">
+                <div className="px-box px-box--dashed px-4 py-3">
                   <p className="font-display text-sm uppercase tracking-widest">
                     <span className="blink-cursor">Thinking...</span>
                   </p>
@@ -309,7 +309,7 @@ export function InterviewRunner({
               <SegmentBar label="Communication" value={attempt.scores.communication_score} animate delay={900} />
               <SegmentBar label="Reasoning" value={attempt.scores.reasoning_score} animate delay={1800} />
               {reward && reward.granted && (
-                <p className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t-[3px] border-paper pt-3 font-display text-base uppercase tracking-widest">
+                <p className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t-[3px] border-line pt-3 font-display text-base uppercase tracking-widest">
                   <span className="text-green">+{reward.xp_gained} XP</span>
                   {reward.coins_gained > 0 && (
                     <span className="flex items-center gap-1 text-amber">
@@ -319,10 +319,10 @@ export function InterviewRunner({
                 </p>
               )}
               {reward && !reward.granted && (
-                <p className="border-t-[3px] border-paper pt-3 text-base">This question was already counted.</p>
+                <p className="border-t-[3px] border-line pt-3 text-base">This question was already counted.</p>
               )}
               {!reward && signedIn === false && (
-                <p className="border-t-[3px] border-paper pt-3 text-base">Sign in to earn XP and coins for runs like this.</p>
+                <p className="border-t-[3px] border-line pt-3 text-base">Sign in to earn XP and coins for runs like this.</p>
               )}
             </div>
           )}
@@ -390,7 +390,7 @@ export function InterviewRunner({
           )}
 
           {error && (
-            <p role="alert" className="border-[3px] border-red px-3 py-2 text-base text-red">
+            <p role="alert" className="px-box px-box--red px-3 py-2 text-base text-red">
               {error}
             </p>
           )}

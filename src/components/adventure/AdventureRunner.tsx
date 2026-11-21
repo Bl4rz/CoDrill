@@ -8,7 +8,13 @@ import { showToast } from "@/lib/toast";
 import { useInterviewerVoice } from "@/lib/useInterviewerVoice";
 import type { CodeLanguage } from "@/lib/types";
 import { AppHeader } from "@/components/AppHeader";
-import { CodeEditor } from "@/components/CodeEditor";
+import dynamic from "next/dynamic";
+
+// Monaco is the heaviest thing on the site and only the code step needs it, so it loads on demand.
+const CodeEditor = dynamic(() => import("@/components/CodeEditor").then((m) => m.CodeEditor), {
+  ssr: false,
+  loading: () => <div className="min-h-[476px] border-[3px] border-line bg-shade" aria-busy="true" />,
+});
 import { VoiceTextArea } from "@/components/VoiceTextArea";
 import { BossArena, type DamagePop } from "@/components/adventure/BossArena";
 import { DifficultyTag } from "@/components/adventure/DifficultyTag";
@@ -373,7 +379,7 @@ export function AdventureRunner({ attemptId }: { attemptId: string }) {
   const hintBox = (phase: Phase) => {
     const text = hintUsed(phase);
     return text ? (
-      <div className="border-[3px] border-amber px-3 py-2">
+      <div className="px-box px-box--amber px-3 py-2">
         <p className="font-display text-xs uppercase tracking-widest text-amber">Hint</p>
         <p className="text-base leading-relaxed">{text}</p>
       </div>
@@ -392,7 +398,7 @@ export function AdventureRunner({ attemptId }: { attemptId: string }) {
         <LevelUpDialog level={levelUp.to} previousLevel={levelUp.from} xpEarned={result.xp_gained} onClose={() => setLevelUp(null)} />
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-[3px] border-paper bg-ink px-4 py-3">
+      <div className="px-box flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-display text-lg uppercase tracking-widest">{boss ? "Boss battle" : `Level ${view.level.order_index}`}</span>
           {!boss && <DifficultyTag difficulty={view.level.difficulty} />}
@@ -423,7 +429,7 @@ export function AdventureRunner({ attemptId }: { attemptId: string }) {
               {busy && busy !== "hint" && busy !== "followups" && (
                 <div className="flex items-start gap-3">
                   <Avatar expression="thinking" />
-                  <div className="border-[3px] border-dashed border-paper px-4 py-3">
+                  <div className="px-box px-box--dashed px-4 py-3">
                     <p className="font-display text-sm uppercase tracking-widest">
                       <span className="blink-cursor">Scoring...</span>
                     </p>
@@ -499,7 +505,7 @@ export function AdventureRunner({ attemptId }: { attemptId: string }) {
             {finished && !showResult && <StepProgress messages={["Counting the damage..."]} />}
 
             {problem && (
-              <div role="alert" className="flex flex-col gap-3 border-[3px] border-red px-3 py-3 text-base text-red">
+              <div role="alert" className="px-box px-box--red flex flex-col gap-3 px-3 py-3 text-base text-red">
                 <p>{problem.message}</p>
                 {problem.retry && (
                   <div>
