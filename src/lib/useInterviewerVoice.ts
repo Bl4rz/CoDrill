@@ -29,6 +29,7 @@ export function useInterviewerVoice() {
   const [lastSpokenText, setLastSpokenText] = useState("");
   const lastSpokenTextRef = useRef("");
 
+  const wasBetter = useRef(false);
   useEffect(() => {
     // Hand over cleanly: nothing from the old voice keeps talking over the new one.
     if (betterVoice) {
@@ -36,7 +37,13 @@ export function useInterviewerVoice() {
       browserTts.cancel();
     } else {
       kokoro.cancel();
+      // If the better voice gave up (bad audio, too slow) the line it was in the middle of
+      // would just stop. Say the whole line again with the standard voice instead.
+      if (wasBetter.current && kokoroState.status === "failed" && voiceOn && lastSpokenTextRef.current && standard.isSupported) {
+        standard.speak(lastSpokenTextRef.current);
+      }
     }
+    wasBetter.current = betterVoice;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only on switching engines
   }, [betterVoice]);
 

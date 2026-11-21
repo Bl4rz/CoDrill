@@ -9,7 +9,7 @@ import type { InterviewerVoice } from "@/lib/useInterviewerVoice";
 const FIELD =
   "max-w-[190px] border-[3px] border-line bg-ink px-2 py-1.5 text-sm text-paper focus:outline-3 focus:outline-offset-2 focus:outline-amber";
 
-/** Opt-in "Better voice": downloads about 165 MB once, then runs on this device's GPU. */
+/** Opt-in "Better voice": downloads about 330 MB once, then runs on this device's GPU. */
 function BetterVoice({ voice }: { voice: InterviewerVoice }) {
   const k = voice.kokoro;
   // Only offered where it can actually run; the device check happens in the store, after hydration.
@@ -57,9 +57,9 @@ function BetterVoice({ voice }: { voice: InterviewerVoice }) {
         size="sm"
         aria-pressed={false}
         onClick={() => kokoro.enable()}
-        title="A more natural voice that runs on your device. Downloads about 165 MB once."
+        title="A more natural voice that runs on your device. Downloads about 330 MB once."
       >
-        Better voice (165 MB)
+        Better voice (330 MB)
       </PixelButton>
       {k.status === "failed" && k.message && (
         <p role="status" className="text-sm text-mute">

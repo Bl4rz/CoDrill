@@ -17,10 +17,10 @@ function load() {
   if (loading) return loading;
   const files = new Map();
   loading = KokoroTTS.from_pretrained(MODEL_ID, {
-    // fp16 on WebGPU is about 163 MB and several times faster than real time. The WASM
-    // builds were measured at about 1.75x slower than real time on an Apple M4, so there
-    // is deliberately no CPU fallback.
-    dtype: "fp16",
+    // fp32 on WebGPU (about 326 MB) is the only build that was measured to sound right: fp16
+    // outputs NaN samples, q4f16 is muffled, q8 and uint8 are garbage or far too slow. The CPU
+    // (WASM) build is correct but about 1.75x slower than real time on an Apple M4.
+    dtype: "fp32",
     device: "webgpu",
     progress_callback: (p) => {
       if (p.status !== "progress" || !("file" in p)) return;
@@ -35,9 +35,11 @@ function load() {
     },
   })
     .then(async (model) => {
-      // The first generation compiles the GPU kernels (about 3 s). Pay that during the
-      // download bar, not on the interviewer's first line.
-      await model.generate("Ready.", { voice: "af_heart" });
+      // The first generation compiles the GPU kernels. Pay that during the download bar, not on
+      // the interviewer's first line, and use it to check this GPU really produces speech.
+      const test = await model.generate("Welcome to your interview. Let's get started.", { voice: "af_heart" });
+      const problem = audioProblem(test.audio);
+      if (problem) throw new Error("Audio check failed on this device: " + problem);
       tts = model;
       postMessage({ type: "ready" });
     })
@@ -46,6 +48,26 @@ function load() {
       postMessage({ type: "error", message: err instanceof Error ? err.message : "Couldn't load the voice model." });
     });
   return loading;
+}
+
+/**
+ * Rejects audio that is not speech. Measured on good output: no NaN, RMS 0.06 to 0.08,
+ * zero-crossing rate 0.17 to 0.26. Broken GPU output was all NaN, or muffled (rate below 0.1).
+ */
+function audioProblem(a) {
+  let sum = 0;
+  let zc = 0;
+  for (let i = 0; i < a.length; i++) {
+    const v = a[i];
+    if (!Number.isFinite(v)) return "not-a-number samples";
+    sum += v * v;
+    if (i && a[i - 1] < 0 !== v < 0) zc++;
+  }
+  const rms = Math.sqrt(sum / a.length);
+  const rate = zc / a.length;
+  if (rms < 0.02 || rms > 0.3) return "wrong loudness";
+  if (rate < 0.1 || rate > 0.4) return "wrong sound texture";
+  return null;
 }
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -66,6 +88,10 @@ async function run() {
         const out = await tts.generate(sentence, { voice: job.voice });
         if (job.epoch !== epoch) break;
         const audio = out.audio;
+        // A chunk of NaN plays as static. Never let one through.
+        for (let i = 0; i < audio.length; i += 64) {
+          if (!Number.isFinite(audio[i])) throw new Error("Audio check failed: not-a-number samples");
+        }
         postMessage(
           { type: "chunk", id: job.id, epoch: job.epoch, audio, sampleRate: out.sampling_rate, genMs: performance.now() - started },
           [audio.buffer],

@@ -15,7 +15,7 @@ const KEY_SLOW = "codrill:kokoro-slow";
 export type KokoroStatus = "off" | "loading" | "ready" | "failed";
 
 export interface KokoroState {
-  /** null until the device check has run; true only where WebGPU with fp16 is available */
+  /** null until the device check has run; true only where a WebGPU adapter is available */
   supported: boolean | null;
   status: KokoroStatus;
   /** 0-100 while the model downloads */
@@ -61,20 +61,21 @@ let sources: AudioBufferSourceNode[] = [];
 let slowChunks = 0;
 
 /**
- * Can this device run it fast enough? Needs a Worker, Web Audio and a WebGPU adapter with 16-bit
- * float support (the model is the fp16 build). Everything else keeps the standard voice, because
- * the CPU (WASM) build is slower than real time. This only asks the browser; nothing downloads.
+ * Can this device run it fast enough? Needs a Worker, Web Audio and a WebGPU adapter. Everything
+ * else keeps the standard voice, because the CPU (WASM) build is slower than real time. This only
+ * asks the browser; nothing downloads. Whether the GPU then produces real speech is checked by the
+ * worker after the download.
  */
 async function probeSupport(): Promise<boolean> {
   if (typeof Worker === "undefined") return false;
   if (!("AudioContext" in window || "webkitAudioContext" in window)) return false;
   const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
   if (mem !== undefined && mem < 4) return false;
-  const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<{ features: Set<string> } | null> } }).gpu;
+  const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<object | null> } }).gpu;
   if (!gpu) return false;
   try {
     const adapter = await gpu.requestAdapter();
-    return !!adapter && adapter.features.has("shader-f16");
+    return !!adapter;
   } catch {
     return false;
   }
